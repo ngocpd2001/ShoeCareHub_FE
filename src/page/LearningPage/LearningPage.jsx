@@ -1,0 +1,102 @@
+import React from "react";
+import { Link } from "react-router-dom";
+
+
+function LearningPage() {
+  return (
+    <div className="relative overflow-hidden bg-white">
+      <div className="pb-80 pt-16 sm:pb-40 sm:pt-24 lg:pb-48 lg:pt-40">
+        <div className="relative mx-auto max-w-7xl px-4 sm:static sm:px-6 lg:px-8">
+          <div className="sm:max-w-lg">
+            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-6xl">
+              Chăm sóc người cao tuổi
+            </h1>
+            <p className="mt-4 text-xl text-gray-500">
+              Chúng tôi cam kết mang đến cho người cao tuổi sự chăm sóc tận tình
+              và chu đáo, giúp họ tận hưởng những năm tháng tuổi già một cách
+              thoải mái và hạnh phúc nhất.
+            </p>
+          </div>
+          <div>
+            <div className="mt-10">
+              {/* Decorative image grid */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none lg:absolute lg:inset-y-0 lg:mx-auto lg:w-full lg:max-w-7xl"
+              >
+                <div className="absolute transform sm:left-1/2 sm:top-0 sm:translate-x-8 lg:left-1/2 lg:top-1/2 lg:-translate-y-1/2 lg:translate-x-8">
+                  <div className="flex items-center space-x-6 lg:space-x-8">
+                    <div className="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                      <div className="h-64 w-44 overflow-hidden rounded-lg sm:opacity-0 lg:opacity-100">
+                        <img
+                          src="https://i.pinimg.com/originals/42/d3/1c/42d31c4b0fe70dc805f6f0e0949756a1.png"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/78/17/f8/7817f845c99f87ce26ebe729ab586abd.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/2d/94/fb/2d94fb3bb0faf610e6af4e8687246b46.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/45/01/d8/4501d8e462e68a7dcf7664a22337fa2a.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/6a/be/6f/6abe6ff395c384cdcacef38618303aeb.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                    </div>
+                    <div className="grid flex-shrink-0 grid-cols-1 gap-y-6 lg:gap-y-8">
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/30/4e/b7/304eb7036a863db3dea264c37dcb0691.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                      <div className="h-64 w-44 overflow-hidden rounded-lg">
+                        <img
+                          src="https://i.pinimg.com/originals/fe/77/87/fe778791b62d17578585f0205767bee4.jpg"
+                          alt=""
+                          className="h-full w-full object-cover object-center"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <Link
+                to="/login"
+                className="inline-block rounded-md border border-transparent bg-[#0F296D] px-8 py-3 text-center font-medium text-white hover:bg-indigo-700"
+              >
+                Đăng ký tư vấn
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default LearningPage;

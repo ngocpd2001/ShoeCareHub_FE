@@ -1,0 +1,261 @@
+.antPageHeaderHeading {
+  margin-top: 0.625rem;
+  display: flex;
+  align-items: center;
+  color: #f2f2f2;
+}
+.antPageHeaderHeading .icon {
+  display: inline-flex;
+  width: 2rem;
+  height: 2rem;
+  background-color: #fff;
+  box-shadow: 0 0.25rem 0.375rem #868686;
+  border-radius: 0.375rem;
+  justify-content: center;
+  align-items: center;
+  margin-right: 0.6875rem;
+  vertical-align: middle;
+}
+.antPageHeaderHeading .icon svg {
+  font-size: 1.125rem;
+}
+.antPageHeaderHeading .icon svg {
+  font-size: 1.125rem;
+}
+.antPageHeaderHeading .icon svg path {
+  fill: #bfbfbf;
+}
+.antPageHeaderHeading .antPageHeaderHeadingTitle {
+  font-weight: 700;
+  font-size: 1.5rem;
+  line-height: 1.25rem;
+  margin-top: 0.25rem;
+}
+.antPageHeaderHeading :global .ant-picker {
+  margin-left: 1rem;
+  color: #f2f2f2;
+  border: 0.0625rem solid #6b6b6b;
+  background-color: rgba(242, 242, 242, 0.1);
+}
+.antPageHeaderHeading :global .ant-picker input {
+  color: #f2f2f2;
+}
+.antPageBreadcrumb span {
+  font-weight: 600;
+  color: #f2f2f2;
+}
+.headerControl {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  margin-top: 0.625rem;
+}
+.headerControl .btnSignIn {
+  display: flex;
+  align-items: center;
+  padding: 0 0.4375rem;
+  color: #8c8c8c;
+}
+.headerControl .btnSignIn .iconProfile {
+  width: 2.1875rem !important;
+  height: 2.1875rem !important;
+  border-radius: 0.625rem !important;
+  background-image: linear-gradient(310deg, #1677ff, #adc6ff);
+  box-shadow: 0 0.25rem 0.375rem -0.0625rem rgba(20, 20, 20, 0.12),
+    0 0.125rem 0.25rem -0.0625rem rgba(20, 20, 20, 0.07) !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  margin-right: 0.5rem;
+}
+.headerControl .btnSignIn .iconProfile img {
+  width: 2rem;
+  height: 2rem;
+  color: #fff;
+}
+.headerControl .btnSignIn span {
+  font-weight: 600;
+  vertical-align: middle;
+  margin: 0 0.75rem;
+  color: #fff;
+}
+.headerControl svg {
+  font-size: 1.5rem;
+}
+.headerControl svg path {
+  fill: #112122;
+}
+.headerControl .sidebarToggler {
+  display: block;
+  height: auto;
+  padding: 0 0.4375rem;
+  margin: 0;
+  box-shadow: none;
+  color: #8c8c8c;
+  line-height: normal;
+}
+.headerControl .bellFilled {
+  margin-left: 0.75rem;
+}
+.headerControl .bellFilled .center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate3d(-50%, -50%, 0);
+}
+.headerControl .bellFilled .ripple {
+  border: 0.125rem solid #fadb14;
+  border-radius: 50%;
+  clip-path: polygon(0% 0%, 50% 50%, 100% 0%, 100% 100%, 50% 50%, 0% 100%);
+  animation-name: ripple;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+.headerControl .bellFilled .ripple:nth-child(2) {
+  animation-delay: 0.1s;
+}
+.headerControl .bellFilled .ripple:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.headerControl .bellFilled .ripple:nth-child(3) {
+  animation-delay: 0.5s;
+}
+.headerControl .bellFilled .bell {
+  width: 1.5rem;
+  height: 1.5625rem;
+}
+.headerControl .bellFilled .bell svg path {
+  fill: #fadb14;
+}
+.headerControl .bellFilled .bellAni {
+  animation-name: ring;
+  animation-duration: 1.5s;
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+@keyframes ring {
+  0% {
+    transform: rotate(0);
+  }
+  5% {
+    transform: rotate(-3deg);
+  }
+  10% {
+    transform: rotate(5deg);
+  }
+  15%,
+  25%,
+  35% {
+    transform: rotate(-10deg);
+  }
+  20%,
+  30%,
+  40% {
+    transform: rotate(10deg);
+  }
+  45% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(3deg);
+  }
+  55% {
+    transform: rotate(0);
+  }
+  100% {
+    transform: rotate(0);
+  }
+}
+@keyframes ripple {
+  10% {
+    opacity: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  30% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    width: 3.125rem;
+    height: 3.125rem;
+    opacity: 0;
+  }
+}
+.headerNotificationsDropdown {
+  background: #686868;
+  box-shadow: 0 1.25rem 1.6875rem #8d8d8d;
+  border-radius: 0.625rem;
+  min-width: 13;
+  padding: 0.5rem 0.5rem;
+  margin-top: 0.3125rem;
+}
+.headerNotificationsDropdown :global .ant-list-item {
+  display: block;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+.headerNotificationsDropdown :global .ant-list-item a {
+  width: 100%;
+}
+.headerNotificationsDropdown
+  :global
+  .ant-list-item
+  :global
+  .ant-list-item-meta {
+  align-items: center;
+}
+.headerNotificationsDropdown
+  :global
+  .ant-list-item
+  :global
+  .ant-list-item-meta
+  :global
+  .ant-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  background-color: #fafafa;
+  box-shadow: 0 0.25rem 0.375rem #838383;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.headerNotificationsDropdown
+  :global
+  .ant-list-item
+  :global
+  .ant-list-item-meta
+  :global
+  .ant-avatar
+  svg {
+  font-size: 1.125rem;
+  color: #666;
+}
+.headerNotificationsDropdown
+  :global
+  .ant-list-item
+  :global
+  .ant-list-item-meta
+  :global
+  .ant-list-item-meta-content
+  h4 {
+  color: #f2f2f2;
+  margin: 0;
+}
+.headerNotificationsDropdown :global .ant-list-item:hover {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 0.25rem;
+}
+.iconLoad svg {
+  width: 20px;
+  height: 28px;
+}
+@media (min-width: 62rem) {
+  .headerControl .sidebarToggler {
+    display: none;
+  }
+}

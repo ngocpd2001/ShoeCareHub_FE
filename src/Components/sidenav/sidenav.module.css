@@ -1,0 +1,197 @@
+.brand {
+	 text-align: center;
+	 font-weight: 600;
+	 padding-top: 0.5rem;
+}
+ .brand img {
+	 height: 2.5rem;
+	 margin: auto;
+}
+ .brand h1 {
+	 font-size: 30px;
+	 margin: 0px;
+	 font-weight: 700;
+	 text-align: center;
+	 color: #f2f2f2;
+	 padding: 0px;
+	 max-width: 550px;
+}
+ .brand span {
+	 background: linear-gradient(141deg, #c87cff 0%, #745cfc 50%, #3ff1fd 100%);
+	 -webkit-background-clip: text;
+	 background-clip: text;
+	 border-bottom: 3px solid transparent;
+	 border-image: linear-gradient(141deg, #c87cff 0%, #745cfc 50%, #3ff1fd 100%);
+	 border-image-slice: 1;
+	 -webkit-text-fill-color: transparent;
+}
+ .menuInline {
+	 border: 0rem;
+	 border-inline-end: none !important;
+	 background: transparent;
+	 overflow: auto;
+	 height: calc(100vh - 9rem);
+}
+ .menuInline .menuItem {
+	 overflow: visible;
+	 background-color: transparent;
+	 padding: 0 !important;
+	 height: auto;
+	 line-height: normal;
+	 display: block !important;
+}
+ .menuInline .menuItem:after {
+	 display: none;
+}
+ .menuInline .menuItem:hover {
+	 background-color: rgba(56, 56, 56, 0.8) !important;
+}
+ .menuInline .menuItem .activeItem {
+	 background-color: #383838;
+	 box-shadow: 0 1.25rem 1.6875rem #888888;
+	 font-weight: 600;
+}
+ .menuInline .menuItem .activeItem:hover {
+	 background-color: rgba(0, 0, 0, 0.06);
+}
+ .menuInline .menuItem .activeItem .icon {
+	 background: #f2f2f2;
+}
+ .menuInline .menuItem .activeItem span:first-child {
+	 background: #1890ff !important;
+}
+ .menuInline .menuItem .activeItem span:first-child svg path {
+	 fill: #fff;
+}
+ .menuInline .menuItem a {
+	 padding: 0.625rem 1rem;
+	 color: #fff;
+	 font-size: 1.0625rem;
+	 border-radius: 0.5rem;
+	 display: flex;
+	 align-items: center;
+	 justify-content: space-between;
+	 white-space: nowrap;
+}
+ .menuInline .menuItem a:hover {
+	 color: #f2f2f2;
+	 font-size: 1.0625rem;
+}
+ .menuInline .menuItem a svg path {
+	 fill: #bfbfbf;
+}
+ .menuInline .menuItem a :global .anticon-down {
+	 transform: rotate(0deg);
+}
+ .menuInline .menuItem a .downOutlined {
+	 transform: rotate(-180deg);
+}
+ .menuInline .menuItem .flex {
+	 display: flex;
+	 align-items: center;
+	 justify-content: center;
+	 margin-right: 0.625rem;
+}
+ .menuInline .menuItem .icon {
+	 display: inline-flex;
+	 width: 2rem;
+	 height: 2rem;
+	 background-color: #fff;
+	 box-shadow: 0 0.25rem 0.375rem #656565;
+	 border-radius: 0.375rem;
+	 justify-content: center;
+	 align-items: center;
+	 margin-right: 0.6875rem;
+	 vertical-align: middle;
+}
+ .menuInline .menuItem .icon svg {
+	 font-size: 1.125rem;
+}
+ .menuInline .menuItem svg {
+	 font-size: 1.125rem;
+}
+ .menuInline .menuSub {
+	 padding-left: 1.875rem;
+	 border: 0rem;
+	 border-inline-end: none !important;
+	 background: transparent;
+}
+ .menuInline .menuSub .menuItem {
+	 overflow: visible;
+	 background-color: transparent;
+	 padding: 0 !important;
+	 height: auto;
+	 line-height: normal;
+	 display: block !important;
+}
+ .menuInline .menuSub .menuItem:after {
+	 display: none;
+}
+ .menuInline .menuSub .menuItem:hover {
+	 background-color: rgba(56, 56, 56, 0.8) !important;
+}
+ .menuInline .menuSub .menuItem .activeItem {
+	 background-color: #383838;
+	 box-shadow: 0 1.25rem 1.6875rem #000;
+	 font-weight: 600;
+}
+ .menuInline .menuSub .menuItem .activeItem:hover {
+	 background-color: rgba(0, 0, 0, 0.06);
+}
+ .menuInline .menuSub .menuItem .activeItem .icon {
+	 background: #f2f2f2;
+}
+ .menuInline .menuSub .menuItem .activeItem svg path {
+	 fill: #fff;
+}
+ .menuInline .menuSub .menuItem a {
+	 padding: 0.625rem 1rem;
+	 color: #fff;
+	 font-size: 1.0625rem;
+	 border-radius: 0.5rem;
+	 display: flex;
+	 justify-content: space-between;
+	 align-items: center;
+	 white-space: nowrap;
+}
+ .menuInline .menuSub .menuItem a:hover {
+	 color: #f2f2f2;
+	 font-size: 1.0625rem;
+}
+ .menuInline .menuSub .menuItem a svg path {
+	 fill: #bfbfbf;
+}
+ .menuInline .menuSub .menuItem .icon {
+	 display: inline-flex;
+	 width: 2rem;
+	 height: 2rem;
+	 background-color: #fff;
+	 box-shadow: 0 0.25rem 0.375rem #000;
+	 border-radius: 0.375rem;
+	 justify-content: center;
+	 align-items: center;
+	 margin-right: 0.6875rem;
+	 vertical-align: middle;
+}
+ .menuInline .menuSub .menuItem .icon svg {
+	 font-size: 1.125rem;
+}
+ .menuInline .menuSub .menuItem svg {
+	 font-size: 1.125rem;
+}
+ .menuInline .ant-menu-submenu {
+	 margin: 0;
+	 overflow: visible;
+}
+ .menuInline .ant-menu-submenu:after {
+	 display: none;
+}
+ .menuInline .ant-menu-item.menu-item-header {
+	 padding: 0.625rem 1rem !important;
+	 color: #8c8c8c;
+	 font-weight: 700;
+	 font-size: 0.8125rem;
+	 text-transform: uppercase;
+	 display: block;
+}
+ 

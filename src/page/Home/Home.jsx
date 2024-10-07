@@ -1,0 +1,190 @@
+import React, { useState, useRef } from 'react';
+import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
+import ServiceGrid from '../../Components/ServiceGrid/ServiceGrid';
+import { Carousel } from 'antd';
+
+
+
+const CARD_WIDTH = 280; // Fixed width for each card
+const CARD_GAP = 16; // Gap between cards
+
+const Carousels = ({ title, items, type }) => {
+  const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = useRef(null);
+
+  const scroll = (direction) => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const scrollAmount = CARD_WIDTH + CARD_GAP;
+    const maxScroll = container.scrollWidth - container.clientWidth;
+
+    let newPosition = scrollPosition + (direction === 'left' ? -scrollAmount : scrollAmount);
+    newPosition = Math.max(0, Math.min(newPosition, maxScroll));
+
+    container.scrollTo({ left: newPosition, behavior: 'smooth' });
+    setScrollPosition(newPosition);
+  };
+
+  return (
+    <div className="mb-8 rounded-md  shadow-lg p-8 border-[#D9D9D9] border">
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-2xl font-bold mb-6">{title}</h2>
+        <a href="#" className="text-blue-600 hover:underline">
+          Xem tất cả
+        </a>
+      </div>
+      <div className="relative">
+        <button
+          onClick={() => scroll("left")}
+          className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md z-10"
+          disabled={scrollPosition === 0}
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-600" />
+        </button>
+        <div
+          ref={containerRef}
+          className="flex space-x-4 overflow-x-hidden scroll-smooth"
+          style={{ width: "100%", overflowX: "hidden" }}
+        >
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="flex-none m-2 "
+              style={{ width: `${CARD_WIDTH}px` }}
+            >
+              <div className="bg-white rounded-lg shadow-md p-4">
+                {type === "service" ? (
+                  <ServiceCard item={item} />
+                ) : (
+                  <SupplierCard item={item} />
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+        <button
+          onClick={() => scroll("right")}
+          className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow-md z-10"
+          // disabled={scrollPosition >= (items.length - 4) * (CARD_WIDTH + CARD_GAP)}
+        >
+          <ChevronRight className="w-6 h-6 text-gray-600" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const ServiceCard = ({ item }) => (
+  <>
+    <div className="mb-2 h-40 relative bg-gray-200 rounded-md flex items-center justify-center">
+      <img
+        src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
+        className="text-gray-400 h-40 w-full object-cover"
+        alt={item.name}
+      />
+
+      <div className="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
+        -{item.discount}%
+      </div>
+    </div>
+    <h3 className="font-semibold mb-1">{item.name}</h3>
+    <div className="flex items-center mb-1">
+      <span className="text-yellow-400 mr-1">{item.rating}</span>
+      <Star className="w-4 h-4 fill-current text-yellow-400" />
+    </div>
+    <div className="text-gray-500 line-through text-sm">
+      {item.originalPrice.toLocaleString()}đ
+    </div>
+    <div className="text-red-500 font-bold">
+      {item.discountedPrice.toLocaleString()}đ
+    </div>
+    <button className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">
+      Đặt Ngay
+    </button>
+  </>
+);
+
+const SupplierCard = ({ item }) => (
+  <>
+    <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center py-2">
+      <img
+        src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
+        className="text-gray-400 h-40 w-full object-cover"
+        alt={item.name}
+      />
+    </div>
+    <h3 className="font-semibold mb-1">{item.name}</h3>
+    <div className="flex items-center mb-1">
+      <span className="text-yellow-400 mr-1">{item.rating}</span>
+      <Star className="w-4 h-4 fill-current text-yellow-400" />
+    </div>
+    <div className="text-sm text-gray-600">
+      Đã bán {item.orderCount.toLocaleString()} trong năm
+    </div>
+    <button className="mt-2 w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition-colors">
+      Chi Tiết
+    </button>
+  </>
+);
+
+export default function CarouselsSection() {
+  const services = [
+    { id: 1, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    { id: 2, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    { id: 3, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    { id: 4, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    { id: 5, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    { id: 6, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+  ];
+    const [dataImg, setDataImg] = useState([
+      {
+        img: "https://lh3.googleusercontent.com/3YZhlELinDuAv3PN4Rn6AAJaBVjkE-pL0zA1Gt-gSCtBuuvJCqmQ5pFc5MBNEdxwTRqvODQdMRD4Mt_vSFyRehbwnNedWMuSAozgemo8ZCfUu6aWwkoW61rAclByqu4tIrjqUVHeMgIdRO4RPOtRl7Y",
+      },
+      {
+        img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
+      },
+      {
+        img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
+      },
+    ]);
+  const suppliers = [
+    { id: 1, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 2, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 3, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 4, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 5, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 6, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+  ];
+
+  return (
+    <>
+      <div className=" h-[50vh]  ">
+        <Carousel autoplay arrows={true} infinite={false}>
+          {dataImg.map((value, index) => (
+            <div className="flex justify-center items-center" key={index}>
+              <img
+                className="object-cover h-[50vh] w-screen"
+                alt={index}
+                src={value.img}
+              />
+            </div>
+          ))}
+        </Carousel>
+      </div>
+      <div className="container mx-auto md:px-4 mt-4">
+        <Carousels
+          title="Dịch vụ đang được giảm giá"
+          items={services}
+          type="service"
+        />
+        <Carousels
+          title="Nhà cung cấp tiêu biểu"
+          items={suppliers}
+          type="supplier"
+        />
+        <ServiceGrid />
+      </div>
+    </>
+  );
+}
