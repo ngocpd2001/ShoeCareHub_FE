@@ -157,7 +157,7 @@ export default function ComHeader({ children }) {
                       to="/"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
-                      GỎI LÊN SÀN
+                      GÓI LÊN SÀN
                     </Link>
                   </li>
                   <li>
@@ -185,7 +185,7 @@ export default function ComHeader({ children }) {
           <div className="">{children}</div>
         </main>
       </div>
-      <footer className="min-h-full  bg-white text-gray-600  font-sans  shadow-lg border-t-[#002278] border-t-4 pt-6">
+      <footer className="min-h-full  bg-white text-gray-600  font-sans  shadow-lg border-t-[#002278] border-4 pt-6">
         <div className="container mx-auto text-center max-w-[1250px]">
           <div className="grid grid-cols-2 justify-center  md:grid-cols-4 gap-8">
             <div>
@@ -264,8 +264,8 @@ export default function ComHeader({ children }) {
               </ul>
             </div>
             <div>
-              <h3 className="font-bold text-lg mb-4">TẢI ỨNG DỤNG</h3>
-              <div className=" space-x-2 mb-4 flex flex-col justify-center  items-center">
+              <h3 className="font-bold text-lg ">TẢI ỨNG DỤNG</h3>
+              <div className=" space-x-2  flex flex-col justify-center  items-center">
                 <img
                   src="https://play.google.com/intl/en_us/badges/images/generic/en_badge_web_generic.png?hl=vi "
                   alt="Google Play"
