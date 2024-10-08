@@ -1,9 +1,7 @@
-import React, { useState, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Star } from 'lucide-react';
-import ServiceGrid from '../../Components/ServiceGrid/ServiceGrid';
-import { Carousel } from 'antd';
-
-
+import React, { useState, useRef } from "react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import ServiceGrid from "../../Components/ServiceGrid/ServiceGrid";
+import { Carousel } from "antd";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_GAP = 16; // Gap between cards
@@ -19,10 +17,11 @@ const Carousels = ({ title, items, type }) => {
     const scrollAmount = CARD_WIDTH + CARD_GAP;
     const maxScroll = container.scrollWidth - container.clientWidth;
 
-    let newPosition = scrollPosition + (direction === 'left' ? -scrollAmount : scrollAmount);
+    let newPosition =
+      scrollPosition + (direction === "left" ? -scrollAmount : scrollAmount);
     newPosition = Math.max(0, Math.min(newPosition, maxScroll));
 
-    container.scrollTo({ left: newPosition, behavior: 'smooth' });
+    container.scrollTo({ left: newPosition, behavior: "smooth" });
     setScrollPosition(newPosition);
   };
 
@@ -130,31 +129,73 @@ const SupplierCard = ({ item }) => (
 
 export default function CarouselsSection() {
   const services = [
-    { id: 1, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
-    { id: 2, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
-    { id: 3, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
-    { id: 4, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
-    { id: 5, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
-    { id: 6, name: 'Tên Dịch Vụ', rating: "5.0", originalPrice: 1000000, discountedPrice: 800000, discount: 20 },
+    {
+      id: 1,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
+    {
+      id: 2,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
+    {
+      id: 3,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
+    {
+      id: 4,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
+    {
+      id: 5,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
+    {
+      id: 6,
+      name: "Tên Dịch Vụ",
+      rating: "5.0",
+      originalPrice: 1000000,
+      discountedPrice: 800000,
+      discount: 20,
+    },
   ];
-    const [dataImg, setDataImg] = useState([
-      {
-        img: "https://lh3.googleusercontent.com/3YZhlELinDuAv3PN4Rn6AAJaBVjkE-pL0zA1Gt-gSCtBuuvJCqmQ5pFc5MBNEdxwTRqvODQdMRD4Mt_vSFyRehbwnNedWMuSAozgemo8ZCfUu6aWwkoW61rAclByqu4tIrjqUVHeMgIdRO4RPOtRl7Y",
-      },
-      {
-        img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
-      },
-      {
-        img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
-      },
-    ]);
+  const [dataImg, setDataImg] = useState([
+    {
+      img: "https://lh3.googleusercontent.com/3YZhlELinDuAv3PN4Rn6AAJaBVjkE-pL0zA1Gt-gSCtBuuvJCqmQ5pFc5MBNEdxwTRqvODQdMRD4Mt_vSFyRehbwnNedWMuSAozgemo8ZCfUu6aWwkoW61rAclByqu4tIrjqUVHeMgIdRO4RPOtRl7Y",
+    },
+    {
+      img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
+    },
+    {
+      img: "https://extrim.vn/_next/image?url=https%3A%2F%2Fextrim-prod.s3.ap-southeast-1.amazonaws.com%2FCach_chon_ban_chai_ve_sinh_giay_8aa234ee5e.jpg&w=3840&q=75",
+    },
+  ]);
   const suppliers = [
-    { id: 1, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
-    { id: 2, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
-    { id: 3, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
-    { id: 4, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
-    { id: 5, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
-    { id: 6, name: 'Tên Nhà Cung Cấp', rating: "5.0", orderCount: 1000 },
+    { id: 1, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
+    { id: 2, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
+    { id: 3, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
+    { id: 4, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
+    { id: 5, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
+    { id: 6, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
   ];
 
   return (
@@ -172,7 +213,7 @@ export default function CarouselsSection() {
           ))}
         </Carousel>
       </div>
-      <div className="container mx-auto md:px-4 mt-4">
+      <div className="container mx-auto md:px-1 mt-4 max-w-[1250px]">
         <Carousels
           title="Dịch vụ đang được giảm giá"
           items={services}
