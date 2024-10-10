@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
-import { Pagination } from "antd";
+import { Button, Dropdown, Menu, Pagination } from "antd";
+import { DownOutlined } from "@ant-design/icons";
 
 const services = [
   {
@@ -12,7 +13,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.5,
     reviews: 150,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 2,
@@ -21,7 +23,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.8,
     reviews: 110,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 3,
@@ -30,7 +33,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.6,
     reviews: 90,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 4,
@@ -39,7 +43,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.7,
     reviews: 130,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 5,
@@ -48,7 +53,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.4,
     reviews: 70,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 6,
@@ -57,7 +63,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.9,
     reviews: 120,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 7,
@@ -66,7 +73,8 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.8,
     reviews: 80,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
   {
     id: 8,
@@ -75,15 +83,20 @@ const services = [
     originalPrice: "$119.99/hr",
     rating: 4.5,
     reviews: 60,
-    image: "https://via.placeholder.com/150",
+    image:
+      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
   },
 ];
 
+const handleMenuClick = (e) => {
+  console.log("Click on menu item:", e);
+};
+
 const ServiceGrid = () => {
   const [selected, setSelected] = useState(false);
-  const [favorites, setFavorites] = useState([]); 
-  const [currentPage, setCurrentPage] = useState(1); 
-  const pageSize = 8; 
+  const [favorites, setFavorites] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 8;
 
   const handleFocus = () => {
     setSelected(true);
@@ -103,17 +116,24 @@ const ServiceGrid = () => {
     });
   };
 
-  const totalPages = Math.ceil(services.length / pageSize); 
-
+  const totalPages = Math.ceil(services.length / pageSize);
 
   const onPageChange = (page) => {
     setCurrentPage(page);
   };
 
-
   const displayedServices = services.slice(
     (currentPage - 1) * pageSize,
     currentPage * pageSize
+  );
+
+  // Định nghĩa menu trong ServiceGrid
+  const menu = (
+    <Menu onClick={handleMenuClick}>
+      <Menu.Item key="1">Rẻ</Menu.Item>
+      <Menu.Item key="2">Trung Bình</Menu.Item>
+      <Menu.Item key="3">Cao</Menu.Item>
+    </Menu>
   );
 
   return (
@@ -121,28 +141,21 @@ const ServiceGrid = () => {
       <div className="flex flex-row items-center mb-4 bg-white p-4">
         <h2 className="text-lg font-semibold text-center">SẮP XẾP THEO</h2>
 
-        <h1
-          className={`rounded-md p-2 mx-3 ${
-            selected ? "bg-[#002278] text-white" : ""
-          }`}
+        <Button
+          className={`mx-3 ${
+            selected ? "bg-white border-3 border-[#3A4980] text-white" : ""
+          } text-center`}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          tabIndex={0}
         >
           Phổ biến
-        </h1>
+        </Button>
 
-        <select
-          className={`rounded-md p-2 ${
-            selected ? "bg-[#002278] text-white" : ""
-          }`}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-        >
-          <option>Rẻ</option>
-          <option>Trung Bình</option>
-          <option>Cao</option>
-        </select>
+        <Dropdown overlay={menu} trigger={["click"]}>
+          <Button>
+            Giá <DownOutlined />
+          </Button>
+        </Dropdown>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 shadow-md">
         {displayedServices.map((service) => (
@@ -159,7 +172,7 @@ const ServiceGrid = () => {
               <div className="absolute top-2 right-2">
                 <button
                   onClick={() => handleFavoriteClick(service.id)}
-                  className="bg-white rounded-full p-2 w-8 h-8 flex items-center justify-center"
+                  className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center"
                 >
                   <FontAwesomeIcon
                     icon={
@@ -172,6 +185,7 @@ const ServiceGrid = () => {
                         ? "text-[#3A4980]"
                         : "text-gray-400"
                     }`}
+                    size="xl"
                   />
                 </button>
               </div>
@@ -195,11 +209,11 @@ const ServiceGrid = () => {
 
       <div className="flex justify-center mt-4">
         <Pagination
-          current={currentPage} 
-          total={services.length} 
-          pageSize={pageSize} 
-          onChange={onPageChange} 
-          showSizeChanger={false} 
+          current={currentPage}
+          total={services.length}
+          pageSize={pageSize}
+          onChange={onPageChange}
+          showSizeChanger={false}
         />
       </div>
     </div>

@@ -7,7 +7,6 @@ import {
   faThumbsUp as solidThumbsUp,
 } from "@fortawesome/free-solid-svg-icons";
 import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
-import ShoesDetailImage from "../../assets/images/Service/Shoes_detail.png";
 import ServiceDetail from "../../assets/videos/Service/servicedetail.mp4";
 
 const FeedbackService = () => {
@@ -26,6 +25,11 @@ const FeedbackService = () => {
       rating: 5,
       comment:
         "Great Product. There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour.",
+      images: [
+        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
+        "https://atmos.co.id/cdn/shop/files/Sepatu-Sneaker-Palermo_3_1360x.jpg?v=1721196741",
+        "https://us.levelshoes.com/media/catalog/product/cache/d6b308721eea44dce854000e2ac7b2ba/3/9/39684-105_1.jpg",
+      ],
     },
     {
       name: "Sr. Robert Downey",
@@ -33,17 +37,16 @@ const FeedbackService = () => {
       rating: 5,
       comment:
         "The best product in Market. Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old.",
+      images: [
+        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
+        "https://atmos.co.id/cdn/shop/files/Sepatu-Sneaker-Palermo_3_1360x.jpg?v=1721196741",
+        "https://us.levelshoes.com/media/catalog/product/cache/d6b308721eea44dce854000e2ac7b2ba/3/9/39684-105_1.jpg",
+      ],
     },
   ];
 
   const media = [
-    { id: 1, src: ShoesDetailImage, alt: "Review Image 1" },
-    { id: 2, src: ShoesDetailImage, alt: "Review Image 2" },
-    { id: 3, src: ShoesDetailImage, alt: "Review Image 3" },
-    { id: 4, src: ShoesDetailImage, alt: "Review Image 1" },
-    { id: 5, src: ShoesDetailImage, alt: "Review Image 2" },
-    { id: 6, src: ShoesDetailImage, alt: "Review Image 3" },
-    { id: 7, src: ServiceDetail, alt: "Review Video", type: "video" },
+    { id: 1, src: ServiceDetail, alt: "Review Video", type: "video" },
   ];
 
   const [likedReviews, setLikedReviews] = useState(
@@ -165,43 +168,49 @@ const FeedbackService = () => {
               </div>
               <p className="text-gray-700">{review.comment}</p>
               <div className="mt-6">
-                <div className="grid grid-cols-2 md:grid-cols-8 gap-4">
-                  {media.map((item, index) => (
-                    <div key={item.id} className="relative">
-                      {item.type === "video" ? (
-                        <video
-                          src={item.src}
-                          className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                            index === currentMediaIndex
-                              ? "border-2 border-[#3A4980]"
-                              : ""
-                          }`}
-                          controls
-                          onClick={() => setCurrentMediaIndex(index)}
-                        />
-                      ) : (
-                        <img
-                          src={item.src}
-                          alt={item.alt}
-                          className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                            index === currentMediaIndex
-                              ? "border-2 border-[#3A4980]"
-                              : ""
-                          }`}
-                          onClick={() => setCurrentMediaIndex(index)}
-                        />
-                      )}
-                      {item.type === "video" && (
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <FontAwesomeIcon
-                            icon={faPlay}
-                            className="text-white text-2xl"
+                <div className="grid md:grid-cols-8 gap-4">
+                  {/* Render Video */}
+                  {media.map(
+                    (item) =>
+                      item.type === "video" && (
+                        <div key={item.id} className="relative">
+                          <video
+                            src={item.src}
+                            className={`w-32 h-32 object-cover cursor-pointer rounded ${
+                              currentMediaIndex === item.id
+                                ? "border-2 border-[#3A4980]"
+                                : ""
+                            }`}
+                            controls
+                            onClick={() => setCurrentMediaIndex(item.id)}
                           />
+                          <div className="absolute inset-0 flex items-center justify-center  pointer-events-none">
+                            {/* <FontAwesomeIcon
+                              icon={faPlay}
+                              className="text-white text-2xl"
+                            /> */}
+                          </div>
                         </div>
-                      )}
+                      )
+                  )}
+
+                  {/* Render Images */}
+                  {review.images.map((image, imageIndex) => (
+                    <div key={image} className="relative">
+                      <img
+                        src={image}
+                        alt={review.name}
+                        className={`w-32 h-32 object-cover cursor-pointer rounded ${
+                          imageIndex === currentMediaIndex
+                            ? "border-2 border-[#3A4980]"
+                            : ""
+                        }`}
+                        onClick={() => setCurrentMediaIndex(imageIndex)}
+                      />
                     </div>
                   ))}
                 </div>
+
                 <div className="flex mt-5 items-center">
                   <button
                     onClick={() => handleLikeClick(index)}

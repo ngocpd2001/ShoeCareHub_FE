@@ -11,7 +11,6 @@ import {
   faStar as regularStar,
   faCommentDots,
 } from "@fortawesome/free-regular-svg-icons";
-import ShoesDetailImage from "../../assets/images/Service/Shoes_detail.png";
 import FeedbackService from "../../Components/Service/FeedbackService";
 import InformationShop from "../../Components/Service/InformationShop";
 import ServiceCard from "../../Components/Service/ServiceCard";
@@ -28,15 +27,18 @@ const services = [
     usage: 25,
     description:
       "Dịch vụ clean shoes chuyên sâu của chúng tôi mang đến sự chăm sóc toàn diện và tỉ mỉ cho từng đôi giày của bạn. Với quy trình làm sạch đa bước, bao gồm vệ sinh bề mặt, loại bỏ vết bẩn sâu, xử lý đế giày và khử mùi hôi.",
+    images: {
+      main: "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
+      thumbnails: [
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQOCPie3ythIWfDE5rn8FzU26ET8Wugra2xbEO5g-VuHCDHaT8-_v01p9vQDlJ0XO-pnc&usqp=CAU",
+        "https://i.ebayimg.com/images/g/3GoAAOSwckRkf3Yl/s-l1200.jpg",
+        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQHx0NYAv5VPb_PTBUmna4imQVgqzZM30gSBKVBEZB1PNdp7sgfrGuPIN5X83b1ziPUXE&usqp=CAU",
+      ],
+    },
   },
 ];
 
-const dataImages = [
-  { img: ShoesDetailImage },
-  { img: ShoesDetailImage },
-  { img: ShoesDetailImage },
-  { img: ShoesDetailVideo, type: "video" }, // Cập nhật để sử dụng img và thêm type
-];
+const dataImages = [{ img: ShoesDetailVideo, type: "video" }];
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -45,13 +47,23 @@ const ServiceDetail = () => {
 
   const currentService = services[0];
 
+  const combinedData = [
+    ...dataImages,
+    ...currentService.images.thumbnails.map((img) => ({
+      img,
+      type: "image",
+    })),
+  ];
+
+  // Điều hướng đến hình ảnh/video tiếp theo
   const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % dataImages.length);
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
   };
 
+  // Điều hướng đến hình ảnh/video trước đó
   const prevImage = () => {
     setCurrentImageIndex(
-      (prevIndex) => (prevIndex - 1 + dataImages.length) % dataImages.length
+      (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
     );
   };
 
@@ -82,28 +94,28 @@ const ServiceDetail = () => {
             {/* Left column - Image and thumbnails */}
             <div className="w-full md:w-1/2 p-6">
               <div className="relative">
-                {/* Tăng chiều cao của ảnh chính */}
+                {/* Main Image */}
                 <img
-                  src={dataImages[currentImageIndex].img}
-                  alt="Service"
-                  className="w-full h-[500px] object-cover rounded-lg" // Set height to 500px and object-cover to fit nicely
+                  src={currentService.images.main}
+                  alt={currentService.name}
+                  className="w-full h-[500px] object-cover rounded-lg"
                 />
               </div>
               <div className="flex justify-center mt-6 space-x-2 overflow-x-auto relative">
-                {/* Previous button */}
+                {/* Button Previous */}
                 <button
                   onClick={prevImage}
-                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10"
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
                 >
-                  <FontAwesomeIcon icon={faChevronLeft} size={24} />
+                  <FontAwesomeIcon icon={faChevronLeft} size="lg" />
                 </button>
 
-                {/* Image Thumbnails */}
-                {dataImages.map((image, index) => (
+                {/* Thumbnails cho hình ảnh/video */}
+                {combinedData.map((item, index) => (
                   <div key={index} className="relative">
-                    {image.type === "video" ? (
+                    {item.type === "video" ? (
                       <video
-                        src={image.img}
+                        src={item.img}
                         className={`w-32 h-32 object-cover cursor-pointer rounded ${
                           index === currentImageIndex
                             ? "border-2 border-[#3A4980]"
@@ -114,7 +126,7 @@ const ServiceDetail = () => {
                       />
                     ) : (
                       <img
-                        src={image.img}
+                        src={item.img}
                         alt={`Thumbnail ${index + 1}`}
                         className={`w-32 h-32 object-cover cursor-pointer rounded ${
                           index === currentImageIndex
@@ -124,23 +136,23 @@ const ServiceDetail = () => {
                         onClick={() => setCurrentImageIndex(index)}
                       />
                     )}
-                    {image.type === "video" && (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <FontAwesomeIcon
+                    {item.type === "video" && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        {/* <FontAwesomeIcon
                           icon={faPlay}
                           className="text-white text-2xl"
-                        />
+                        /> */}
                       </div>
                     )}
                   </div>
                 ))}
 
-                {/* Next button */}
+                {/* Button Next */}
                 <button
                   onClick={nextImage}
-                  className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10"
+                  className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
                 >
-                  <FontAwesomeIcon icon={faChevronRight} size={24} />
+                  <FontAwesomeIcon icon={faChevronRight} size="lg" />
                 </button>
               </div>
             </div>
