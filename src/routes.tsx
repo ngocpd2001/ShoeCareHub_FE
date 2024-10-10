@@ -5,6 +5,9 @@ import ErrorPage from "./page/404/ErrorPage";
 import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
 import Home from "./page/Home/Home";
 import ComHeader from './Components/ComHeader/ComHeader';
+import ServiceDetail from "./page/Service/ServiceDetail";
+import ProviderLandingPage from "./page/Provider/ProviderLandingPage";
+import Subscription from "./page/Provider/Subscription";
 
 export const routers = createBrowserRouter([
   {
@@ -30,6 +33,24 @@ export const routers = createBrowserRouter([
       {
         path: "/login",
         element: <LoginPage />,
+      },
+      {
+        path: "/servicedetail",
+        element: (
+            <ServiceDetail />
+        ),
+      },
+      {
+        path: "/provider-landingpage",
+        element: (
+            <ProviderLandingPage />
+        ),
+      },
+      {
+        path: "/subscription-provider",
+        element: (
+            <Subscription />
+        ),
       },
     
     ],
