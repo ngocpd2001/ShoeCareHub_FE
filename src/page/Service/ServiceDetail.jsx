@@ -11,9 +11,9 @@ import {
   faStar as regularStar,
   faCommentDots,
 } from "@fortawesome/free-regular-svg-icons";
-import FeedbackService from "../../Components/Service/FeedbackService";
-import InformationShop from "../../Components/Service/InformationShop";
-import ServiceCard from "../../Components/Service/ServiceCard";
+import FeedbackService from "../../Components/ComService/FeedbackService";
+import InformationShop from "../../Components/ComService/InformationShop";
+import ServiceCard from "../../Components/ComService/ServiceCard";
 import ShoesDetailVideo from "../../assets/videos/Service/servicedetail.mp4";
 
 const services = [
