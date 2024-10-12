@@ -76,7 +76,7 @@ code {
 
 .anticon-filter {
   background-color: #0f296d !important; /* Thay đổi màu nền header */
-  color: #ffffff  !important;
+  color: #ffffff !important;
 }
 .ant-table-column-sorter {
   color: #ffffff !important;
@@ -86,7 +86,42 @@ code {
   z-index: 99;
 }
 
-
 .active .anticon-filter {
   color: #1677ff !important;
 }
+
+.ant-tabs-nav-wrap {
+  display: flex;
+  justify-content: space-around; /* Chia đều các tab */
+}
+
+.ant-tabs-tab {
+  flex: 1 !important; /* Để tab chiếm đều chiều rộng */
+  justify-content: center !important;
+  margin: 0 0 0 0 !important;
+}
+.ant-tabs-nav-list {
+  width: 100%; /* Mặc định là 100% chiều rộng của container */
+}
+
+/* Điều chỉnh cho màn hình lớn */
+@media (min-width: 1200px) {
+  .ant-tabs-nav-list {
+    width: 900px; /* Đặt cố định 900px cho màn hình lớn */
+  }
+}
+
+/* Điều chỉnh cho màn hình trung bình */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .ant-tabs-nav-list {
+    width: 700px; /* Đặt 700px cho màn hình trung bình */
+  }
+}
+
+/* Điều chỉnh cho màn hình nhỏ */
+@media (max-width: 767px) {
+  .ant-tabs-nav-list {
+    width: 600px; /* Đặt chiều rộng 100% cho màn hình nhỏ */
+  }
+}
+
