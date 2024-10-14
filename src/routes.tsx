@@ -8,6 +8,11 @@ import ComHeader from './Components/ComHeader/ComHeader';
 import ServiceDetail from "./page/Service/ServiceDetail";
 import ProviderLandingPage from "./page/Provider/ProviderLandingPage";
 import Subscription from "./page/Provider/Subscription";
+// import OrderHistory from "./page/OrderHistory/OrderHistory";
+import ComHeaderUser from "./Components/ComHeaderUser/ComHeaderUser";
+// import ProfilePage from './page/ProfileUser/ProfileUser';
+import UserCart from "./page/UserCart";
+import Checkout from "./page/Checkout";
 
 export const routers = createBrowserRouter([
   {
@@ -52,7 +57,18 @@ export const routers = createBrowserRouter([
             <Subscription />
         ),
       },
-    
+      {
+        path: "/cart",
+        element: (
+            <UserCart />
+        ),
+      },
+      {
+        path: "/checkout",
+        element: (
+            <Checkout />
+        ),
+      },
     ],
   },
   {

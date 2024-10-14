@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faShoppingCart, faStar } from "@fortawesome/free-solid-svg-icons";
-import InformationShop from "../../Components/Service/InformationShop";
-import ServiceCard from "../../Components/Service/ServiceCard";
-import ServiceGrid from "../../Components/Service/ServiceGrid";
-import ImageSlider from "../../Components/Service/ImageSlider";
+import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
+import InformationShop from "../../Components/ComService/InformationShop";
+import ServiceCard from "../../Components/ComService/ServiceCard";
+import ServiceGrid from "../../Components/ComService/ServiceGrid";
+import ImageSlider from "../../Components/ComService/ImageSlider";
 
 const ProviderLandingPage = () => {
   const featuredServices = [
@@ -114,7 +114,7 @@ const ProviderLandingPage = () => {
               </div>
             </div>
 
-            {/* Phần sản phẩm chiếm 2 cột với gap 2 */}
+            {/* Phần dịch vụ chiếm 2 cột với gap 2 */}
             <div className="col-span-2 grid grid-cols-2 gap-2 h-[450px] overflow-hidden">
               {banner2.slice(1).map((image, index) => (
                 <div key={index} className="relative h-full">
