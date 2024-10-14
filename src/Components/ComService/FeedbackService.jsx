@@ -65,7 +65,7 @@ const FeedbackService = () => {
   return (
     <div className="p-6 bg-white rounded-lg shadow-md mt-10">
       <div>
-        <h2 className="text-2xl font-semibold text-[#344054]">Đánh giá</h2>
+        <h2 className="text-2xl font-semibold text-[#344054]">Đánh giá </h2>
 
         {/* Progress Bar Section */}
         <div className="flex-start flex h-2.5 w-full overflow-hidden rounded-full bg-blue-gray-50 font-sans text-xs font-medium mt-2">

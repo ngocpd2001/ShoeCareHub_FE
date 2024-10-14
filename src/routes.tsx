@@ -13,14 +13,14 @@ import ComHeaderUser from "./Components/ComHeaderUser/ComHeaderUser";
 import ProfilePage from './page/ProfileUser/ProfileUser';
 
 export const routers = createBrowserRouter([
-  {
-    path: "*",
-    element: (
-      // <ComHeader>
-      <ErrorPage goTo={"/"} statusCode={"404"} />
-      // {/* </ComHeader> */}
-    ),
-  },
+  // {
+  //   path: "*",
+  //   element: (
+  //     <ComHeader>
+  //     <ErrorPage goTo={"/"} statusCode={"404"} />
+  //     </ComHeader> 
+  //   ),
+  // },
   {
     path: "/",
     element: (
@@ -36,10 +36,6 @@ export const routers = createBrowserRouter([
       {
         path: "/login",
         element: <LoginPage />,
-      },
-      {
-        path: "/order-history",
-        element: <OrderHistory />,
       },
       {
         path: "/servicedetail",
@@ -62,7 +58,7 @@ export const routers = createBrowserRouter([
         ),
         children: [
           {
-            path: "/user/OrderHistory",
+            path: "/user/order-history",
             element: <OrderHistory />,
           },
           {
