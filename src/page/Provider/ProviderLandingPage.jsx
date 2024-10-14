@@ -131,53 +131,57 @@ const ProviderLandingPage = () => {
             </div>
           </div>
 
-          <div className="items-center bg-blue-400 my-8 p-5">  
-  <h1 className="text-2xl font-bold text-[#002278] text-center pb-5">  
-    EXPLORE NEW AND POPULAR STYLES  
-  </h1>  
-  <div className="grid grid-cols-3">  
-    {/* Hình ảnh đầu tiên */}  
-    <div className="h-[70%] flex justify-center items-center">  
-      <img  
-        src={banner2[0]}  
-        alt="Shoe Cleaning"  
-        className="rounded-lg w-full h-full object-cover"  
-      />  
-    </div>  
+          <div className="items-center bg-blue-400 my-8 p-5">
+            <h1 className="text-2xl font-bold text-[#002278] text-center pb-5">
+              EXPLORE NEW AND POPULAR STYLES
+            </h1>
+            <div className="grid grid-cols-3">
+              {/* Hình ảnh đầu tiên */}
+              <div className="h-[70%] flex justify-center items-center">
+                <img
+                  src={banner2[0]}
+                  alt="Shoe Cleaning"
+                  className="rounded-lg w-full h-full object-cover"
+                />
+              </div>
 
-    {/* Khuyến mãi */}  
-    <div className="flex flex-col items-center mx-5 justify-center">  
-      <h1 className="text-4xl font-bold text-black mt-4 text-center">  
-        Get 50% Off  
-      </h1>  
-      <p className="text-black mt-2 text-center">  
-        for all new product purchases min. purchase Rp. 350.000  
-      </p>  
-      <button className="mt-4 bg-white text-[#002278] font-semibold py-2 px-4 rounded flex items-center">  
-        <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />  
-        SHOP NOW  
-      </button>  
-    </div>  
+              {/* Khuyến mãi */}
+              <div className="flex flex-col items-center mx-5 justify-center">
+                <h1 className="text-4xl font-bold text-black mt-4 text-center">
+                  Get 50% Off
+                </h1>
+                <p className="text-black mt-2 text-center">
+                  for all new product purchases min. purchase Rp. 350.000
+                </p>
+                <button className="mt-4 bg-white text-[#002278] font-semibold py-2 px-4 rounded flex items-center">
+                  <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
+                  SHOP NOW
+                </button>
+              </div>
 
-    {/* Phần hình ảnh bổ sung */}  
-    <div className="grid grid-cols-1 gap-y-4">  
-      <div className="h-48"> {/* Điều chỉnh chiều cao tại đây */}  
-        <img  
-          src={banner2[0]} // Có thể sử dụng một ảnh khác nếu có  
-          alt="Shoe Cleaning"  
-          className="rounded-lg w-full h-full object-cover"  
-        />  
-      </div>  
-      <div className="h-48"> {/* Điều chỉnh chiều cao tại đây */}  
-        <img  
-          src={banner2[1]}  
-          alt="Shoe Display"  
-          className="rounded-lg w-full h-full object-cover"  
-        />  
-      </div>  
-    </div>  
-  </div>  
-</div>
+              {/* Phần hình ảnh bổ sung */}
+              <div className="grid grid-cols-1 gap-y-4">
+                <div className="h-48">
+                  {" "}
+                  {/* Điều chỉnh chiều cao tại đây */}
+                  <img
+                    src={banner2[0]} // Có thể sử dụng một ảnh khác nếu có
+                    alt="Shoe Cleaning"
+                    className="rounded-lg w-full h-full object-cover"
+                  />
+                </div>
+                <div className="h-48">
+                  {" "}
+                  {/* Điều chỉnh chiều cao tại đây */}
+                  <img
+                    src={banner2[1]}
+                    alt="Shoe Display"
+                    className="rounded-lg w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* ServiceGrid */}
           <ServiceGrid />

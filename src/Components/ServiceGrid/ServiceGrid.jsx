@@ -2,7 +2,7 @@ import React from "react";
 import { Star } from "lucide-react";
 
 const ServiceCard = ({ item }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 relative">
+  <div className="bg-white rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]">
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center">
       <img
         src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
@@ -99,9 +99,9 @@ export default function ServiceGrid() {
   ];
 
   return (
-    <div className="mb-8 container mx-auto px-4 py-8 rounded-md  shadow-lg p-8 border-[#D9D9D9] border">
+    <div className=" container mx-auto px-4 py-8 rounded-md shadow-lg p-8 border-[#D9D9D9] border bg-white">
       <h2 className="text-2xl font-bold mb-6">Dành riêng cho bạn</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6">
         {services.map((service) => (
           <ServiceCard key={service.id} item={service} />
         ))}

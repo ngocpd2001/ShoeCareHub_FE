@@ -8,6 +8,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FieldError } from "../../Components/FieldError/FieldError";
 import { useStorage } from "../../hooks/useLocalStorage";
+import logo2 from "../../assets/images/logo2.webp";
 
 import { postData } from "../../api/api";
 export default function LoginPage(props) {
@@ -20,7 +21,6 @@ export default function LoginPage(props) {
   const navigate = useNavigate();
 
   const loginMessenger = yup.object({
- 
     username: yup.string().trim().required("Tên đăng nhập không được để trống"),
     password: yup.string().required("Mật khẩu không được để trống"),
   });
@@ -98,24 +98,24 @@ export default function LoginPage(props) {
     <>
       {/* <Header login={true} /> */}
       <section
-        className="flex items-center justify-center  w-screen bg-cover bg-center "
+        className="flex items-center justify-center  w-screen bg-cover bg-center pt-4 "
         style={
           {
             // backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/careconnect-2d494.appspot.com/o/images%2Fab3611bf-a5f8-4b46-9f42-56fafbaefb5a.jpg?alt=media&token=bc958e0c-35f5-4592-a224-16d476a90536)`,
           }
         }
       >
-        <div className="w-full max-w-4xl h-auto bg-white bg-opacity-90 rounded-3xl shadow-lg border ">
-          <div className="grid grid-cols-1 lg:grid-cols-2 rounded-lg">
+        <div className="w-full max-w-4xl h-auto bg-white bg-opacity-90 rounded-3xl shadow-lg border border-[#c3c3c3]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 ">
             <div className="hidden lg:block">
               <img
-                className="object-cover w-full h-full  p-14"
-                src={"https://wwd.com/wp-content/uploads/2022/12/DOM0403.jpg"}
+                className="object-cover w-full h-full rounded-3xl"
+                src={logo2}
                 alt="Login Image"
               />
             </div>
-            <div className="flex flex-col justify-center p-10">
-              <div className="mt-8 space-y-6  text-center ">
+            <div className="flex flex-col justify-center px-10">
+              <div className="  text-center ">
                 <h3 className="text-3xl font-bold text-gray-700">Đăng nhập</h3>
                 <p className="mt-2 text-gray-500">
                   Chào mừng đến với Shoe Care Hub!
@@ -125,12 +125,12 @@ export default function LoginPage(props) {
                 <div className="flex flex-col items-center ">
                   <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="mt-8 space-y-6  max-w-xl m-4 min-w-full"
+                    className="mt-4 space-y-6  max-w-xl m-4 min-w-full"
                   >
                     <div>
                       <ComInput
-                        placeholder={"username"}
-                        label={"username"}
+                        placeholder={"Nhập tài khoản"}
+                        label={"Tài khoản"}
                         type="text"
                         {...register("username")}
                         required
@@ -138,8 +138,8 @@ export default function LoginPage(props) {
                     </div>
                     <div>
                       <ComInput
-                        placeholder={"Mật khẩu"}
-                        label={"Nhập mật khẩu"}
+                        placeholder={"Nhập mật khẩu"}
+                        label={"Mật khẩu"}
                         type="password"
                         maxLength={16}
                         {...register("password")}
@@ -149,7 +149,7 @@ export default function LoginPage(props) {
                     <FieldError className="text-red-500 text-center">
                       {LoginState || LoginError ? errorMessage : ""}
                     </FieldError>
-                    <div className="mt-6 text-center gap-3 flex flex-col">
+                    <div className="mt-4 text-center gap-3 flex flex-col">
                       <ComButton
                         disabled={disabled}
                         htmlType="submit"
@@ -159,7 +159,7 @@ export default function LoginPage(props) {
                         Đăng nhập
                       </ComButton>
 
-                      <Link to="/" className=" text-sky-600">
+                      <Link to="#" className=" text-sky-600">
                         Trang chủ
                       </Link>
                     </div>
