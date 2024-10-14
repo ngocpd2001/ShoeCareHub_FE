@@ -5,7 +5,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import * as yup from "yup";
 import ComInput from "../../Components/ComInput/ComInput";
 import ComSelect from "./../../Components/ComInput/ComSelect copy";
-import ComUpImgOne from './../../Components/ComUpImg/ComUpImgOne';
+import ComUpImgOne from "./../../Components/ComUpImg/ComUpImgOne";
 
 const ProfileForm = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -22,16 +22,11 @@ const ProfileForm = () => {
   });
   const { handleSubmit, register, setFocus, watch, setValue, setError } =
     methods;
-  
-  
-  const onChange = () => {
-  
-  }
-  const onSubmit = (data) => { 
 
-  }
+  const onChange = () => {};
+  const onSubmit = (data) => {};
   return (
-    <div className="flex-1 p-8">
+    <div className="flex-1 px-4 py-0">
       <h1 className="text-2xl font-bold mb-6">Hồ sơ của tôi</h1>
       <div className="flex">
         <FormProvider {...methods}>
@@ -122,26 +117,31 @@ const ProfileForm = () => {
                     placeholder={"Vui lòng nhập Ngày tháng năm sinh "}
                     {...register("dateOfBirth")}
                     required={isEditing}
-                   
                   />
                 </div>
               </div>
 
               {isEditing ? (
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Cập nhật
-                </button>
+                // Centering the "Cập nhật" button
+                <div className="flex justify-center">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Cập nhật
+                  </button>
+                </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Cập nhật thông tin
-                </button>
+                // Centering the "Cập nhật thông tin" button
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Cập nhật thông tin
+                  </button>
+                </div>
               )}
             </form>
           ) : (
@@ -238,42 +238,49 @@ const ProfileForm = () => {
               </div>
 
               {isEditing ? (
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Cập nhật
-                </button>
+                // Centering the "Cập nhật" button
+                <div className="flex justify-center">
+                  <button
+                    type="submit"
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Cập nhật
+                  </button>
+                </div>
               ) : (
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-                >
-                  Cập nhật thông tin
-                </button>
+                // Centering the "Cập nhật thông tin" button
+                <div className="flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Cập nhật thông tin
+                  </button>
+                </div>
               )}
             </form>
           )}
         </FormProvider>
-        <div className="w-48 text-center">
+        <div className="w-48 h-50 flex justify-center items-center pl-8">
           {!isEditing ? (
             <img
-              className="h-25 w-25 rounded-full border border-gray-400"
+              className="h-40 w-40 rounded-full border border-gray-400"
               src={
-                "https://meatworld.com.vn/wp-content/uploads/anh-avatar-anime-2-1.jpg"
+                "https://cdn.kona-blue.com/upload/kona-blue_com/post/images/2024/08/13/356/avatar-vo-tri-meo-3.jpg"
               }
-              alt=""
+              alt="Avatar"
             />
           ) : (
-            <div className="flex flex-col sm:justify-center gap-2 sm:items-center">
+            <div className="flex flex-col justify-center gap-2 items-center">
               <ComUpImgOne
+                className="rounded-2xl border border-gray-400"
                 imgUrl={
-                  "https://meatworld.com.vn/wp-content/uploads/anh-avatar-anime-2-1.jpg"
+                  "https://cdn.kona-blue.com/upload/kona-blue_com/post/images/2024/08/13/356/avatar-vo-tri-meo-3.jpg"
                 }
                 onChange={onChange}
               />
-              <span className="text-xs text-gray-400">
+              <span className="text-xs text-gray-400 text-center">
                 Bấm vào ảnh để thay đổi ảnh đại diện
               </span>
             </div>
@@ -290,7 +297,7 @@ export default function ProfilePage() {
   return (
     <div>
       <div className=" col-span-3  ">
-        <div className="p-4 mb-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-1   sm:p-6  ">
+        <div className="mb-4 bg-white border border-gray-300 rounded-lg shadow-sm 2xl:col-span-1 sm:px-6 sm:py-4  mt-2">
           <ProfileForm />
         </div>
       </div>

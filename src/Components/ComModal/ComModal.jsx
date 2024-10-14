@@ -14,7 +14,7 @@ function ComModal({ isOpen, onClose, children, title, width }) {
     <Modal
       title={title}
       open={isOpen}
-      width={width || 500}
+      width={width || 400}
       onCancel={onClose}
       footer={null}
     >

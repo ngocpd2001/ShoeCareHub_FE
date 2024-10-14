@@ -125,7 +125,7 @@ export default function LoginPage(props) {
                 <div className="flex flex-col items-center ">
                   <form
                     onSubmit={handleSubmit(onSubmit)}
-                    className="mt-4 space-y-6  max-w-xl m-4 min-w-full"
+                    className="space-y-6  max-w-xl m-4 min-w-full"
                   >
                     <div>
                       <ComInput

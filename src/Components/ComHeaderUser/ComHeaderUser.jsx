@@ -51,7 +51,7 @@ const navigation = [
     name: "Lịch sử mua hàng",
     icon: UsersIcon,
     current: false,
-    children: [{ name: "Đơn hàng", href: "/user/OrderHistory" }],
+    children: [{ name: "Đơn hàng", href: "/user/order-history" }],
   },
 ];
 
@@ -73,12 +73,12 @@ export default function ComHeaderUser({ children }) {
     <div className="max-w-[1250px] m-auto">
       <div className="flex  w-full mt-2 ">
         <div className=" w-56 ">
-          <div className="flex grow flex-col gap-y-5 overflow-y-auto px-4 pb-4 bg-white ">
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto px-4 pb-3 pt-5 bg-white mt-4 border border-gray-200 rounded-lg shadow-xl">
             <div className="flex h-16 gap-2 shrink-0 items-center justify-center">
               <img
                 alt="Your Company"
-                src="/static/media/Shoe%20Care%20Hub%20Logo_NoneBack.c5ffe0b9434c3d34dd6e.png"
-                className="h-16 w-auto"
+                src="https://cdn.kona-blue.com/upload/kona-blue_com/post/images/2024/08/13/356/avatar-vo-tri-meo-3.jpg"
+                className="h-16 w-auto rounded-full"
               />
               Phan Văn A
             </div>

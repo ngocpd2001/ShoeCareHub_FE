@@ -191,11 +191,11 @@ export default function ComHeader({ children }) {
             </nav>
           </header>
         </Affix>
-        <main>
+        <main className="bg-[#f9f9f9]">
           <div className="">{children}</div>
         </main>
       </div>
-      <footer className="min-h-full  bg-white text-gray-600  font-sans  shadow-lg border-t-[#002278] border-4 mt-4">
+      <footer className="min-h-full  bg-white text-gray-600  font-sans  shadow-lg border-t-[#002278] border-4 ">
         <div className="container mx-auto text-center max-w-[1250px]">
           <div className="grid grid-cols-2 justify-center  md:grid-cols-4 gap-8 mt-4">
             <div>

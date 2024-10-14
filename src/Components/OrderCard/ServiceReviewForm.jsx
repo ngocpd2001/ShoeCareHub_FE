@@ -6,7 +6,6 @@ const ServiceReviewForm = () => {
   const [rating, setRating] = useState(4);
   const [review, setReview] = useState("");
 
-
   const handleRatingChange = (newRating) => {
     setRating(newRating);
   };
@@ -15,8 +14,6 @@ const ServiceReviewForm = () => {
     setReview(event.target.value);
   };
 
-
-
   const handleSubmit = (event) => {
     event.preventDefault();
     // Here you would typically send the review data to a server
@@ -24,7 +21,7 @@ const ServiceReviewForm = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-4">
+    <div className="max-w-2xl mx-auto ">
       <h1 className="text-2xl font-bold mb-4">Đánh Giá Dịch Vụ</h1>
       <div className="flex items-center mb-4">
         <img

@@ -1,10 +1,8 @@
 import React from "react";
 import { MessageSquare, Store } from "lucide-react";
-import ComModal from './../ComModal/ComModal';
-import { useModalState } from './../../hooks/useModalState';
+import ComModal from "./../ComModal/ComModal";
+import { useModalState } from "./../../hooks/useModalState";
 import ServiceReviewForm from "./ServiceReviewForm";
-
-
 
 const CartItem = ({ item }) => (
   <div className="flex items-center py-4 border-b">
@@ -36,7 +34,8 @@ export default function OrderCard() {
       quantity: 1,
       price: 123000,
       originalPrice: 200000,
-      image: "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
+      image:
+        "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
     },
     {
       id: 2,
@@ -44,7 +43,8 @@ export default function OrderCard() {
       quantity: 1,
       price: 123000,
       originalPrice: 200000,
-      image: "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
+      image:
+        "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
     },
   ];
 
@@ -68,8 +68,8 @@ export default function OrderCard() {
           </button>
         </div>
         <div className="flex gap-2">
-          <span className=" font-medium">Chi tiết</span> 
-          <span className=" font-medium">|</span> 
+          <span className=" font-medium">Chi tiết</span>
+          <span className=" font-medium">|</span>
           <span className="text-blue-800 font-medium">HOÀN THÀNH</span>
         </div>
       </div>
