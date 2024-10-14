@@ -1,9 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
+import { useLocation } from "react-router-dom";
 
+// Nhận prop isProviderLandingPage để xác định có đang ở trang landing không
 const InformationShop = () => {
+  const [isDropdownOpen, setDropdownOpen] = useState(false);
+  const location = useLocation();
+  const toggleDropdown = () => {
+    setDropdownOpen(!isDropdownOpen);
+  };
+  const isProviderLandingPage = location.pathname === "/provider-landingpage";
   const provider = {
     id: 1,
     name: "Cửa hàng Nike",
@@ -21,6 +29,12 @@ const InformationShop = () => {
       usage: 200,
       joined: "10 tháng trước",
     },
+  ];
+
+  const branches = [
+    { id: 1, address: "123 Đường ABC, Quận 1" },
+    { id: 2, address: "456 Đường DEF, Quận 3" },
+    { id: 3, address: "789 Đường GHI, Quận 5" },
   ];
 
   return (
@@ -53,9 +67,36 @@ const InformationShop = () => {
               <FontAwesomeIcon icon={faCommentDots} className="mr-2" />
               Chat Ngay
             </button>
-            <button className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3">
-              Xem Shop
-            </button>
+
+            {/* Kiểm tra xem đang ở trang ProviderLandingPage hay ServiceDetail */}
+            {isProviderLandingPage ? (
+              <div className="relative inline-block">
+                <button
+                  onClick={toggleDropdown}
+                  className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3"
+                >
+                  Chi nhánh
+                </button>
+                {isDropdownOpen && (
+                  <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-52">
+                    {/* Dropdown chi nhánh */}
+                    {branches.map((branch) => (
+                      <a
+                        key={branch.id}
+                        href="#"
+                        className="block px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white"
+                      >
+                        {branch.address}
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <button className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3">
+                Xem Shop
+              </button>
+            )}
           </div>
         </div>
       </div>
