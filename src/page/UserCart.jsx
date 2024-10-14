@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import ShopCart from "../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCartShopping } from "@fortawesome/free-solid-svg-icons";
+import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate } from "react-router-dom";
 
 const fetchCartItems = async () => {
   return [
     {
       shopName: "Cửa Hàng 1",
+      shopAddress: "456 Trần Hưng Đạo",
       products: [
         {
           id: 1,
@@ -30,6 +31,7 @@ const fetchCartItems = async () => {
     },
     {
       shopName: "Cửa Hàng 2",
+      shopAddress: "456 Ngô Quyền",
       products: [
         {
           id: 3,
@@ -56,6 +58,7 @@ const fetchCartItems = async () => {
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -68,16 +71,23 @@ const UserCart = () => {
   }, []);
 
   const handleCheckout = () => {
-    // Filter selected items
     const selectedItems = cartItems
       .map((shop) => ({
         shopName: shop.shopName,
+        shopAddress: shop.shopAddress,
         products: shop.products.filter((product) => product.selected),
       }))
-      .filter((shop) => shop.products.length > 0); // Keep only shops with selected products
+      .filter((shop) => shop.products.length > 0);
 
-    // Pass selected items to the checkout page
-    navigate("/checkout", { state: { selectedItems } });
+    if (selectedItems.length === 0) {
+      setShowPopup(true);
+    } else {
+      navigate("/checkout", { state: { selectedItems } });
+    }
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false);
   };
 
   const handleQuantityChange = (id, delta) => {
@@ -198,53 +208,43 @@ const UserCart = () => {
             <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
           </div>
         ) : (
-          // <div>
-          //   {/* Header Row */}
-          //   <div className="flex flex-row h-15 p-4 mx-4">
-          //     {/* Cột checkbox và sản phẩm */}
-          //     <div className="font-semibold text-xl text-left flex items-center w-2/5">
-          //       <input
-          //         type="checkbox"
-          //         checked={cartItems.every((shop) =>
-          //           shop.products.every((product) => product.selected)
-          //         )}
-          //         onChange={(e) => {
-          //           const isChecked = e.target.checked;
-          //           cartItems.forEach((shop) => {
-          //             handleToggleSelectAll(shop.shopName, isChecked);
-          //           });
-          //         }}
-          //         className="mr-4"
-          //       />
-          //       <h2 className="text-left">Sản phẩm</h2>
-          //     </div>
-
-          //     {/* Cột đơn giá */}
-          //     <div className="font-semibold text-xl text-center w-1/5">
-          //       Đơn giá
-          //     </div>
-
-          //     {/* Cột số lượng */}
-          //     <div className="font-semibold text-xl text-center w-1/5">
-          //       Số lượng
-          //     </div>
-
-          //     {/* Cột thành tiền */}
-          //     <div className="font-semibold text-xl text-center w-1/5">
-          //       Thành tiền
-          //     </div>
-          //   </div>
-          cartItems.map((shop) => (
-            <ShopCart
-              key={shop.shopName}
-              shop={shop}
-              onQuantityChange={handleQuantityChange}
-              onRemove={handleRemove}
-              onToggleSelectAll={handleToggleSelectAll}
-              onToggleSelect={handleToggleSelect}
-            />
-          ))
-          // </div>
+          <div>
+            <div className="grid grid-cols-4 h-15 p-4 mx-4 mb-2">
+              <div className="font-semibold text-xl text-left flex items-center w-full">
+                <input
+                  type="checkbox"
+                  checked={cartItems.every((shop) =>
+                    shop.products.every((product) => product.selected)
+                  )}
+                  onChange={(e) => {
+                    const isChecked = e.target.checked;
+                    cartItems.forEach((shop) => {
+                      handleToggleSelectAll(shop.shopName, isChecked);
+                    });
+                  }}
+                  className="mr-4"
+                />
+                <h2 className="text-left">Sản phẩm</h2>
+              </div>
+              <div className="font-semibold text-xl text-center">Đơn giá</div>
+              <div className="font-semibold text-xl text-center">Số lượng</div>
+              <div className="flex flex-row items-center">
+                <div className="font-semibold text-xl text-center w-[70%]">
+                  Thành tiền
+                </div>
+              </div>
+            </div>
+            {cartItems.map((shop) => (
+              <ShopCart
+                key={shop.shopName}
+                shop={shop}
+                onQuantityChange={handleQuantityChange}
+                onRemove={handleRemove}
+                onToggleSelectAll={handleToggleSelectAll}
+                onToggleSelect={handleToggleSelect}
+              />
+            ))}
+          </div>
         )}
         {cartItems.length > 0 && (
           <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
@@ -296,6 +296,25 @@ const UserCart = () => {
           </div>
         )}
       </div>
+
+      {showPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg relative h-50 w-90 flex flex-col justify-center items-center">
+            <button
+              onClick={handleClosePopup}
+              className="absolute top-2 right-2 text-gray-700 hover:text-black text-3xl"
+            >
+              <FontAwesomeIcon icon={faXmark} />
+            </button>
+            <h2 className="text-2xl font-semibold mb-2 text-center text-[#002278]">
+              Bạn chưa chọn dịch vụ nào!
+            </h2>
+            <p className="text-lg text-gray-500 text-center">
+              Vui lòng chọn dịch vụ để đặt hàng
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
