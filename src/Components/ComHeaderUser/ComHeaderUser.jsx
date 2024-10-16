@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { UsersIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { Link, useLocation } from "react-router-dom";
-import { Disclosure } from "@headlessui/react";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from "@headlessui/react";
 
 const navigation = [
   {
@@ -40,7 +44,7 @@ export default function ComHeaderUser({ children }) {
   return (
     <div className="max-w-[1250px] m-auto">
       <div className="flex  w-full mt-2 ">
-        <div className=" w-56 ">
+        <div className=" w-60 ">
           <div className="flex grow flex-col gap-y-5 overflow-y-auto px-4 pb-3 pt-5 bg-white mt-4 border border-gray-200 rounded-lg shadow-xl">
             <div className="flex h-16 gap-2 shrink-0 items-center justify-center">
               <img
@@ -57,7 +61,7 @@ export default function ComHeaderUser({ children }) {
                     <Disclosure as="div" defaultOpen={true}>
                       {({ open }) => (
                         <>
-                          <Disclosure.Button
+                          <DisclosureButton
                             className={classNames(
                               "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700",
                               item.children
@@ -75,8 +79,8 @@ export default function ComHeaderUser({ children }) {
                               className="h-6 w-6 shrink-0"
                             />
                             {item.name}
-                          </Disclosure.Button>
-                          <Disclosure.Panel as="ul" className="mt-1">
+                          </DisclosureButton>
+                          <DisclosurePanel as="ul" className="mt-1">
                             {item.children.map((subItem) => (
                               <li key={subItem.name}>
                                 <Link
@@ -92,7 +96,7 @@ export default function ComHeaderUser({ children }) {
                                 </Link>
                               </li>
                             ))}
-                          </Disclosure.Panel>
+                          </DisclosurePanel>
                         </>
                       )}
                     </Disclosure>

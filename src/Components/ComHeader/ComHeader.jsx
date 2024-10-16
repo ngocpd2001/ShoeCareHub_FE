@@ -257,9 +257,12 @@ export default function ComHeader({ children }) {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-blue-600">
+                  <Link
+                    to="/subscription-provider"
+                    className="hover:text-blue-600"
+                  >
                     Gói lên sàn
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-blue-600">
