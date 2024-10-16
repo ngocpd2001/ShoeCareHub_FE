@@ -1,7 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import ServiceGrid from "../../Components/ServiceGrid/ServiceGrid";
-import { Carousel } from "antd";
+import Marquee from "react-fast-marquee";
 import ShoeSlide1 from "../../assets/images/cleanShow.webp";
 import ShoeSlide2 from "../../assets/images/brushing.webp";
 
@@ -11,7 +11,7 @@ const CARD_GAP = 16; // Gap between cards
 
 const Carousels = ({ title, items, type }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
-  const containerRef = useRef(null);
+  const containerRef = React.useRef(null);
 
   const scroll = (direction) => {
     const container = containerRef.current;
@@ -182,6 +182,7 @@ export default function CarouselsSection() {
       discount: 20,
     },
   ];
+
   const [dataImg, setDataImg] = useState([
     {
       img: ShoeSlide1,
@@ -193,6 +194,7 @@ export default function CarouselsSection() {
       img: ShoeSlide1,
     },
   ]);
+
   const suppliers = [
     { id: 1, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
     { id: 2, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
@@ -204,19 +206,28 @@ export default function CarouselsSection() {
 
   return (
     <div className="bg-[#F9F9F9]">
-      <div className=" h-[50vh]">
-        <Carousel autoplay arrows={true} infinite={false}>
+      {/* Using Marquee for auto-scrolling images */}
+      <div className="h-[25vh]">
+        <Marquee
+          pauseOnHover={true}
+          speed={50}
+          gradient={true}
+          gradientWidth={50}
+          autoFill={true}
+          loop={0}
+        >
           {dataImg.map((value, index) => (
-            <div className="flex justify-center items-center" key={index}>
+            <div className="flex justify-center items-center mx-4" key={index}>
               <img
-                className="object-cover h-[50vh] w-screen"
+                className="object-cover h-[25vh] w-[20vw] rounded-md"
                 alt={index}
                 src={value.img}
               />
             </div>
           ))}
-        </Carousel>
+        </Marquee>
       </div>
+
       <div className="container mx-auto md:px-1 mt-4 max-w-[1250px] ">
         <Carousels
           title="Dịch vụ đang được giảm giá"

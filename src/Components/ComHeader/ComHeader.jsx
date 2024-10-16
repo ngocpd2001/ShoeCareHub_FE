@@ -132,21 +132,23 @@ export default function ComHeader({ children }) {
                     </div>
                   </div>
                   <div>
-                    <button className="text-gray-600 hover:text-blue-500 mr-[5px]">
-                      <div
-                        style={{
-                          backgroundColor: "#ebebeb",
-                          borderRadius: "50%",
-                          width: "35px",
-                          height: "35px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
-                        <BsCart3 size={20} color="black" />
-                      </div>
-                    </button>
+                    <Link to="/cart">
+                      <button className="text-gray-600 hover:text-blue-500 mr-[5px]">
+                        <div
+                          style={{
+                            backgroundColor: "#ebebeb",
+                            borderRadius: "50%",
+                            width: "35px",
+                            height: "35px",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                          }}
+                        >
+                          <BsCart3 size={20} color="black" />
+                        </div>
+                      </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -172,7 +174,7 @@ export default function ComHeader({ children }) {
                   </li>
                   <li>
                     <Link
-                      to="/"
+                      to="/subscription-provider"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
                       GÓI LÊN SÀN
@@ -257,9 +259,12 @@ export default function ComHeader({ children }) {
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-blue-600">
+                  <Link
+                    to="/subscription-provider"
+                    className="hover:text-blue-600"
+                  >
                     Gói lên sàn
-                  </a>
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-blue-600">
