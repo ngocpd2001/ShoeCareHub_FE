@@ -15,14 +15,7 @@ import OrderHistory from "./page/OrderHistory/OrderHistory";
 import ProfilePage from './page/ProfileUser/ProfileUser';
 
 export const routers = createBrowserRouter([
-  // {
-  //   path: "*",
-  //   element: (
-  //     <ComHeader>
-  //     <ErrorPage goTo={"/"} statusCode={"404"} />
-  //     </ComHeader> 
-  //   ),
-  // },
+  
   {
     path: "/",
     element: (
