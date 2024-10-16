@@ -132,7 +132,7 @@ export default function ComHeader({ children }) {
                     </div>
                   </div>
                   <div>
-                    <button className="text-gray-600 hover:text-blue-500 mr-[5px]">
+                    <Link to="/cart" className="text-gray-600 hover:text-blue-500 mr-[5px] block">
                       <div
                         style={{
                           backgroundColor: "#ebebeb",
@@ -146,7 +146,7 @@ export default function ComHeader({ children }) {
                       >
                         <BsCart3 size={20} color="black" />
                       </div>
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function ComHeader({ children }) {
                   </li>
                   <li>
                     <Link
-                      to="/"
+                      to="/subscription-provider"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
                       GÓI LÊN SÀN
