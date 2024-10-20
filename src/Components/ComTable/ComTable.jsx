@@ -11,7 +11,7 @@ export default function ComTable({ x, y, columns, dataSource, loading, ...props 
           x: x || 1520,
           y: y || "55vh",
         }}
-        bordered
+        // bordered
         pagination={{
           showSizeChanger: true,
           pageSizeOptions: ["10", "20", "50", "100"],
