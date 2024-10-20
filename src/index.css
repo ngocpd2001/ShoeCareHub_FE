@@ -69,39 +69,8 @@ code {
 ::-webkit-scrollbar-track {
   background-color: var(--scrollbar-track-color);
 }
-.ant-table-thead .ant-table-cell {
-  background-color: #0f296d !important; /* Thay đổi màu nền header */
-  color: #ffffff !important; /* Thay đổi màu chữ header */
-}
-
-.anticon-filter {
-  background-color: #0f296d !important; /* Thay đổi màu nền header */
-  color: #ffffff !important;
-}
-.ant-table-column-sorter {
-  color: #ffffff !important;
-}
-
 .ant-affix {
   z-index: 99;
-}
-
-.active .anticon-filter {
-  color: #1677ff !important;
-}
-
-.ant-tabs-nav-wrap {
-  display: flex;
-  justify-content: space-around; /* Chia đều các tab */
-}
-
-.ant-tabs-tab {
-  flex: 1 !important; /* Để tab chiếm đều chiều rộng */
-  justify-content: center !important;
-  margin: 0 0 0 0 !important;
-}
-.ant-tabs-nav-list {
-  width: 100%; /* Mặc định là 100% chiều rộng của container */
 }
 
 /* Điều chỉnh cho màn hình lớn */
@@ -125,3 +94,30 @@ code {
   }
 }
 
+.ant-table-container {
+  border-bottom: 1px solid #bebebe !important;
+  border-top: 1px solid #bebebe !important;
+  border-inline-start: 1px solid #bebebe;
+  border-inline-end: 1px solid #bebebe;
+}
+
+.ant-pagination-item-link {
+  color: #000 !important;
+}
+.ant-empty-description {
+  color: #000 !important;
+}
+
+.anticon-filter {
+  background-color: #32353b !important;
+  color: #000 !important;
+}
+
+.ant-table-column-sorter {
+  color: #000 !important;
+}
+
+.anticon-filter {
+  /* background-color: #32353b !important; */
+  color: #000 !important;
+}

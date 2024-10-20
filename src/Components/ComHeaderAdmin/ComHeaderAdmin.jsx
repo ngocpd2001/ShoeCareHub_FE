@@ -1,316 +1,432 @@
-import { Fragment, useContext, useEffect, useState } from "react";
-import { Dialog, Menu, Transition } from "@headlessui/react";
+import { useEffect, useState } from "react";
+import {
+  Dialog,
+  DialogBackdrop,
+  DialogPanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  TransitionChild,
+} from "@headlessui/react";
 import {
   Bars3Icon,
-  CalendarDaysIcon,
-  QueueListIcon,
-  UserCircleIcon,
+  BellIcon,
+  BuildingStorefrontIcon,
+  CalendarIcon,
+  ChartPieIcon,
+  ChatBubbleBottomCenterTextIcon,
+  Cog6ToothIcon,
+  DocumentDuplicateIcon,
+  ExclamationTriangleIcon,
+  FolderIcon,
+  HomeIcon,
+  UsersIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { Affix, Badge, Space } from "antd";
-import { BellOutlined, MenuOutlined } from "@ant-design/icons";
 import {
-  BuildingOffice2Icon, // Quản lý viện (Ví dụ)
-  UserIcon, // Quản lý khách hàng (Ví dụ)
-  UsersIcon, // Quản lý người cao tuổi (Ví dụ)
-  BriefcaseIcon, // Quản lý nhân viên (Ví dụ)
-  Cog6ToothIcon, // Quản lý tài khoản (Ví dụ)
-  WrenchScrewdriverIcon, // Quản lý dịch vụ (Ví dụ)
-  ClockIcon, // Quản lý thời gian (Ví dụ)
-  BellIcon, //Thông báo (Ví dụ)
-} from "@heroicons/react/24/outline";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../../Auth/useAuth";
-import ErrorPage from "../../page/404/ErrorPage";
-import { getData } from "../../api/api";
-import { useStorage } from "../../hooks/useLocalStorage";
-const sortOptions = [
-  { name: "Thông tin", href: "profile" },
-  { name: "Thay đổi mật khẩu", href: "password" },
-  { name: "Đăng xuất", href: "login" },
-];
-const subCategories = [
-  // { name: "Tổng quát", href: "/admin/institute", icon: BuildingOffice2Icon },
-  { name: "Tài khoản", href: "/admin/account", icon: UserIcon },
-  // { name: "Người cao tuổi", href: "/admin/elder", icon: UsersIcon },
-  { name: "Nhân viên", href: "/admin/employee", icon: BriefcaseIcon },
-  // {
-  //   name: "Lịch hẹn",
-  //   href: "/admin/appointmentSchedule",
-  //   icon: CalendarDaysIcon,
-  // },
-  // {
-  //   name: "Danh sách gói dưỡng lão",
-  //   href: "/admin/nursingPackage",
-  //   icon: QueueListIcon,
-  // },
-  // { name: "Danh sách dịch vụ", href: "/admin/servicePackage", icon: Bars3Icon },
-  // { name: "Lịch hoạt động", href: "/admin/activitie", icon: Cog6ToothIcon },
-  // {
-  //   name: "Trung tâm thông báo",
-  //   href: "/admin/createNotification",
-  //   icon: BellIcon,
-  // },
+  ChevronDownIcon,
+} from "@heroicons/react/20/solid";
+import {
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+} from "@headlessui/react";
+import { ChevronRightIcon } from "@heroicons/react/20/solid";
+import { Link, useLocation } from "react-router-dom";
+import { Affix } from "antd";
+import { PackageIcon, UserCircleIcon } from "lucide-react";
+
+const navigation = [
+  {
+    name: "Trang chủ",
+    href: "/admin",
+    icon: HomeIcon,
+    current: false,
+  },
+  {
+    name: "Cửa hàng",
+    icon: BuildingStorefrontIcon,
+    current: false,
+    children: [
+      { name: "Dịch vụ", href: "/admin/service" },
+      { name: "Đơn hàng", href: "/admin/API" },
+      { name: "Chi nhánh", href: "/admin/App" },
+      { name: "Nhân viên", href: "/admin/Android" },
+    ],
+  },
+  {
+    name: "Khiếu nại",
+    href: "/admin/report",
+    icon: ExclamationTriangleIcon,
+    current: true,
+  },
+  {
+    name: "Gói ",
+    href: "/admin/package",
+    icon: PackageIcon,
+    current: true,
+  },
+  {
+    name: "Tin nhắn",
+    href: "/admin/photo",
+    icon: ChatBubbleBottomCenterTextIcon,
+    current: false,
+  },
+  {
+    name: "Profile",
+    href: "/admin/profile",
+    icon: UserCircleIcon,
+    current: false,
+  },
 ];
 
-export default function ComHeaderAdmin({ children }) {
-  const [mobileFiltersOpen, setMobileHeadersOpen] = useState(false);
+const userNavigation = [
+  { name: "Your profile", href: "#" },
+  { name: "Sign out", href: "#" },
+];
+
+function classNames(...classes) {
+  return classes.filter(Boolean).join(" ");
+}
+
+export default function AdminLayout({ children }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;
-  const [userData, setUserData] = useState(null);
   const [activeCategory, setActiveCategory] = useState(null);
-  const navigate = useNavigate();
-  const [role, setRole, loadStoredValue] = useStorage("role", null);
 
   useEffect(() => {
     setActiveCategory(currentPath);
     window.scrollTo(0, 0);
-    loadStoredValue();
   }, [currentPath]);
-  function findNameByPathname() {
-    const matchingCategory = subCategories.find(
-      (category) => category.href === currentPath
-    );
-    return matchingCategory ? matchingCategory.name : null;
-  }
-  const handSend = (option) => {
-    switch (option) {
-      case "login":
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("role");
-        //localStorage.clear(); // xóa tất cả
-        setTimeout(() => {
-          navigate("/login");
-        }, 0);
-        break;
-      case "profile":
-        navigate("/admin/profile");
-        break;
-      case "password":
-        navigate("/admin/changePassword");
-        break;
-      default:
-        navigate(option);
-        break;
-    }
-  };
-  const getAPI = () => {
-    getData("/users/profile")
-      .then((response) => {
-        setUserData(response?.data);
-      })
-      .catch((er) => {
-        console.error("Error fetching items:", er);
-      });
-  };
-  useEffect(() => {
-    getAPI();
-  }, []);
-  if (role !== "Admin") {
-    return <ErrorPage goTo={"/"} statusCode={"404"} />;
-  }
   return (
-    <div className="bg-[#f9fafb] flex">
-      <Affix offsetTop={0} className="hidden lg:block fixed-sidebar ">
-        <div className="bg-[#0F296D] h-screen w-[260px]  pr-2 overflow-y-auto pb-4">
-          <div className="text-white px-10 py-4 text-center text-3xl">
-            Shoe Care Hub
+    <>
+      <div>
+        <Dialog
+          open={sidebarOpen}
+          onClose={setSidebarOpen}
+          className="relative z-50 lg:hidden"
+        >
+          <DialogBackdrop
+            transition
+            className="fixed inset-0 bg-white/80 transition-opacity duration-300 ease-linear data-[closed]:opacity-0"
+          />
+
+          <div className="fixed inset-0 flex">
+            <DialogPanel
+              transition
+              className="relative mr-16 flex w-full max-w-xs flex-1 transform transition duration-300 ease-in-out data-[closed]:-translate-x-full"
+            >
+              <TransitionChild>
+                <div className="absolute left-full top-0 flex w-16 justify-center pt-5 duration-300 ease-in-out data-[closed]:opacity-0">
+                  <button
+                    type="button"
+                    onClick={() => setSidebarOpen(false)}
+                    className="-m-2.5 p-2.5"
+                  >
+                    <span className="sr-only">Close sidebar</span>
+                    <XMarkIcon
+                      aria-hidden="true"
+                      className="h-6 w-6 text-white"
+                    />
+                  </button>
+                </div>
+              </TransitionChild>
+              {/* Sidebar component, swap this element with another sidebar if you like */}
+              <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-4 pb-4 ring-1 ring-white/10 border-r">
+                <div className="flex h-16 shrink-0 items-center">
+                  <img
+                    alt="Your Company"
+                    src="https://img.freepik.com/free-vector/bird-colorful-logo-gradient-vector_343694-1365.jpg"
+                    className="h-8 w-auto"
+                  />
+                  NAME
+                </div>
+                <nav className="flex flex-1 flex-col">
+                  <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                    <li>
+                      <ul role="list" className="-mx-2 space-y-1">
+                        {navigation.map((item) => (
+                          <li key={item.name}>
+                            {!item.children ? (
+                              <Link
+                                to={item.href}
+                                className={classNames(
+                                  item.href === activeCategory
+                                    ? "bg-gray-50 text-[#002278]"
+                                    : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                                  "block  rounded-md py-2 pl-10 pr-2 text-sm font-semibold leading-6 "
+                                )}
+                              >
+                                <div className="flex gap-2">
+                                  <item.icon
+                                    aria-hidden="true"
+                                    className="h-6 w-6 shrink-0"
+                                  />
+                                  {item.name}
+                                </div>
+                              </Link>
+                            ) : (
+                              <Disclosure as="div">
+                                <DisclosureButton
+                                  className={classNames(
+                                    item.href === activeCategory
+                                      ? "bg-gray-50 text-[#002278]"
+                                      : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                                    "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700"
+                                  )}
+                                >
+                                  <ChevronRightIcon
+                                    aria-hidden="true"
+                                    className="h-5 w-5 shrink-0 text-gray-400 group-data-[open]:rotate-90 group-data-[open]:text-gray-500"
+                                  />
+                                  <item.icon
+                                    aria-hidden="true"
+                                    className="h-6 w-6 shrink-0"
+                                  />
+                                  {item.name}
+                                </DisclosureButton>
+                                <DisclosurePanel as="ul" className="mt-1 ">
+                                  {item.children.map((subItem) => (
+                                    <li key={subItem.name}>
+                                      <Link
+                                        as="a"
+                                        to={subItem.href}
+                                        className={classNames(
+                                          subItem.href === activeCategory
+                                            ? "bg-gray-50 text-[#002278]"
+                                            : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                                          "block rounded-md py-2 pl-9 pr-2 text-sm leading-6 my-2"
+                                        )}
+                                      >
+                                        {subItem.name}
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </DisclosurePanel>
+                              </Disclosure>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </li>
+
+                    <li className="mt-auto">
+                      <a
+                        href="#"
+                        className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                      >
+                        <Cog6ToothIcon
+                          aria-hidden="true"
+                          className="h-6 w-6 shrink-0"
+                        />
+                        Settings
+                      </a>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            </DialogPanel>
           </div>
-          <div className="text-white flex flex-col gap-5">
-            {subCategories.map((category) => (
-              <Link
-                to={category.href}
-                key={category.name}
-                className={`${
-                  category?.href === activeCategory
-                    ? "bg-white rounded-r-full"
-                    : "hover:bg-gray-200 hover:rounded-r-full hover:text-[#0F296D] "
-                } p-3 flex items-center cursor-pointer`}
-                onClick={() => {
-                  // setActiveCategory(category.href);
-                  // navigate(category.href);
-                }}
-              >
-                <category.icon
-                  className={`h-6 w-6 mr-2 ${
-                    category?.href === activeCategory
-                      ? "text-[#0F296D] hover:text-[#0F296D]"
-                      : "text-whitehover:text-[#0F296D]"
-                  }`}
-                  aria-hidden="true"
-                />
-                <h1
-                  className={`${
-                    category?.href === activeCategory ? "text-[#0F296D]" : ""
-                  } font-bold text-base`}
-                >
-                  {category.name}
-                </h1>
-              </Link>
-            ))}
+        </Dialog>
+
+        {/* Static sidebar for desktop */}
+        <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-56 lg:flex-col border-r">
+          {/* Sidebar component, swap this element with another sidebar if you like */}
+          <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-4 pb-4">
+            <div className="flex h-16 shrink-0 items-center justify-center">
+              <img
+                alt="Your Company"
+                src="https://img.freepik.com/free-vector/bird-colorful-logo-gradient-vector_343694-1365.jpg"
+                className="h-8 w-auto"
+              />
+              NAME
+            </div>
+            <nav className="flex flex-1 flex-col">
+              <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                <li>
+                  <ul role="list" className="-mx-2 space-y-1">
+                    {navigation.map((item) => (
+                      <li key={item.name}>
+                        {!item.children ? (
+                          <Link
+                            to={item.href}
+                            className={classNames(
+                              item.href === activeCategory
+                                ? "bg-gray-50 text-[#002278]"
+                                : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                              "block  rounded-md py-2 pl-10 pr-2 text-sm font-semibold leading-6 "
+                            )}
+                          >
+                            <div className="flex gap-2">
+                              <item.icon
+                                aria-hidden="true"
+                                className="h-6 w-6 shrink-0"
+                              />
+                              {item.name}
+                            </div>
+                          </Link>
+                        ) : (
+                          <Disclosure as="div">
+                            <DisclosureButton
+                              className={classNames(
+                                item.href === activeCategory
+                                  ? "bg-gray-50 text-[#002278]"
+                                  : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                                "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700"
+                              )}
+                            >
+                              <ChevronRightIcon
+                                aria-hidden="true"
+                                className="h-5 w-5 shrink-0 text-gray-400 group-data-[open]:rotate-90 group-data-[open]:text-gray-500"
+                              />
+                              <item.icon
+                                aria-hidden="true"
+                                className="h-6 w-6 shrink-0"
+                              />
+                              {item.name}
+                            </DisclosureButton>
+                            <DisclosurePanel as="ul" className="mt-1 ">
+                              {item.children.map((subItem) => (
+                                <li key={subItem.name}>
+                                  <Link
+                                    as="a"
+                                    to={subItem.href}
+                                    className={classNames(
+                                      subItem.href === activeCategory
+                                        ? "bg-gray-50 text-[#002278]"
+                                        : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
+                                      "block rounded-md py-2 pl-9 pr-2 text-sm leading-6 my-2"
+                                    )}
+                                  >
+                                    {subItem.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </DisclosurePanel>
+                          </Disclosure>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+                </li>
+
+                <li className="mt-auto">
+                  <a
+                    href="#"
+                    className="group -mx-2 flex gap-x-3 rounded-md p-2 text-sm font-semibold leading-6 text-gray-400 hover:bg-gray-800 hover:text-white"
+                  >
+                    <Cog6ToothIcon
+                      aria-hidden="true"
+                      className="h-6 w-6 shrink-0"
+                    />
+                    Settings
+                  </a>
+                </li>
+              </ul>
+            </nav>
           </div>
         </div>
-      </Affix>
-      <div className="w-full">
-        <Transition.Root show={mobileFiltersOpen} as={Fragment}>
-          <Dialog
-            as="div"
-            className="relative z-40 lg:hidden"
-            onClose={setMobileHeadersOpen}
-          >
-            <Transition.Child
-              as={Fragment}
-              enter="transition-opacity ease-linear duration-300"
-              enterFrom="opacity-0"
-              enterTo="opacity-100"
-              leave="transition-opacity ease-linear duration-300"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <div className="fixed inset-0 bg-black bg-opacity-25" />
-            </Transition.Child>
 
-            <div className="fixed inset-0 z-40 flex">
-              <Transition.Child
-                as={Fragment}
-                enter="transition ease-in-out duration-300 transform"
-                enterFrom="translate-x-full"
-                enterTo="translate-x-0"
-                leave="transition ease-in-out duration-300 transform"
-                leaveFrom="translate-x-0"
-                leaveTo="translate-x-full"
+        <div className="lg:pl-56 ">
+          <Affix offsetTop={0}>
+            <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white  px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-8">
+              <button
+                type="button"
+                onClick={() => setSidebarOpen(true)}
+                className="-m-2.5 p-2.5 text-gray-700 lg:hidden "
               >
-                <Dialog.Panel className="relative ml-auto flex h-full w-full max-w-xs flex-col overflow-y-auto bg-white py-4 pb-12 shadow-xl">
-                  <div className="flex items-center justify-between px-4">
-                    <h2 className="text-lg font-medium text-gray-900">
-                      Shoe Care Hub 
-                    </h2>
-                    <button
-                      type="button"
-                      className="-mr-2 flex h-10 w-10 items-center justify-center rounded-md bg-white p-2 text-gray-400"
-                      onClick={() => setMobileHeadersOpen(false)}
-                    >
-                      <span className="sr-only">Close menu</span>
-                      <XMarkIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-                  </div>
+                <span className="sr-only">Open sidebar</span>
+                <Bars3Icon aria-hidden="true" className="h-6 w-6 text-black" />
+              </button>
 
-                  {/* Header */}
-                  <form className="mt-4 border-t border-gray-200">
-                    <h3 className="sr-only">Shoe Care Hub</h3>
-                    <ul
-                      role="list"
-                      className="px-2 py-3 font-medium text-gray-900 scrollbar scrollbar-thin"
-                    >
-                      {subCategories.map((category) => (
-                        <li key={category.name}>
-                          <Link to={category.href} className="block px-2 py-3">
-                            {category.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </form>
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
-          </Dialog>
-        </Transition.Root>
-        <Affix offsetTop={0} className="w-full sticky top-0 z-30">
-          <div className="bg-white flex items-center justify-between border-b border-gray-200 h-17">
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 px-3">
-              {/* đổi Tên */}
-              {findNameByPathname()}
-            </h1>
+              {/* Separator */}
+              <div
+                aria-hidden="true"
+                className="h-6 w-px bg-white/10 lg:hidden"
+              />
 
-            <div className="flex items-center">
-              <Space size="large">
-                {/* <Badge count={0} overflowCount={9}>
-                  <BellOutlined
-                    style={{ fontSize: "30px" }}
-                    onClick={() => navigate("/admin/notification")}
-                  />
-                </Badge> */}
-                <div className="text-lg">{userData?.fullName}</div>
-                <Menu as="div" className="relative inline-block text-left">
-                  <div>
-                    <Menu.Button className="h-11 w-11 group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
-                      {userData && userData.avatarUrl ? (
-                        <img
-                          className="h-10 w-10 rounded-full border border-gray-400 justify-center items-center mt-2"
-                          src={userData.avatarUrl}
-                          alt=""
-                        />
-                      ) : (
-                        <div className="bg-white">
-                          <UserCircleIcon className="h-10 w-10" />
-                        </div>
-                      )}
-                    </Menu.Button>
-                  </div>
-
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-100"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                  >
-                    <Menu.Items className="absolute right-0 z-10 w-40 origin-top-right rounded-lg bg-white shadow-2xl ring-1 ring-black ring-opacity-5 focus:outline-none border-b-slate-300 border">
-                      <div>
-                        {sortOptions.map((option) => (
-                          <Menu.Item key={option.name}>
-                            <div
-                              onClick={() => handSend(option.href)}
-                              className="block px-4 py-2 text-sm cursor-pointer text-gray-500 hover:bg-gray-200 hover:text-gray-900 hover:rounded-lg"
-                            >
-                              {option.name}
-                            </div>
-                          </Menu.Item>
-                        ))}
-                      </div>
-                    </Menu.Items>
-                  </Transition>
-                </Menu>
-
-                <button
-                  type="button"
-                  className="-m-2 ml-1 p-2 text-gray-400 hover:text-gray-500 sm:ml-2 lg:hidden"
-                  onClick={() => setMobileHeadersOpen(true)}
-                >
-                  <span className="sr-only">Menu</span>
-                  {/* <MenuFoldOutlined /> */}
-                  <MenuOutlined
-                    className="h-7 w-7 text-black"
+              <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+                <form action="#" method="GET" className="relative flex flex-1">
+                  {/* <label htmlFor="search-field" className="sr-only">
+                    Search
+                  </label>
+                  <MagnifyingGlassIcon
                     aria-hidden="true"
+                    className="pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"
                   />
-                </button>
-              </Space>
-            </div>
-          </div>
-        </Affix>
+                  <input
+                    id="search-field"
+                    name="search"
+                    type="search"
+                    placeholder="Search..."
+                    className="block h-full w-full border-0 py-0 pl-8 pr-0 text-wbg-white placeholder:text-gray-400 focus:ring-0 sm:text-sm"
+                  /> */}
+                </form>
+                <div className="flex items-center gap-x-4 lg:gap-x-6">
+                  <button
+                    type="button"
+                    className="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500"
+                  >
+                    <span className="sr-only">View notifications</span>
+                    <BellIcon aria-hidden="true" className="h-6 w-6" />
+                  </button>
 
-        <section
-          aria-labelledby="products-heading"
-          className="px-4 pt-2 sm:px-6 lg:px-8 "
-        >
-          <div className="grid grid-cols-1 gap-x-8 gap-y-10 lg:grid-cols-6 ">
-            <div className="lg:col-span-6  h-full w-full">
-              {/* <div className="lg:w-[calc(100vw-350px)] w-[calc(100vw-70px)]"> */}
-              <div className="">
-                {/* {user?.role === "admin" ? (
-                  children
-                ) : (
-                  <ErrorPage goTo={"/"} statusCode={"404"} />
-                )} */}
-                {children}
+                  {/* Separator */}
+                  <div
+                    aria-hidden="true"
+                    className="hidden lg:block lg:h-6 lg:w-px lg:bg-white/10"
+                  />
+
+                  {/* Profile dropdown */}
+                  <Menu as="div" className="relative">
+                    <MenuButton className="-m-1.5 flex items-center p-1.5">
+                      <span className="sr-only">Open user menu</span>
+                      <img
+                        alt=""
+                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                        className="h-8 w-8 rounded-full bg-gray-50"
+                      />
+                      <span className="hidden lg:flex lg:items-center">
+                        <span
+                          aria-hidden="true"
+                          className="ml-4 text-sm font-semibold leading-6 text-black"
+                        >
+                          Tom Cook
+                        </span>
+                        <ChevronDownIcon
+                          aria-hidden="true"
+                          className="ml-2 h-5 w-5 text-gray-400"
+                        />
+                      </span>
+                    </MenuButton>
+                    <MenuItems
+                      transition
+                      className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                    >
+                      {userNavigation.map((item) => (
+                        <MenuItem key={item.name}>
+                          <a
+                            href={item.href}
+                            className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                          >
+                            {item.name}
+                          </a>
+                        </MenuItem>
+                      ))}
+                    </MenuItems>
+                  </Menu>
+                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </Affix>
+
+          <main className="py-2  bg-[#f9f9fc] min-h-[calc(100vh-64px)]">
+            <div className="sm:px-6 lg:px-2">{children}</div>
+          </main>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

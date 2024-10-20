@@ -4,9 +4,9 @@ import React from "react";
 import { useForm, useFormContext } from "react-hook-form";
 import { v4 } from "uuid";
 import { isEmpty, isNaN, get } from "lodash";
-import { FieldError } from "../FieldError/FieldError";
 import BigNumber from "bignumber.js";
 import TextArea from "antd/es/input/TextArea";
+import { FieldError } from "../FieldError/FieldError";
 
 const checkValidType = (str, value) => {
   return value.split('').every((item) => str.split('').includes(item));
@@ -86,10 +86,10 @@ const ComTextArea = React.forwardRef(
         <div className={`${className}`}>
           {label && (
             <div className="mb-4 flex justify-between">
-              <label htmlFor={inputId} className="text-paragraph font-bold">
+              <label htmlFor={inputId} className="text-paragraph font-normal">
                 {label}
                 {required && (
-                  <span className="text-paragraph font-bold text-error-7 text-red-500">
+                  <span className="text-paragraph font-normal text-error-7 text-red-500">
                     *
                   </span>
                 )}

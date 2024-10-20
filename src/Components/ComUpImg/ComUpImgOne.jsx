@@ -69,10 +69,10 @@ const ComUpImgOne = ({
       <div>
         {label && (
           <div className="mb-4 flex justify-between">
-            <label htmlFor={inputId} className="text-paragraph font-bold">
+            <label htmlFor={inputId} className="text-paragraph font-normal">
               {label}
               {required && (
-                <span className="text-paragraph font-bold text-error-7 text-red-500">
+                <span className="text-paragraph font-normal text-error-7 text-red-500">
                   *
                 </span>
               )}
