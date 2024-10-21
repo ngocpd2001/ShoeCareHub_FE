@@ -13,7 +13,7 @@ import { ChevronDown } from "lucide-react";
 import ComSelect from "./../../../Components/ComInput/ComSelect";
 import ComUpImg from "./../../../Components/ComUpImg/ComUpImg";
 import ComNumber from "./../../../Components/ComInput/ComNumber";
-import ComDatePicker from './../../../Components/ComDatePicker/ComDatePicker';
+import ComDatePicker from "./../../../Components/ComDatePicker/ComDatePicker";
 import { YupSevice } from "../../../yup/YupSevice";
 
 export default function CreateSevice() {
@@ -55,19 +55,21 @@ export default function CreateSevice() {
       );
       return;
     }
-
   };
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Thêm dịch vụ</h2>
+      <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
+        Thêm dịch vụ
+      </h2>
       <Breadcrumb
+        className="ml-4"
         items={[
           {
             title: "Cửa hàng",
           },
           {
-            title: <Link to="/admin/service">Dịch vụ</Link>,
+            title: <Link to="/owner/service">Dịch vụ</Link>,
           },
           {
             title: "Thêm dịch vụ",
@@ -240,7 +242,7 @@ export default function CreateSevice() {
                   <ComButton
                     className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
                   >
-                  <div className="text-black">  Hủy bỏ</div>
+                    <div className="text-black"> Hủy bỏ</div>
                   </ComButton>
                 </div>
                 <div>

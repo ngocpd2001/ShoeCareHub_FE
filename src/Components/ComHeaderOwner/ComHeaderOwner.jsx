@@ -39,7 +39,7 @@ import { PackageIcon, UserCircleIcon } from "lucide-react";
 const navigation = [
   {
     name: "Trang chủ",
-    href: "/admin",
+    href: "/owner",
     icon: HomeIcon,
     current: false,
   },
@@ -48,33 +48,33 @@ const navigation = [
     icon: BuildingStorefrontIcon,
     current: false,
     children: [
-      { name: "Dịch vụ", href: "/admin/service" },
-      { name: "Đơn hàng", href: "/admin/API" },
-      { name: "Chi nhánh", href: "/admin/App" },
-      { name: "Nhân viên", href: "/admin/Android" },
+      { name: "Dịch vụ", href: "/owner/service" },
+      { name: "Đơn hàng", href: "/owner/API" },
+      { name: "Chi nhánh", href: "/owner/App" },
+      { name: "Nhân viên", href: "/owner/Android" },
     ],
   },
   {
     name: "Khiếu nại",
-    href: "/admin/report",
+    href: "/owner/report",
     icon: ExclamationTriangleIcon,
     current: true,
   },
   {
     name: "Gói ",
-    href: "/admin/package",
+    href: "/owner/package",
     icon: PackageIcon,
     current: true,
   },
   {
     name: "Tin nhắn",
-    href: "/admin/photo",
+    href: "/owner/photo",
     icon: ChatBubbleBottomCenterTextIcon,
     current: false,
   },
   {
     name: "Profile",
-    href: "/admin/profile",
+    href: "/owner/profile",
     icon: UserCircleIcon,
     current: false,
   },
@@ -89,7 +89,7 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function AdminLayout({ children }) {
+export default function OwnerLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const location = useLocation();
   const currentPath = location.pathname;

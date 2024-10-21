@@ -2,7 +2,7 @@ import { Outlet, createBrowserRouter } from "react-router-dom";
 import React from "react";
 import LoginPage from "./page/login/LoginPage";
 import ErrorPage from "./page/404/ErrorPage";
-import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
+import ComHeaderOwner from "./Components/ComHeaderOwner/ComHeaderOwner";
 import Home from "./page/Home/Home";
 import ComHeader from "./Components/ComHeader/ComHeader";
 import ServiceDetail from "./page/Service/ServiceDetail";
@@ -83,27 +83,27 @@ export const routers = createBrowserRouter([
     ],
   },
   {
-    path: "/admin",
+    path: "/owner",
     element: (
-      <ComHeaderAdmin>
+      <ComHeaderOwner>
         <Outlet />
-      </ComHeaderAdmin>
+      </ComHeaderOwner>
     ),
     children: [
       {
-        path: "/admin/*",
+        path: "/owner/*",
         element: <ErrorPage />,
       },
       {
-        path: "/admin/service",
+        path: "/owner/service",
         element: <ServiceManager />,
       },
       {
-        path: "/admin/service/create",
+        path: "/owner/service/create",
         element: <CreateSevice/>,
       },
       {
-        path: "/admin/service/:id",
+        path: "/owner/service/:id",
         element: <DetailService />,
       },
     ],

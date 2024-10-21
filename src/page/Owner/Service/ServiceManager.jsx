@@ -13,7 +13,7 @@ export default function ServiceManager() {
     <>
       <div className="flex justify-between items-end pb-2 px-4 ">
         <div>
-          <h3 className="text-[#002278] text-4xl">Dịch vụ</h3>
+          <h3 className="text-[#002278] text-4xl mb-4">Dịch vụ</h3>
           <Breadcrumb
             items={[
               {
@@ -26,7 +26,7 @@ export default function ServiceManager() {
           />
         </div>
         <div>
-          <ComButton onClick={()=>navigate("/admin/service/create")}>
+          <ComButton onClick={() => navigate("/owner/service/create")}>
             + Thêm dịch vụ
           </ComButton>
         </div>

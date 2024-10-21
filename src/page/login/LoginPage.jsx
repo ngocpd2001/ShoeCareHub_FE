@@ -98,7 +98,7 @@ export default function LoginPage(props) {
     <>
       {/* <Header login={true} /> */}
       <section
-        className="flex items-center justify-center  w-screen bg-cover bg-center pt-4 pb-6 "
+        className="flex items-center justify-center  w-screen bg-cover bg-center pt-6  "
         style={
           {
             // backgroundImage: `url(https://firebasestorage.googleapis.com/v0/b/careconnect-2d494.appspot.com/o/images%2Fab3611bf-a5f8-4b46-9f42-56fafbaefb5a.jpg?alt=media&token=bc958e0c-35f5-4592-a224-16d476a90536)`,
