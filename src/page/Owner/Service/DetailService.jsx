@@ -5,9 +5,9 @@ import { Link, useNavigate } from "react-router-dom";
 import ComButton from "../../../Components/ComButton/ComButton";
 
 export default function DetailService() {
-const [selectedImage, setSelectedImage] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(0);
   const navigate = useNavigate();
-const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const images = [
     "https://www.chuphinhsanpham.vn/wp-content/uploads/2021/06/chup-hinh-giay-dincox-shoes-c-photo-studio-5.jpg",
     "https://www.chuphinhsanpham.vn/wp-content/uploads/2021/06/chup-hinh-giay-dincox-shoes-c-photo-studio-4.jpg",
@@ -26,7 +26,7 @@ const [isModalOpen, setIsModalOpen] = useState(false);
               title: "Cửa hàng",
             },
             {
-              title: <Link to="/admin/service">Dịch vụ</Link>,
+              title: <Link to="/owner/service">Dịch vụ</Link>,
             },
             {
               title: "Chi tiết dịch vụ",
@@ -34,7 +34,7 @@ const [isModalOpen, setIsModalOpen] = useState(false);
           ]}
         />
         <div>
-          <ComButton onClick={() => navigate("/admin/service/create")}>
+          <ComButton onClick={() => navigate("/owner/service/create")}>
             Cập nhật dịch vụ
           </ComButton>
         </div>

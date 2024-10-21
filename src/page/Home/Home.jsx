@@ -3,7 +3,10 @@ import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import ServiceGrid from "../../Components/ServiceGrid/ServiceGrid";
 import Marquee from "react-fast-marquee";
 import ShoeSlide1 from "../../assets/images/cleanShow.webp";
-import ShoeSlide2 from "../../assets/images/brushing.webp";
+import ShoeSlide2 from "../../assets/images/suaChua.webp";
+import ShoeSlide3 from "../../assets/images/sonGiay.webp";
+import ShoeSlide4 from "../../assets/images/giatgiay.webp";
+import ShoeSlide5 from "../../assets/images/vaGiay.webp";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_HEIGHT = 360;
@@ -191,7 +194,13 @@ export default function CarouselsSection() {
       img: ShoeSlide2,
     },
     {
-      img: ShoeSlide1,
+      img: ShoeSlide3,
+    },
+    {
+      img: ShoeSlide4,
+    },
+    {
+      img: ShoeSlide5,
     },
   ]);
 

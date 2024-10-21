@@ -132,7 +132,10 @@ export default function ComHeader({ children }) {
                     </div>
                   </div>
                   <div>
-                    <Link to="/cart" className="text-gray-600 hover:text-blue-500 mr-[5px] block">
+                    <Link
+                      to="/cart"
+                      className="text-gray-600 hover:text-blue-500 mr-[5px] block"
+                    >
                       <div
                         style={{
                           backgroundColor: "#ebebeb",
@@ -191,7 +194,7 @@ export default function ComHeader({ children }) {
             </nav>
           </header>
         </Affix>
-        <main className="bg-[#f9f9f9]">
+        <main className="bg-[#f9f9f9] pb-8">
           <div className="">{children}</div>
         </main>
       </div>
