@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from "react";
 import { Affix } from "antd";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/Shoe Care Hub Logo_NoneBack.png";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -12,6 +12,10 @@ import {
 } from "react-icons/fa";
 import { RiFacebookBoxLine } from "react-icons/ri";
 import { BsCart3 } from "react-icons/bs";
+import { useStorage } from "../../hooks/useLocalStorage";
+import { MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react";
+import { ChevronDownIcon } from "lucide-react";
+import { getData } from "../../api/api";
 
 const navigation = [
   { name: "Dashboard", href: "/admin/institute", current: false },
@@ -21,24 +25,17 @@ const navigation = [
   { name: "Reports", href: "#", current: false },
 ];
 const userNavigation = [
-  { name: "Your Profile", href: "/" },
-  { name: "Settings", href: "/" },
-  { name: "Sign out", href: "/login" },
+  { name: "Hồ sơ của tôi", href: "/user/profile" },
+  { name: "Đơn mua của tôi", href: "/user/order-history" },
+  { name: "Đăng xuất", href: "/login" },
 ];
-const language = [
-  { name: "Việt Nam", href: "vn" },
-  { name: "English", href: "en" },
-];
-
-function classNames(...classes) {
-  return classes.filter(Boolean).join(" ");
-}
 
 export default function ComHeader({ children }) {
   const [headerNavigation, setheaderNavigation] = useState(navigation);
   const location = useLocation();
+  const [token, setToken, loadToken] = useStorage("token", "");
   const currentPath = location.pathname;
-
+  const navigate = useNavigate();
   const methods = useForm({
     resolver: yupResolver(),
     defaultValues: {
@@ -52,6 +49,13 @@ export default function ComHeader({ children }) {
     changeNavigation2(currentPath);
   }, []);
 
+  useEffect(() => {
+    loadToken();
+    // chỗ để lấy thông tin người dùng
+    // getData("/")
+  }, [currentPath]);
+  console.log(currentPath);
+
   const changeNavigation2 = (path) => {
     setheaderNavigation((prevNavigation) =>
       prevNavigation.map((item) => {
@@ -63,18 +67,10 @@ export default function ComHeader({ children }) {
       })
     );
   };
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [currentPath]);
 
-  const changeNavigation = (itemName) => {
-    setheaderNavigation((prevNavigation) =>
-      prevNavigation.map((item) => {
-        if (item.name === itemName) {
-          return { ...item, current: true };
-        } else {
-          return { ...item, current: false };
-        }
-      })
-    );
-  };
   return (
     <>
       <div className="min-h-full">
@@ -101,12 +97,16 @@ export default function ComHeader({ children }) {
                   <Link to="" className="hover:underline">
                     Hỗ trợ
                   </Link>
-                  <Link to="" className="hover:underline">
-                    Đăng Ký
-                  </Link>
-                  <Link to="/login" className="hover:underline">
-                    Đăng Nhập
-                  </Link>
+                  {!token ? (
+                    <>
+                      <Link to="/register" className="hover:underline">
+                        Đăng Ký
+                      </Link>
+                      <Link to="/login" className="hover:underline">
+                        Đăng Nhập
+                      </Link>
+                    </>
+                  ) : null}
                 </div>
               </div>
             </div>
@@ -131,7 +131,7 @@ export default function ComHeader({ children }) {
                       </button>
                     </div>
                   </div>
-                  <div>
+                  <div className="flex gap-2">
                     <Link
                       to="/cart"
                       className="text-gray-600 hover:text-blue-500 mr-[5px] block"
@@ -150,13 +150,68 @@ export default function ComHeader({ children }) {
                         <BsCart3 size={20} color="black" />
                       </div>
                     </Link>
+                    {token ? (
+                      <>
+                        <Menu as="div" className="relative">
+                          <MenuButton className="-m-1.5 flex items-center p-1.5">
+                            <span className="sr-only">Open user menu</span>
+                            <img
+                              alt=""
+                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              className="h-8 w-8 rounded-full bg-gray-50"
+                            />
+                            <span className="hidden lg:flex lg:items-center">
+                              <span
+                                aria-hidden="true"
+                                className="ml-4 text-sm font-semibold leading-6 text-black"
+                              >
+                                Đợi api
+                              </span>
+                              <ChevronDownIcon
+                                aria-hidden="true"
+                                className="ml-2 h-5 w-5 text-gray-400"
+                              />
+                            </span>
+                          </MenuButton>
+                          <MenuItems
+                            transition
+                            className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                          >
+                            {userNavigation.map((item) => (
+                              <MenuItem key={item.name}>
+                                {item.name === "Đăng xuất" ? (
+                                  <button
+                                    onClick={() => {
+                                      setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
+                                      setTimeout(() => {
+                                        navigate("/login");
+                                      }, 300);
+                                    }}
+                                    className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                  >
+                                    {item.name}
+                                  </button>
+                                ) : (
+                                  <Link
+                                    to={item.href}
+                                    className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                  >
+                                    {item.name}
+                                  </Link>
+                                )}
+                              </MenuItem>
+                            ))}
+                          </MenuItems>
+                        </Menu>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               </div>
             </div>
             <nav className="bg-white border-t border-gray-300">
               <div className="container mx-auto shadow-md">
-                <ul className="flex justify-center space-x-8 py-2 text-sm font-medium bg-[#F9F9F9]">
+                <ul className="flex justify-center gap-8  py-2 text-sm font-medium bg-[#F9F9F9]">
                   <li>
                     <Link
                       to="/"
