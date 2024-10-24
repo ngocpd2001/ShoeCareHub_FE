@@ -1,102 +1,35 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { Button, Dropdown, Menu, Pagination } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-
-const services = [
-  {
-    id: 1,
-    name: "Web Development",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.5,
-    reviews: 150,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 2,
-    name: "Graphic Design",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.8,
-    reviews: 110,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 3,
-    name: "SEO Services",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.6,
-    reviews: 90,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 4,
-    name: "Content Writing",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.7,
-    reviews: 130,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 5,
-    name: "Digital Marketing",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.4,
-    reviews: 70,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 6,
-    name: "UI/UX Design",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.9,
-    reviews: 120,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 7,
-    name: "App Development",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.8,
-    reviews: 80,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-  {
-    id: 8,
-    name: "Video Editing",
-    discountPrice: "$59.99/hr",
-    originalPrice: "$119.99/hr",
-    rating: 4.5,
-    reviews: 60,
-    image:
-      "https://cany.vn/image/catalog/lnt/15224/Palermo-Hairy-Men's-Sneakers_75(1).jpg",
-  },
-];
-
-const handleMenuClick = (e) => {
-  console.log("Click on menu item:", e);
-};
+import { getAllService } from "../../api/service"; // Import hàm API
+import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
 
 const ServiceGrid = () => {
+  const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
   const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
+
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await getAllService();
+        if (response && response.data && response.data.items) {
+          setServices(response.data.items); // Lấy danh sách dịch vụ từ response
+        } else {
+          console.error("Dữ liệu không hợp lệ", response);
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API", error);
+      }
+    };
+
+    fetchServices();
+  }, []); // Chỉ chạy một lần khi component được mount
 
   const handleFocus = () => {
     setSelected(true);
@@ -126,6 +59,12 @@ const ServiceGrid = () => {
     (currentPage - 1) * pageSize,
     currentPage * pageSize
   );
+
+  // Định nghĩa hàm handleMenuClick trước khi sử dụng
+  const handleMenuClick = (e) => {
+    console.log("Menu item clicked:", e.key);
+    // Thêm logic xử lý khi một mục trong menu được chọn
+  };
 
   // Định nghĩa menu trong ServiceGrid
   const menu = (
@@ -192,16 +131,59 @@ const ServiceGrid = () => {
             </div>
             <h3 className="text-lg font-semibold mt-2">{service.name}</h3>
             <p className="text-[#667085] font-normal line-through">
-              {service.originalPrice}
+              {service.price.toLocaleString("vi-VN")}đ
             </p>
             <p className="text-[#3A4980] font-bold text-xl">
-              {service.discountPrice}
+              {service.promotion.newPrice.toLocaleString("vi-VN")}đ
             </p>
             <div className="flex items-center mt-1">
-              <span className="text-yellow-500">
-                {"★".repeat(Math.floor(service.rating))}
+              <span className="text-yellow-500 flex">
+                {[...Array(5)].map((_, index) => {
+                  const fillPercentage = Math.max(
+                    0,
+                    Math.min(100, (services[0].rating - index) * 100)
+                  );
+                  return (
+                    <div
+                      key={index}
+                      className="relative inline-block w-4 h-4"
+                      style={{ marginRight: "4px" }}
+                    >
+                      <FaStar
+                        style={{
+                          position: "absolute",
+                          color: "gold",
+                          width: "1em",
+                          height: "1em",
+                          zIndex: 1,
+                          stroke: "gold",
+                          strokeWidth: "30px",
+                        }}
+                      />
+                      <FaStar
+                        style={{
+                          position: "absolute",
+                          color: "white",
+                          clipPath: `inset(0 0 0 ${fillPercentage}%)`,
+                          width: "1em",
+                          height: "1em",
+                          zIndex: 2,
+                        }}
+                      />
+                    </div>
+                  );
+                })}
               </span>
-              <span className="text-gray-500 ml-1">({service.reviews})</span>
+              <span className="ml-1 text-xs text-gray-600">
+                ({service.rating})
+              </span>
+            </div>
+            <div className="mt-3 flex justify-start">
+              <span
+                className="bg-red-500 text-white rounded-full px-2 py-1"
+              >
+                SaleOff: {service.promotion.saleOff}%
+              </span>
             </div>
           </div>
         ))}

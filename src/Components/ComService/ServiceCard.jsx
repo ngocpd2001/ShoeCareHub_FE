@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar, faChevronRight } from "@fortawesome/free-solid-svg-icons";
+// import { faStar, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
-import { getAllService } from '../../api/service'; 
+import { getAllService } from "../../api/service";
+import { FaStar } from "react-icons/fa";
 
 const ServiceCard = () => {
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
@@ -40,7 +41,7 @@ const ServiceCard = () => {
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-7">
-      {services.map((service, index) => (
+      {services.map((service) => (
         <div
           key={service.id}
           className="bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[300px] relative"
@@ -73,17 +74,49 @@ const ServiceCard = () => {
           </div>
           <div className="relative mb-2">
             <p className="text-[#667085] font-normal line-through">
-              {service.price}đ
+              {service.price.toLocaleString('vi-VN')}đ
             </p>
             <p className="text-[#3A4980] font-bold text-xl">
-              {service.promotion.newPrice}đ
+              {service.promotion.newPrice.toLocaleString('vi-VN')}đ
             </p>
           </div>
           <div className="flex items-center">
             <span className="text-yellow-500 flex">
-              {[...Array(5)].map((_, i) => (
-                <FontAwesomeIcon key={i} icon={faStar} size={12} />
-              ))}
+              {[...Array(5)].map((_, index) => {
+                const fillPercentage = Math.max(
+                  0,
+                  Math.min(100, (services[0].rating - index) * 100)
+                );
+                return (
+                  <div
+                    key={index}
+                    className="relative inline-block w-4 h-4"
+                    style={{ marginRight: "4px" }}
+                  >
+                    <FaStar
+                      style={{
+                        position: "absolute",
+                        color: "gold",
+                        width: "1em",
+                        height: "1em",
+                        zIndex: 1,
+                        stroke: "gold",
+                        strokeWidth: "30px",
+                      }}
+                    />
+                    <FaStar
+                      style={{
+                        position: "absolute",
+                        color: "white",
+                        clipPath: `inset(0 0 0 ${fillPercentage}%)`,
+                        width: "1em",
+                        height: "1em",
+                        zIndex: 2,
+                      }}
+                    />
+                  </div>
+                );
+              })}
             </span>
             <span className="ml-1 text-xs text-gray-600">
               ({service.rating})

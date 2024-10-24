@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStar as solidStar,
-  faPlay,
   faStarHalf as solidStarHalf,
 } from "@fortawesome/free-solid-svg-icons";
 import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
@@ -12,6 +11,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
 import ServiceDetail from "../../assets/videos/Service/servicedetail.mp4";
+// Import FaStar từ react-icons/fa
+import { FaStar } from "react-icons/fa";
 
 const FeedbackService = () => {
   const ratings = [
@@ -203,53 +204,43 @@ const FeedbackService = () => {
                     />
                   </div>
                   <div className="flex ml-2 items-center">
-                    {[...Array(totalStars)].map((_, index) => {
-                      if (index < Math.floor(filledStars)) {
-                        // Ngôi sao đầy
-                        return (
-                          <FontAwesomeIcon
-                            key={index}
-                            icon={solidStar}
+                    {[...Array(5)].map((_, index) => {
+                      const starPercentage = (rating.percentage / 100) * 5; // Chuyển đổi phần trăm thành số sao
+                      const fillPercentage = Math.max(
+                        0,
+                        Math.min(100, (starPercentage - index) * 100)
+                      );
+                      // Giới hạn fillPercentage trong khoảng 0 đến 100 cho từng ngôi sao
+
+                      return (
+                        <div
+                          key={index}
+                          className="relative inline-block w-4 h-4"
+                          style={{ marginRight: "4px" }}
+                        >
+                          <FaStar
                             style={{
-                              color: "gold",
-                              marginRight: "4px",
-                              stroke: "gold", // Màu đường viền
-                              strokeWidth: "25px", // Độ dày đường viền
+                              position: "absolute",
+                              color: "white",
+                              width: "1em",
+                              height: "1em",
+                              zIndex: 1,
+                              stroke: "gold",
+                              strokeWidth: "30px",
                             }}
                           />
-                        );
-                      } else if (
-                        index === Math.floor(filledStars) &&
-                        filledStars % 1 !== 0
-                      ) {
-                        // Ngôi sao nửa
-                        return (
-                          <FontAwesomeIcon
-                            key={index}
-                            icon={solidStarHalf}
+                          <FaStar
                             style={{
+                              position: "absolute",
                               color: "gold",
-                              marginRight: "4px",
-                              stroke: "gold", // Màu đường viền
-                              strokeWidth: "25px", // Độ dày đường viền
+                              clipPath: `inset(0 ${Math.max(0, 100 - fillPercentage)}% 0 0)`,
+                              width: "1em",
+                              height: "1em",
+                              zIndex: 2,
                             }}
                           />
-                        );
-                      } else {
-                        // Ngôi sao trống
-                        return (
-                          <FontAwesomeIcon
-                            key={index}
-                            icon={regularStar}
-                            style={{
-                              color: "gold",
-                              marginRight: "4px",
-                              stroke: "gold", // Màu đường viền
-                              strokeWidth: "1px", // Độ dày đường viền
-                            }}
-                          />
-                        );
-                      }
+                        </div>
+                      );
                     })}
                   </div>
                   <div
