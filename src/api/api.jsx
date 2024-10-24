@@ -8,7 +8,7 @@ const api = axios.create({
 
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy token từ localStorage (hoặc nơi bạn lưu trữ)
+    const accessToken = localStorage.getItem("token"); // Lấy token từ localStorage (hoặc nơi bạn lưu trữ)
 
     if (accessToken) {
       const Token = accessToken.replace(/"/g, ""); // Loại bỏ tất cả dấu ngoặc kép
