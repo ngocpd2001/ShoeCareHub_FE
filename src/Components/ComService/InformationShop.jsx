@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
 import { useLocation } from "react-router-dom";
+import { FaStar } from "react-icons/fa";
 
 // Nhận prop isProviderLandingPage để xác định có đang ở trang landing không
 const InformationShop = () => {
@@ -24,7 +25,7 @@ const InformationShop = () => {
       id: 1,
       name: "Vệ sinh chuyên sâu",
       brand: "Nike",
-      rating: 4.8,
+      rating: 4.3,
       reviews: 67,
       usage: 200,
       joined: "10 tháng trước",
@@ -105,7 +106,46 @@ const InformationShop = () => {
       <div className="flex flex-col flex-1">
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Đánh giá</span>
-          <span className="text-lg text-[#002278] font-normal">{`${services[0].rating} (${services[0].reviews} đánh giá)`}</span>
+          <span className="text-lg text-[#002278] font-normal flex items-center">
+            <span className="text-xl">{`${services[0].rating}`}</span>
+            <div className="flex ml-2">
+              {[...Array(5)].map((_, index) => {
+                const fillPercentage = Math.max(
+                  0,
+                  Math.min(100, (services[0].rating - index) * 100)
+                );
+                return (
+                  <div
+                    key={index}
+                    className="relative inline-block w-4 h-4"
+                    style={{ marginRight: "4px" }}
+                  >
+                    <FaStar
+                      style={{
+                        position: "absolute",
+                        color: "gold",
+                        width: "1em",
+                        height: "1em",
+                        zIndex: 1,
+                        stroke: "gold",
+                        strokeWidth: "30px",
+                      }}
+                    />
+                    <FaStar
+                      style={{
+                        position: "absolute",
+                        color: "white",
+                        clipPath: `inset(0 0 0 ${fillPercentage}%)`,
+                        width: "1em",
+                        height: "1em",
+                        zIndex: 2,
+                      }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </span>
         </div>
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Dịch vụ</span>

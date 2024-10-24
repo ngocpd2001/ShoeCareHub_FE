@@ -154,7 +154,7 @@ export default function OwnerLayout({ children }) {
                                   item.href === activeCategory
                                     ? "bg-gray-50 text-[#002278]"
                                     : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
-                                  "block  rounded-md py-2 pl-10 pr-2 text-sm font-semibold leading-6 "
+                                  "block  rounded-md py-2 pl-10 pr-2 text-sm font-semibold leading-6"
                                 )}
                               >
                                 <div className="flex gap-2">
@@ -185,7 +185,7 @@ export default function OwnerLayout({ children }) {
                                   />
                                   {item.name}
                                 </DisclosureButton>
-                                <DisclosurePanel as="ul" className="mt-1 ">
+                                <DisclosurePanel as="ul" className="mt-1">
                                   {item.children.map((subItem) => (
                                     <li key={subItem.name}>
                                       <Link
@@ -249,7 +249,7 @@ export default function OwnerLayout({ children }) {
                               item.href === activeCategory
                                 ? "bg-gray-50 text-[#002278]"
                                 : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
-                              "block  rounded-md py-2 pl-10 pr-2 text-sm font-semibold leading-6 "
+                              "block  rounded-md py-3 pl-10 pr-2 text-sm font-semibold leading-6 "
                             )}
                           >
                             <div className="flex gap-2">
@@ -267,7 +267,7 @@ export default function OwnerLayout({ children }) {
                                 item.href === activeCategory
                                   ? "bg-gray-50 text-[#002278]"
                                   : "hover:bg-gray-50  hover:text-[#002278] text-[#4A4C56]",
-                                "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700"
+                                "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700 py-3"
                               )}
                             >
                               <ChevronRightIcon

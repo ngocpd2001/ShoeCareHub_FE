@@ -1,72 +1,34 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStar, faChevronRight } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
+import { getAllService } from '../../api/service'; 
 
 const ServiceCard = () => {
-  const services = [
-    {
-      id: 1,
-      name: "TDX Sinkers",
-      rating: "5.0",
-      originalPrice: 675,
-      discountedPrice: 675,
-      typesAvailable: 5,
-      reviews: 121,
-      image:
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092https://i.ebayimg.com/images/g/1oAAAOSw2URk0mVj/s-l1200.jpg",
-    },
-    {
-      id: 2,
-      name: "TDX Sinkers",
-      rating: "5.0",
-      originalPrice: 675,
-      discountedPrice: 675,
-      typesAvailable: 5,
-      reviews: 121,
-      image:
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092https://i.ebayimg.com/images/g/1oAAAOSw2URk0mVj/s-l1200.jpg",
-    },
-    {
-      id: 3,
-      name: "TDX Sinkers",
-      rating: "5.0",
-      originalPrice: 675,
-      discountedPrice: 675,
-      typesAvailable: 5,
-      reviews: 121,
-      image:
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092https://i.ebayimg.com/images/g/1oAAAOSw2URk0mVj/s-l1200.jpg",
-    },
-    {
-      id: 4,
-      name: "TDX Sinkers",
-      rating: "5.0",
-      originalPrice: 675,
-      discountedPrice: 675,
-      typesAvailable: 5,
-      reviews: 121,
-      image:
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092https://i.ebayimg.com/images/g/1oAAAOSw2URk0mVj/s-l1200.jpg",
-    },
-    {
-      id: 5,
-      name: "TDX Sinkers",
-      rating: "5.0",
-      originalPrice: 675,
-      discountedPrice: 675,
-      typesAvailable: 5,
-      reviews: 121,
-      image:
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092https://i.ebayimg.com/images/g/1oAAAOSw2URk0mVj/s-l1200.jpg",
-    },
-  ];
+  const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
+  const [favorites, setFavorites] = useState([]); // State để quản lý yêu thích
 
-  const [favorites, setFavorites] = useState([]); // State to manage favorites
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const response = await getAllService();
+        console.log(response); // Kiểm tra response từ API
+        if (response && response.data && response.data.items) {
+          setServices(response.data.items); // Lấy danh sách dịch vụ từ response
+        } else {
+          console.error("Dữ liệu không hợp lệ", response);
+        }
+      } catch (error) {
+        console.error("Lỗi khi gọi API", error);
+      }
+    };
+
+    fetchServices();
+  }, []); // Chỉ chạy một lần khi component được mount
 
   const handleFavoriteClick = (serviceId) => {
-    // Toggle favorite status
+    // Toggle trạng thái yêu thích
     setFavorites((prevFavorites) => {
       if (prevFavorites.includes(serviceId)) {
         return prevFavorites.filter((id) => id !== serviceId);
@@ -77,7 +39,6 @@ const ServiceCard = () => {
   };
 
   return (
-    // <div className="p-6 bg-white rounded-lg shadow-md mt-10">
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-7">
       {services.map((service, index) => (
         <div
@@ -92,7 +53,7 @@ const ServiceCard = () => {
           <div className="absolute top-2 right-2">
             <button
               onClick={() => handleFavoriteClick(service.id)}
-              className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center]"
+              className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center"
             >
               <FontAwesomeIcon
                 icon={
@@ -112,10 +73,10 @@ const ServiceCard = () => {
           </div>
           <div className="relative mb-2">
             <p className="text-[#667085] font-normal line-through">
-              {service.originalPrice}đ
+              {service.price}đ
             </p>
             <p className="text-[#3A4980] font-bold text-xl">
-              {service.discountedPrice}đ
+              {service.promotion.newPrice}đ
             </p>
           </div>
           <div className="flex items-center">
@@ -125,14 +86,12 @@ const ServiceCard = () => {
               ))}
             </span>
             <span className="ml-1 text-xs text-gray-600">
-              ({service.reviews})
+              ({service.rating})
             </span>
           </div>
         </div>
       ))}
     </div>
-
-    // </div>
   );
 };
 

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
-import CheckoutCart from "../Components/ComCart/CheckoutCart";
+import CheckoutCart from "../../Components/ComCart/CheckoutCart";
 
 const Checkout = () => {
   const location = useLocation();
@@ -27,7 +27,7 @@ const Checkout = () => {
     <div className="p-4 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6 rounded-lg bg-white">
         <h1 className="text-3xl text-[#002278] font-bold mb-2">Thanh Toán</h1>
-        
+
         <CheckoutCart />
 
         <div className="border-t border-gray-300 p-4 mx-2">

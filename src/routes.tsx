@@ -9,13 +9,13 @@ import ServiceDetail from "./page/Service/ServiceDetail";
 import ProviderLandingPage from "./page/Provider/ProviderLandingPage";
 import Subscription from "./page/Provider/Subscription";
 import ComHeaderUser from "./Components/ComHeaderUser/ComHeaderUser";
-import UserCart from "./page/UserCart";
-import Checkout from "./page/Checkout";
+import UserCart from "./page/Cart&Checkout/UserCart";
+import Checkout from "./page/Cart&Checkout/Checkout";
 import OrderHistory from "./page/OrderHistory/OrderHistory";
 import ProfilePage from "./page/ProfileUser/ProfileUser";
 import ServiceManager from "./page/Owner/Service/ServiceManager";
 import DetailService from "./page/Owner/Service/DetailService";
-import CreateSevice from './page/Owner/Service/CreateSevice';
+import CreateSevice from "./page/Owner/Service/CreateService";
 
 export const routers = createBrowserRouter([
   {
@@ -100,7 +100,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service/create",
-        element: <CreateSevice/>,
+        element: <CreateSevice />,
       },
       {
         path: "/owner/service/:id",

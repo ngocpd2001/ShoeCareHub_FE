@@ -1,6 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStar as solidStar, faPlay } from "@fortawesome/free-solid-svg-icons";
+import {
+  faStar as solidStar,
+  faPlay,
+  faStarHalf as solidStarHalf,
+} from "@fortawesome/free-solid-svg-icons";
 import { faStar as regularStar } from "@fortawesome/free-regular-svg-icons";
 import {
   faThumbsUp as regularThumbsUp,
@@ -53,17 +57,78 @@ const FeedbackService = () => {
     Array(reviews.length).fill(false)
   );
 
-  const handleLikeClick = (index) => {
-    const updatedLikes = likedReviews.map((liked, i) =>
-      i === index ? !liked : liked
+  // Khai báo trạng thái cho chỉ số video hiện tại, mỗi phần tử tương ứng với một feedback
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(
+    Array(reviews.length).fill(null)
+  );
+
+  // Khai báo trạng thái cho chỉ số hình ảnh hiện tại, mỗi phần tử tương ứng với một feedback
+  const [currentImageIndex, setCurrentImageIndex] = useState(
+    Array(reviews.length).fill(null)
+  );
+
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setCurrentVideoIndex(Array(reviews.length).fill(null));
+        setCurrentImageIndex(Array(reviews.length).fill(null));
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [reviews.length]);
+
+  // Hàm xử lý khi nhấp vào video
+  const handleVideoClick = (reviewIndex, id) => {
+    // Cập nhật chỉ số video hiện tại cho feedback được chọn
+    const updatedVideoIndex = currentVideoIndex.map(
+      (videoId, i) => (i === reviewIndex ? (videoId === id ? null : id) : null) // Đặt tất cả các video khác về null
     );
-    setLikedReviews(updatedLikes); // Update the liked state
+    setCurrentVideoIndex(updatedVideoIndex);
+
+    // Đặt lại chỉ số hình ảnh hiện tại cho feedback được chọn
+    const updatedImageIndex = currentImageIndex.map(() => null); // Đặt tất cả các hình ảnh về null
+    setCurrentImageIndex(updatedImageIndex);
   };
 
-  const [currentMediaIndex, setCurrentMediaIndex] = useState(0);
+  // Hàm xử lý khi nhấp vào hình ảnh
+  const handleImageClick = (reviewIndex, index) => {
+    // Cập nhật chỉ số hình ảnh hiện tại cho feedback được chọn
+    const updatedImageIndex = currentImageIndex.map(
+      (imageId, i) =>
+        i === reviewIndex ? (imageId === index ? null : index) : null // Đặt tất cả các hình ảnh khác về null
+    );
+    setCurrentImageIndex(updatedImageIndex);
+
+    // Đặt lại chỉ số video hiện tại cho feedback được chọn
+    const updatedVideoIndex = currentVideoIndex.map(() => null); // Đặt tất cả các video về null
+    setCurrentVideoIndex(updatedVideoIndex);
+  };
+
+  // Định nghĩa hàm handleLikeClick
+  const handleLikeClick = (reviewIndex) => {
+    // Cập nhật trạng thái likedReviews cho review được chọn
+    const updatedLikedReviews = likedReviews.map((liked, i) =>
+      i === reviewIndex ? !liked : liked
+    );
+    setLikedReviews(updatedLikedReviews);
+  };
+
+  const renderStars = (percentage) => {
+    const totalStars = 5;
+    const filledStars = (percentage / 100) * totalStars;
+  };
 
   return (
-    <div className="p-6 bg-white rounded-lg shadow-md mt-10">
+    <div ref={containerRef} className="p-6 bg-white rounded-lg shadow-md mt-10">
       <div>
         <h2 className="text-2xl font-semibold text-[#344054]">Đánh giá </h2>
 
@@ -81,72 +146,132 @@ const FeedbackService = () => {
           <div className="flex flex-col ml-4 w-1/3 bg-[#F9FAFB] justify-center items-center">
             <span className="text-6xl font-bold text-[#164C96] mb-4 ">4.8</span>
             <div className="flex ml-2 mb-4">
-              {[...Array(5)].map((_, index) => (
-                <FontAwesomeIcon
-                  key={index}
-                  icon={solidStar}
-                  className="text-yellow-500 ml-2"
-                />
-              ))}
+              {[...Array(5)].map((_, index) => {
+                const fillPercentage = Math.max(
+                  0,
+                  Math.min(100, (4.8 - index) * 100) // Giả sử rating là 4.8
+                );
+                const totalStars = 5; // Định nghĩa totalStars tại đây
+                const filledStars = (4.8 / 5) * totalStars; // Định nghĩa filledStars tại đây
+
+                if (index < Math.floor(filledStars)) {
+                  // Ngôi sao đầy
+                  return (
+                    <FontAwesomeIcon
+                      key={index}
+                      icon={solidStar}
+                      style={{ color: "gold", marginRight: "4px" }}
+                    />
+                  );
+                } else if (
+                  index === Math.floor(filledStars) &&
+                  filledStars % 1 !== 0
+                ) {
+                  // Ngôi sao nửa
+                  return (
+                    <FontAwesomeIcon
+                      key={index}
+                      icon={solidStarHalf}
+                      style={{ color: "gold", marginRight: "4px" }}
+                    />
+                  );
+                } else {
+                  // Ngôi sao trống
+                  return (
+                    <FontAwesomeIcon
+                      key={index}
+                      icon={regularStar}
+                      style={{ color: "gold", marginRight: "4px" }}
+                    />
+                  );
+                }
+              })}
             </div>
             <span className="ml-2 mb-4 text-[#4F547B]">Service Rating</span>
           </div>
           <div className="flex flex-col w-2/3 ml-10 bg-[#F9FAFB] px-7 py-3">
-            {ratings.map((rating) => (
-              <div key={rating.stars} className="flex items-center my-1">
-                <div className="flex-1 bg-gray-200 rounded-full h-2 mx-2">
+            {ratings.map((rating) => {
+              const totalStars = 5; // Định nghĩa totalStars tại đây
+              const filledStars = (rating.percentage / 100) * totalStars; // Định nghĩa filledStars tại đây
+
+              return (
+                <div key={rating.stars} className="flex items-center my-1">
+                  <div className="flex-1 bg-gray-200 rounded-full h-2 mx-2">
+                    <div
+                      className="bg-green-500 h-2 rounded-full"
+                      style={{ width: `${rating.percentage}%` }}
+                    />
+                  </div>
+                  <div className="flex ml-2 items-center">
+                    {[...Array(totalStars)].map((_, index) => {
+                      if (index < Math.floor(filledStars)) {
+                        // Ngôi sao đầy
+                        return (
+                          <FontAwesomeIcon
+                            key={index}
+                            icon={solidStar}
+                            style={{
+                              color: "gold",
+                              marginRight: "4px",
+                              stroke: "gold", // Màu đường viền
+                              strokeWidth: "25px", // Độ dày đường viền
+                            }}
+                          />
+                        );
+                      } else if (
+                        index === Math.floor(filledStars) &&
+                        filledStars % 1 !== 0
+                      ) {
+                        // Ngôi sao nửa
+                        return (
+                          <FontAwesomeIcon
+                            key={index}
+                            icon={solidStarHalf}
+                            style={{
+                              color: "gold",
+                              marginRight: "4px",
+                              stroke: "gold", // Màu đường viền
+                              strokeWidth: "25px", // Độ dày đường viền
+                            }}
+                          />
+                        );
+                      } else {
+                        // Ngôi sao trống
+                        return (
+                          <FontAwesomeIcon
+                            key={index}
+                            icon={regularStar}
+                            style={{
+                              color: "gold",
+                              marginRight: "4px",
+                              stroke: "gold", // Màu đường viền
+                              strokeWidth: "1px", // Độ dày đường viền
+                            }}
+                          />
+                        );
+                      }
+                    })}
+                  </div>
                   <div
-                    className="bg-green-500 h-2 rounded-full"
-                    style={{ width: `${rating.percentage}%` }}
-                  />
+                    className="text-base text-[#164C96] pl-4"
+                    style={{ width: "40px", textAlign: "right" }}
+                  >
+                    {rating.percentage}%
+                  </div>
                 </div>
-                <div className="flex ml-2 items-center">
-                  {[...Array(Math.floor(rating.stars))].map((_, index) => (
-                    <FontAwesomeIcon
-                      key={index}
-                      icon={solidStar}
-                      className="text-yellow-500 mx-1"
-                    />
-                  ))}
-                  {rating.stars % 1 > 0 && (
-                    <div className="relative">
-                      <FontAwesomeIcon
-                        icon={solidStar}
-                        className="text-yellow-500 mx-1"
-                      />
-                      <div
-                        className="absolute top-0 left-0 h-full bg-yellow-500"
-                        style={{
-                          width: `${(rating.stars % 1) * 100}%`,
-                          clipPath: "inset(0 0 0 0)",
-                        }}
-                      />
-                    </div>
-                  )}
-                  {[...Array(5 - Math.ceil(rating.stars))].map((_, index) => (
-                    <FontAwesomeIcon
-                      key={index}
-                      icon={regularStar}
-                      className="text-yellow-500 mx-1"
-                    />
-                  ))}
-                </div>
-                <div
-                  className="text-base text-[#164C96] pl-4"
-                  style={{ width: "40px", textAlign: "right" }}
-                >
-                  {rating.percentage}%
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         <h3 className="text-xl font-medium text-[#344054] mt-7 pb-5 ">
           Đánh giá
         </h3>
-        {reviews.map((review, index) => (
-          <div key={index} className="border-b pb-4 mb-4 flex items-start">
+        {reviews.map((review, reviewIndex) => (
+          <div
+            key={reviewIndex}
+            className="border-b pb-4 mb-4 flex items-start"
+          >
             <img
               src={ShopAvatar}
               alt="ShopAvatar"
@@ -177,19 +302,15 @@ const FeedbackService = () => {
                           <video
                             src={item.src}
                             className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                              currentMediaIndex === item.id
+                              currentVideoIndex[reviewIndex] === item.id
                                 ? "border-2 border-[#3A4980]"
                                 : ""
                             }`}
                             controls
-                            onClick={() => setCurrentMediaIndex(item.id)}
+                            onClick={() =>
+                              handleVideoClick(reviewIndex, item.id)
+                            }
                           />
-                          <div className="absolute inset-0 flex items-center justify-center  pointer-events-none">
-                            {/* <FontAwesomeIcon
-                              icon={faPlay}
-                              className="text-white text-2xl"
-                            /> */}
-                          </div>
                         </div>
                       )
                   )}
@@ -201,11 +322,13 @@ const FeedbackService = () => {
                         src={image}
                         alt={review.name}
                         className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                          imageIndex === currentMediaIndex
+                          currentImageIndex[reviewIndex] === imageIndex
                             ? "border-2 border-[#3A4980]"
                             : ""
                         }`}
-                        onClick={() => setCurrentMediaIndex(imageIndex)}
+                        onClick={() =>
+                          handleImageClick(reviewIndex, imageIndex)
+                        }
                       />
                     </div>
                   ))}
@@ -213,15 +336,17 @@ const FeedbackService = () => {
 
                 <div className="flex mt-5 items-center">
                   <button
-                    onClick={() => handleLikeClick(index)}
+                    onClick={() => handleLikeClick(reviewIndex)}
                     className="flex items-center"
                     style={{
-                      color: likedReviews[index] ? "#3B82F6" : "#667085",
+                      color: likedReviews[reviewIndex] ? "#3B82F6" : "#667085",
                     }}
                   >
                     <FontAwesomeIcon
                       icon={
-                        likedReviews[index] ? solidThumbsUp : regularThumbsUp
+                        likedReviews[reviewIndex]
+                          ? solidThumbsUp
+                          : regularThumbsUp
                       }
                       className="mr-2"
                     />

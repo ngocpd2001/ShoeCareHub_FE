@@ -11,6 +11,7 @@ const ShopCart = ({
   onRemove,
   onToggleSelectAll,
   onToggleSelect,
+  updateProductQuantity,
 }) => {
   return (
     <div className="mb-6 border rounded-lg bg-white">
@@ -51,6 +52,7 @@ const ShopCart = ({
             onQuantityChange={onQuantityChange}
             onRemove={onRemove}
             onToggleSelect={onToggleSelect}
+            updateProductQuantity={updateProductQuantity}
           />
         ))}
       </div>

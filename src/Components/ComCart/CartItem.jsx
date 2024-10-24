@@ -1,8 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
+import "./CartItem.css";
 
-const CartItem = ({ product, onQuantityChange, onRemove, onToggleSelect }) => {
+const CartItem = ({
+  product,
+  onQuantityChange,
+  onRemove,
+  onToggleSelect,
+  // updateProductQuantity,
+}) => {
+  const [inputValue, setInputValue] = useState(product.quantity); // State để lưu giá trị input
+
+  const handleQuantityChange = (e) => {
+    const updatedQuantity = parseInt(e.target.value, 10);
+    if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
+      onQuantityChange(product.id, updatedQuantity - product.quantity);
+      setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
+    } else {
+      setInputValue(""); // Xóa giá trị khi không hợp lệ
+    }
+  };
+
+  const handleIncrease = () => {
+    const newQuantity = inputValue + 1;
+    onQuantityChange(product.id, 1);
+    setInputValue(newQuantity); // Cập nhật state với giá trị mới
+  };
+
+  const handleDecrease = () => {
+    if (inputValue > 0) {
+      const newQuantity = inputValue - 1;
+      onQuantityChange(product.id, -1);
+      setInputValue(newQuantity); // Cập nhật state với giá trị mới
+    }
+  };
+
+  const handleRemove = () => {
+    setInputValue(""); // Xóa giá trị khi nhấn nút xóa
+    onRemove(product.id);
+  };
+
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
       <div className="flex items-center col-span-1">
@@ -42,30 +80,26 @@ const CartItem = ({ product, onQuantityChange, onRemove, onToggleSelect }) => {
       <div className="col-span-1 flex items-center justify-center">
         <div className="flex flex-row items-center justify-center border-[#002278] border-2 w-26 h-7">
           <button
-            onClick={() => onQuantityChange(product.id, -1)}
+            onClick={handleDecrease}
             className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-lg"
           >
             -
           </button>
-          <span className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-xl">
-            {product.quantity}
-          </span>
-          {/* <input
+          <input
             type="number"
-            value={product.quantity}
-            onChange={(e) => onQuantityChange(product.id, e.target.value)} 
-            className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-xl text-center"
-            min={1}
-          /> */}
+            value={inputValue}
+            onChange={handleQuantityChange}
+            className="w-10 h-full border-r-2 border-[#002278] text-lg text-center cart-item-input"
+          />
           <button
-            onClick={() => onQuantityChange(product.id, 1)}
+            onClick={handleIncrease}
             className="flex items-center justify-center w-10 h-full text-lg"
           >
             +
           </button>
         </div>
       </div>
-      
+
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
           {(
@@ -75,10 +109,7 @@ const CartItem = ({ product, onQuantityChange, onRemove, onToggleSelect }) => {
           đ
         </span>
 
-        <button
-          onClick={() => onRemove(product.id)}
-          className="text-[#002278] w-[30%]"
-        >
+        <button onClick={handleRemove} className="text-[#002278] w-[30%]">
           <FontAwesomeIcon icon={faTrash} />
         </button>
       </div>

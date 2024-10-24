@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faChevronRight,
@@ -44,6 +44,7 @@ const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(5);
+  const containerRef = useRef(null);
 
   const currentService = services[0];
 
@@ -86,13 +87,29 @@ const ServiceDetail = () => {
   const shortDescription = currentService.description.slice(0, MAX_LENGTH);
   const isLongDescription = currentService.description.length > MAX_LENGTH;
 
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setCurrentImageIndex(-1); // Đặt lại chỉ số hình ảnh để xóa đường viền
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
         <div className="bg-white rounded-lg shadow-md min-h-[750px]">
           <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6 pt-5">
             {/* Left column - Image and thumbnails */}
-            <div className="w-full md:w-1/2 p-6">
+            <div className="w-full md:w-1/2 p-6" ref={containerRef}>
               <div className="relative">
                 {/* Main Image */}
                 <img
