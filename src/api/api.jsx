@@ -1,9 +1,9 @@
 import axios from "axios";
 const api = axios.create({
   // baseURL: process.env.REACT_APP_BASE_URLS,
-  baseURL: "https://nursinghome.runasp.net/api/",
-  // baseURL: "https://nursinghome.runasp.net/api/",
-  withCredentials: true,
+  baseURL: "https://shoecarehub.site/api/",
+
+  // withCredentials: true,
 });
 
 api.interceptors.request.use(
