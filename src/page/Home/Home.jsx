@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 import ServiceGrid from "../../Components/ServiceGrid/ServiceGrid";
 import Marquee from "react-fast-marquee";
@@ -7,6 +7,8 @@ import ShoeSlide2 from "../../assets/images/suaChua.webp";
 import ShoeSlide3 from "../../assets/images/sonGiay.webp";
 import ShoeSlide4 from "../../assets/images/giatgiay.webp";
 import ShoeSlide5 from "../../assets/images/vaGiay.webp";
+import { getData } from "../../api/api";
+import { useNavigate } from "react-router-dom";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_HEIGHT = 360;
@@ -15,6 +17,7 @@ const CARD_GAP = 16; // Gap between cards
 const Carousels = ({ title, items, type }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const containerRef = React.useRef(null);
+  const navigate = useNavigate();
 
   const scroll = (direction) => {
     const container = containerRef.current;
@@ -63,9 +66,9 @@ const Carousels = ({ title, items, type }) => {
                 style={{ width: "260px", height: "350px" }}
               >
                 {type === "service" ? (
-                  <ServiceCard item={item} />
+                  <ServiceCard item={item} navigate={navigate} />
                 ) : (
-                  <SupplierCard item={item} />
+                  <SupplierCard item={item} navigate={navigate} />
                 )}
               </div>
             </div>
@@ -82,7 +85,7 @@ const Carousels = ({ title, items, type }) => {
   );
 };
 
-const ServiceCard = ({ item }) => (
+const ServiceCard = ({ item, navigate }) => (
   <>
     <div className="mb-2 h-35 relative bg-gray-200 rounded-md flex items-center justify-center">
       <img
@@ -92,20 +95,38 @@ const ServiceCard = ({ item }) => (
       />
     </div>
     <div className="absolute top-2 right-4 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">
-      -{item.discount}%
+      -{item?.promotion?.saleOff}%
     </div>
-    <h3 className="font-semibold mb-1 mt-3">{item.name}</h3>
+    <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
     <div className="flex items-center mb-1">
       <span className="text-yellow-400 mr-1">{item.rating}</span>
       <Star className="w-4 h-4 fill-current text-yellow-400" />
     </div>
-    <div className="text-gray-500 line-through text-sm">
-      {item.originalPrice.toLocaleString()}đ
-    </div>
-    <div className="text-red-500 font-bold">
-      {item.discountedPrice.toLocaleString()}đ
-    </div>
-    <button className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">
+    {item.promotion && item.promotion.newPrice ? (
+      // Nếu có giảm giá
+      <>
+        <div className="text-gray-500 line-through text-sm">
+          {item.price.toLocaleString()}đ
+        </div>
+        <div className="text-red-500 font-bold">
+          {item.promotion.newPrice.toLocaleString()}đ
+        </div>
+      </>
+    ) : (
+      // Nếu không có giảm giá
+      <>
+        <div className="h-[24px]"></div>
+        <div className="text-red-500 font-bold">
+          {item.price.toLocaleString()}đ
+        </div>
+      </>
+    )}
+    <button
+      onClick={() => {
+        navigate(`/service/${item.id}`);
+      }}
+      className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+    >
       Đặt Ngay
     </button>
   </>
@@ -135,7 +156,8 @@ const SupplierCard = ({ item }) => (
 );
 
 export default function CarouselsSection() {
-  const services = [
+  const [services, setServices] = useState([]);
+  const services123 = [
     {
       id: 1,
       name: "Tên Dịch Vụ",
@@ -212,7 +234,19 @@ export default function CarouselsSection() {
     { id: 5, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
     { id: 6, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
   ];
-
+  useEffect(() => {
+    getData("/services?PageSize=99")
+      .then((data) => {
+        console.log(data?.data?.data?.items);
+        const discountedServices = data?.data?.data?.items.filter(
+          (service) => service.promotion !== null
+        );
+        setServices(discountedServices);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
   return (
     <div className="bg-[#F9F9F9]">
       {/* Using Marquee for auto-scrolling images */}

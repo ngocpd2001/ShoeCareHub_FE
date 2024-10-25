@@ -34,6 +34,7 @@ export default function ComHeader({ children }) {
   const [headerNavigation, setheaderNavigation] = useState(navigation);
   const location = useLocation();
   const [token, setToken, loadToken] = useStorage("token", "");
+  const [user, setUser, loadUser] = useStorage("user", null);
   const currentPath = location.pathname;
   const navigate = useNavigate();
   const methods = useForm({
@@ -52,10 +53,8 @@ export default function ComHeader({ children }) {
   useEffect(() => {
     loadToken();
     // chỗ để lấy thông tin người dùng
-    // getData("/")
+    loadUser();
   }, [currentPath]);
-  console.log(currentPath);
-
   const changeNavigation2 = (path) => {
     setheaderNavigation((prevNavigation) =>
       prevNavigation.map((item) => {
@@ -157,7 +156,7 @@ export default function ComHeader({ children }) {
                             <span className="sr-only">Open user menu</span>
                             <img
                               alt=""
-                              src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+                              src={user?.imageUrl}
                               className="h-8 w-8 rounded-full bg-gray-50"
                             />
                             <span className="hidden lg:flex lg:items-center">
@@ -165,7 +164,7 @@ export default function ComHeader({ children }) {
                                 aria-hidden="true"
                                 className="ml-4 text-sm font-semibold leading-6 text-black"
                               >
-                                Đợi api
+                                {user.fullname}
                               </span>
                               <ChevronDownIcon
                                 aria-hidden="true"
@@ -210,7 +209,7 @@ export default function ComHeader({ children }) {
               </div>
             </div>
             <nav className="bg-white border-t border-gray-300">
-              <div className="container mx-auto shadow-md">
+              <div className=" mx-auto shadow-md">
                 <ul className="flex justify-center gap-8  py-2 text-sm font-medium bg-[#F9F9F9]">
                   <li>
                     <Link

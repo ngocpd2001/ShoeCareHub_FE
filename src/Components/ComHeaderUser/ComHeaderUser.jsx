@@ -6,6 +6,7 @@ import {
   DisclosureButton,
   DisclosurePanel,
 } from "@headlessui/react";
+import { useStorage } from "../../hooks/useLocalStorage";
 
 const navigation = [
   {
@@ -35,6 +36,7 @@ export default function ComHeaderUser({ children }) {
   const location = useLocation();
   const currentPath = location.pathname;
   const [activeCategory, setActiveCategory] = useState(null);
+  const [user, setUser] = useStorage("user", null);
 
   useEffect(() => {
     setActiveCategory(currentPath);
@@ -49,10 +51,10 @@ export default function ComHeaderUser({ children }) {
             <div className="flex h-16 gap-2 shrink-0 items-center justify-center">
               <img
                 alt="Your Company"
-                src="https://cdn.kona-blue.com/upload/kona-blue_com/post/images/2024/08/13/356/avatar-vo-tri-meo-3.jpg"
-                className="h-16 w-auto rounded-full"
+                src={user.imageUrl}
+                className="h-16 w-16 rounded-full object-cover"
               />
-              Phan Văn A
+              {user.fullname}
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">

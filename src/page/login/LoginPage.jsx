@@ -13,6 +13,7 @@ import logo2 from "../../assets/images/logo2.webp";
 import { getData, postData } from "../../api/api";
 export default function LoginPage(props) {
   const [token, setToken] = useStorage("token", "");
+  const [user, setUser] = useStorage("user", null);
   const [role, setRole] = useStorage("role", null);
   const [disabled, setDisabled] = useState(false);
   const [LoginState, setLogin] = useState(false);
@@ -44,7 +45,8 @@ export default function LoginPage(props) {
     postData("/auth/login", data, {})
       .then((data) => {
         console.log(111111, data);
-        setToken(data);
+        setToken(data.data.token);
+        setUser(data.data);
         setTimeout(() => {
           navigate("/");
         }, 500);
@@ -88,13 +90,8 @@ export default function LoginPage(props) {
       .catch((error) => {
         console.error("1111111 Error fetching items:", error);
         setDisabled(false);
-        if (error?.status === 401) {
-          setLogin(true);
-          setErrorMessage("Login.message.invalidCredential");
-        } else {
-          setLoginError(true);
-          setErrorMessage("Login.message.loginError");
-        }
+        setLoginError(true);
+        setErrorMessage("Tài khoản hoặc mật khẩu không đúng");
       });
   };
 
