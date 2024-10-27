@@ -206,7 +206,7 @@ const TableEmployee = forwardRef((props, ref) => {
             </div>
           </div>
 
-          <table className="w-full">
+          <table className="w-full mb-4">
             <thead className="bg-[#002278] text-white">
               <tr>
                 <th className="text-left p-4">Tên chi nhánh</th>

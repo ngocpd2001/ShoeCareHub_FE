@@ -83,12 +83,20 @@ const ServiceCard = () => {
             <h3 className="text-xl font-semibold">{service.name}</h3>
           </div>
           <div className="relative mb-2">
-            <p className="text-[#667085] font-normal line-through">
-              {service.price.toLocaleString('vi-VN')}đ
-            </p>
-            <p className="text-[#3A4980] font-bold text-xl">
-              {service.promotion ? service.promotion.newPrice.toLocaleString('vi-VN') : service.price.toLocaleString('vi-VN')}đ
-            </p>
+            {service.promotion && service.promotion.newPrice ? (
+              <>
+                <p className="text-[#667085] font-normal line-through">
+                  {service.price.toLocaleString('vi-VN')}đ
+                </p>
+                <p className="text-[#3A4980] font-bold text-xl">
+                  {service.promotion.newPrice.toLocaleString('vi-VN')}đ
+                </p>
+              </>
+            ) : (
+              <p className="text-[#3A4980] font-bold text-xl">
+                {service.price.toLocaleString('vi-VN')}đ
+              </p>
+            )}
           </div>
           <div className="flex items-center">
             <span className="text-yellow-500 flex">

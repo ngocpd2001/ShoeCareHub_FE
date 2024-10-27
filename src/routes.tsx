@@ -23,6 +23,7 @@ import EmployeeManager from "./page/Owner/Employee/EmployeeManager";
 import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
 import UpdateEmployee from "./page/Owner/Employee/UpdateEmployee";
+import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
 export const routers = createBrowserRouter([
   {
     path: "*",
@@ -49,11 +50,7 @@ export const routers = createBrowserRouter([
         element: <LoginPage />,
       },
       {
-        path: "/servicedetail",
-        element: <ServiceDetail />,
-      },
-      {
-        path: "/service/:id",
+        path: "/servicedetail/:id",
         element: <ServiceDetail />,
       },
       {

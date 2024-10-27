@@ -14,54 +14,67 @@ import {
 import FeedbackService from "../../Components/ComService/FeedbackService";
 import InformationShop from "../../Components/ComService/InformationShop";
 import ServiceCard from "../../Components/ComService/ServiceCard";
-import ShoesDetailVideo from "../../assets/videos/Service/servicedetail.mp4";
-
-const services = [
-  {
-    id: 1,
-    name: "Vệ sinh chuyên sâu",
-    brand: "Nike",
-    rating: 4.8,
-    reviews: 67,
-    price: 65000,
-    usage: 25,
-    description:
-      "Dịch vụ clean shoes chuyên sâu của chúng tôi mang đến sự chăm sóc toàn diện và tỉ mỉ cho từng đôi giày của bạn. Với quy trình làm sạch đa bước, bao gồm vệ sinh bề mặt, loại bỏ vết bẩn sâu, xử lý đế giày và khử mùi hôi.",
-    images: {
-      main: "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
-      thumbnails: [
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQQOCPie3ythIWfDE5rn8FzU26ET8Wugra2xbEO5g-VuHCDHaT8-_v01p9vQDlJ0XO-pnc&usqp=CAU",
-        "https://i.ebayimg.com/images/g/3GoAAOSwckRkf3Yl/s-l1200.jpg",
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQHx0NYAv5VPb_PTBUmna4imQVgqzZM30gSBKVBEZB1PNdp7sgfrGuPIN5X83b1ziPUXE&usqp=CAU",
-      ],
-    },
-  },
-];
-
-const dataImages = [{ img: ShoesDetailVideo, type: "video" }];
+import { getServiceById } from "../../api/service";
+import { useParams } from "react-router-dom";
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(5);
+  const [currentService, setCurrentService] = useState(null);
   const containerRef = useRef(null);
+  const { id } = useParams(); // Lấy id từ URL
 
-  const currentService = services[0];
+  // Định nghĩa dataImages
+  const dataImages = []; // Thay thế bằng dữ liệu thực tế nếu có
 
-  const combinedData = [
+  useEffect(() => {
+    const fetchService = async () => {
+      try {
+        const service = await getServiceById(id);
+        setCurrentService(service);
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin dịch vụ:", error);
+        // Thêm thông báo lỗi cho người dùng nếu cần
+      }
+    };
+
+    fetchService();
+  }, [id]); // Đảm bảo rằng id là dependency để gọi lại khi id thay đổi
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setCurrentImageIndex(-1);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Kiểm tra currentService và currentService.images trước khi sử dụng
+  const combinedData = currentService && currentService.images ? [
     ...dataImages,
     ...currentService.images.thumbnails.map((img) => ({
       img,
       type: "image",
     })),
-  ];
+  ] : [];
 
-  // Điều hướng đến hình ảnh/video tiếp theo
+  if (!currentService) {
+    return <div>Đang tải...</div>;
+  }
+
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
   };
 
-  // Điều hướng đến hình ảnh/video trước đó
   const prevImage = () => {
     setCurrentImageIndex(
       (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
@@ -82,26 +95,10 @@ const ServiceDetail = () => {
     }
   };
 
-  const MAX_LENGTH = 200; // Giới hạn số ký tự hiển thị
+  const MAX_LENGTH = 200;
 
   const shortDescription = currentService.description.slice(0, MAX_LENGTH);
   const isLongDescription = currentService.description.length > MAX_LENGTH;
-
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
-        setCurrentImageIndex(-1); // Đặt lại chỉ số hình ảnh để xóa đường viền
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -112,11 +109,13 @@ const ServiceDetail = () => {
             <div className="w-full md:w-1/2 p-6" ref={containerRef}>
               <div className="relative">
                 {/* Main Image */}
-                <img
-                  src={currentService.images.main}
-                  alt={currentService.name}
-                  className="w-full h-[500px] object-cover rounded-lg"
-                />
+                {currentService.images && (
+                  <img
+                    src={currentService.images.main}
+                    alt={currentService.name}
+                    className="w-full h-[500px] object-cover rounded-lg"
+                  />
+                )}
               </div>
               <div className="flex justify-center mt-6 space-x-2 overflow-x-auto relative">
                 {/* Button Previous */}
@@ -178,8 +177,8 @@ const ServiceDetail = () => {
             <div className="w-full md:w-1/2 p-6 flex flex-col space-y-4">
               {/* Name-icon heart */}
               <div className="flex flex-row justify-between items-center">
-                <div className="flex flex-col space-y-2">
-                  <h1 className="text-3xl font-bold text-gray-800">
+                <div className="flex flex-col space-y-2 max-w-[70%]">
+                  <h1 className="text-3xl font-bold text-gray-800 break-words">
                     {currentService.name}
                   </h1>
                   <h2 className="text-lg text-gray-400">
@@ -187,7 +186,7 @@ const ServiceDetail = () => {
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <h2 className="text-lg font-semibold text-[#D46F77] bg-[#EDF0F8] rounded-xl px-4 py-1 shadow-md">
+                  <h2 className="text-lg font-semibold text-[#D46F77] bg-[#EDF0F8] rounded-xl px-4 py-1 shadow-md whitespace-nowrap">
                     {currentService.usage} Sử dụng
                   </h2>
                   <div className="ml-2 bg-[#FEE2E2] rounded-full h-10 w-10 flex items-center justify-center">
@@ -201,9 +200,22 @@ const ServiceDetail = () => {
 
               {/* Price-rating & feedback */}
               <div className="flex items-center justify-between mt-5 border-t pt-4">
-                <span className="text-4xl font-bold text-blue-800">
-                  {`${currentService.price}đ`}
-                </span>
+                <div className="flex flex-col items-start">
+                  {currentService.promotion && currentService.promotion.newPrice ? (
+                    <>
+                      <span className="text-3xl font-bold text-blue-800">
+                        {`${currentService.promotion.newPrice.toLocaleString("vi-VN")}đ`}
+                      </span>
+                      <span className="text-lg text-gray-400 line-through">
+                        {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                      </span>
+                    </>
+                  ) : (
+                    <span className="text-[#3A4980] font-bold text-xl">
+                      {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                    </span>
+                  )}
+                </div>
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center bg-[#F9F6F1] rounded-xl px-4 py-1 shadow-md">
                     <FontAwesomeIcon
@@ -216,7 +228,7 @@ const ServiceDetail = () => {
                   </div>
                   <span className="bg-[#EDF0F8] text-[#3A4980] font-semibold rounded-xl px-2 py-1">
                     <FontAwesomeIcon icon={faCommentDots} className="pr-2" />
-                    {currentService.reviews} đánh giá
+                    {currentService.feedbackedNum} đánh giá
                   </span>
                 </div>
               </div>

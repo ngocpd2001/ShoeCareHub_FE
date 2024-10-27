@@ -6,8 +6,10 @@ import { Button, Dropdown, Menu, Pagination } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { getAllService } from "../../api/service"; // Import hàm API
 import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
+import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 
 const ServiceGrid = () => {
+  const navigate = useNavigate(); // Sử dụng useNavigate
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
   const [favorites, setFavorites] = useState([]);
@@ -75,6 +77,10 @@ const ServiceGrid = () => {
     </Menu>
   );
 
+  const handleCardClick = (serviceId) => {
+    navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-row items-center mb-4 bg-white p-4">
@@ -101,6 +107,7 @@ const ServiceGrid = () => {
           <div
             key={service.id}
             className="bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[350px] relative"
+            onClick={() => handleCardClick(service.id)} 
           >
             <div className="relative flex-grow overflow-hidden">
               <img
@@ -130,12 +137,20 @@ const ServiceGrid = () => {
               </div>
             </div>
             <h3 className="text-lg font-semibold mt-2">{service.name}</h3>
-            <p className="text-[#667085] font-normal line-through">
-              {service.price.toLocaleString("vi-VN")}đ
-            </p>
-            <p className="text-[#3A4980] font-bold text-xl">
-              {service.promotion.newPrice.toLocaleString("vi-VN")}đ
-            </p>
+            {service.promotion && service.promotion.newPrice ? (
+              <>
+                <p className="text-[#667085] font-normal line-through">
+                  {service.price.toLocaleString("vi-VN")}đ
+                </p>
+                <p className="text-[#3A4980] font-bold text-xl">
+                  {service.promotion.newPrice.toLocaleString("vi-VN")}đ
+                </p>
+              </>
+            ) : (
+              <p className="text-[#3A4980] font-bold text-xl">
+                {service.price.toLocaleString("vi-VN")}đ
+              </p>
+            )}
             <div className="flex items-center mt-1">
               <span className="text-yellow-500 flex">
                 {[...Array(5)].map((_, index) => {
@@ -179,11 +194,11 @@ const ServiceGrid = () => {
               </span>
             </div>
             <div className="mt-3 flex justify-start">
-              <span
-                className="bg-red-500 text-white rounded-full px-2 py-1"
-              >
-                SaleOff: {service.promotion.saleOff}%
-              </span>
+              {service.promotion && service.promotion.saleOff ? (
+                <span className="bg-red-500 text-white rounded-full px-2 py-1">
+                  SaleOff: {service.promotion.saleOff}%
+                </span>
+              ) : null}
             </div>
           </div>
         ))}
