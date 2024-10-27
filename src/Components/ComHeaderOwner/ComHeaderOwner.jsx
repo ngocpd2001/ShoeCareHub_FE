@@ -39,7 +39,7 @@ import { PackageIcon, UserCircleIcon } from "lucide-react";
 const navigation = [
   {
     name: "Trang chủ",
-    href: "/owner",
+    href: "/owner/dashboard",
     icon: HomeIcon,
     current: false,
   },
@@ -49,9 +49,9 @@ const navigation = [
     current: false,
     children: [
       { name: "Dịch vụ", href: "/owner/service" },
-      { name: "Đơn hàng", href: "/owner/API" },
+      { name: "Đơn hàng", href: "/owner/order" },
       { name: "Chi nhánh", href: "/owner/App" },
-      { name: "Nhân viên", href: "/owner/Android" },
+      { name: "Nhân viên", href: "/owner/employee" },
     ],
   },
   {

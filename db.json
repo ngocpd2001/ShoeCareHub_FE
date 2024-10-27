@@ -1,0 +1,28 @@
+{
+  "branches": [
+    { "id": 1, "name": "Chi nhánh A" },
+    { "id": 2, "name": "Chi nhánh B" },
+    { "id": 3, "name": "Chi nhánh C" }
+  ],
+  "employees": [
+    {
+      "id": 1,
+      "avatar": "https://mcdn.coolmate.me/image/December2022/cua-hang-ve-sinh-giay_744.jpg",
+      "name": "Nguyễn Văn A",
+      "email": "nguyenvana@gmail.com",
+      "phone": "0123456789",
+      "branch": "Chi nhánh A",
+      "position": "Nhân viên"
+    },
+    {
+      "id": 2,
+      "avatar": "https://mcdn.coolmate.me/image/December2022/cua-hang-ve-sinh-giay_744.jpg",
+      "name": "Nguyễn Văn B",
+      "email": "nguyenvanb@gmail.com",
+      "phone": "0123456789",
+      "branch": "Chi nhánh B",
+      "position": "Nhân viên"
+    }
+
+  ]
+}

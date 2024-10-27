@@ -5,10 +5,12 @@ import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { getAllService } from "../../api/service";
 import { FaStar } from "react-icons/fa";
+import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate thay vì useHistory
 
 const ServiceCard = () => {
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [favorites, setFavorites] = useState([]); // State để quản lý yêu thích
+  const navigate = useNavigate(); // Sử dụng useNavigate để điều hướng
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -39,12 +41,17 @@ const ServiceCard = () => {
     });
   };
 
+  const handleCardClick = (serviceId) => {
+    navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
+  };
+
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-7">
       {services.map((service) => (
         <div
           key={service.id}
           className="bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[300px] relative"
+          onClick={() => handleCardClick(service.id)} // Thêm sự kiện onClick
         >
           <img
             src={service.image}
@@ -53,7 +60,10 @@ const ServiceCard = () => {
           />
           <div className="absolute top-2 right-2">
             <button
-              onClick={() => handleFavoriteClick(service.id)}
+              onClick={(e) => {
+                e.stopPropagation(); // Ngăn chặn sự kiện onClick của thẻ
+                handleFavoriteClick(service.id);
+              }}
               className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center"
             >
               <FontAwesomeIcon
@@ -77,7 +87,7 @@ const ServiceCard = () => {
               {service.price.toLocaleString('vi-VN')}đ
             </p>
             <p className="text-[#3A4980] font-bold text-xl">
-              {service.promotion.newPrice.toLocaleString('vi-VN')}đ
+              {service.promotion ? service.promotion.newPrice.toLocaleString('vi-VN') : service.price.toLocaleString('vi-VN')}đ
             </p>
           </div>
           <div className="flex items-center">
