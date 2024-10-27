@@ -53,6 +53,10 @@ export const routers = createBrowserRouter([
         element: <ServiceDetail />,
       },
       {
+        path: "/service/:id",
+        element: <ServiceDetail />,
+      },
+      {
         path: "/provider-landingpage",
         element: <ProviderLandingPage />,
       },

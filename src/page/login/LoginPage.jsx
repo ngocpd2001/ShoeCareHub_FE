@@ -4,15 +4,16 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import ComInput from "../../Components/ComInput/ComInput";
 import ComButton from "../../Components/ComButton/ComButton";
 import { ComLink } from "../../Components/ComLink/ComLink";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FieldError } from "../../Components/FieldError/FieldError";
 import { useStorage } from "../../hooks/useLocalStorage";
 import logo2 from "../../assets/images/logo2.webp";
 
-import { postData } from "../../api/api";
+import { getData, postData } from "../../api/api";
 export default function LoginPage(props) {
-  const [token, setToken] = useStorage("accessToken", null);
+  const [token, setToken] = useStorage("token", "");
+  const [user, setUser] = useStorage("user", null);
   const [role, setRole] = useStorage("role", null);
   const [disabled, setDisabled] = useState(false);
   const [LoginState, setLogin] = useState(false);
@@ -21,17 +22,17 @@ export default function LoginPage(props) {
   const navigate = useNavigate();
 
   const loginMessenger = yup.object({
-    username: yup.string().trim().required("Tên đăng nhập không được để trống"),
+    email: yup.string().trim().required("Mail đăng nhập không được để trống"),
     password: yup.string().required("Mật khẩu không được để trống"),
   });
   const LoginRequestDefault = {
-    username: "",
+    email: "",
     password: "",
   };
   const methods = useForm({
     resolver: yupResolver(loginMessenger),
     defaultValues: {
-      username: "",
+      email: "",
       password: "",
     },
     values: LoginRequestDefault,
@@ -43,54 +44,54 @@ export default function LoginPage(props) {
     setLogin(false);
     postData("/auth/login", data, {})
       .then((data) => {
-        setToken(data?.accessToken);
-        setRole(data?.listRole[0]);
+        console.log(111111, data);
+        setToken(data.data.token);
+        setUser(data.data);
+        setTimeout(() => {
+          navigate("/");
+        }, 500);
+
         // Chờ setToken hoàn thành trước khi navigate
-        return new Promise((resolve) => {
-          setTimeout(() => {
-            console.log(data);
-            switch (data?.listRole[0]) {
-              case "Staff":
-                navigate("/staff/contract");
-                break;
-              case "Admin":
-                navigate("/admin/account");
-                break;
-              case "Manager":
-                navigate("/manager/institute");
-                break;
-              case "Director":
-                navigate("/director/dashboard");
-                break;
-              case "Nurse":
-                setDisabled(false);
-                setLogin(true);
-                setErrorMessage(
-                  "Tài khoản không được phép đăng nhập vào hệ thống"
-                );
-                break;
-              default:
-                setDisabled(false);
-                setLogin(true);
-                setErrorMessage(
-                  "Tài khoản không được phép đăng nhập vào hệ thống"
-                );
-                break;
-            }
-            resolve(); // Báo hiệu Promise đã hoàn thành
-          }, 0); // Thời gian chờ 0ms để đảm bảo setToken đã được thực hiện
-        });
+        // return new Promise((resolve) => {
+        //   setTimeout(() => {
+        //     console.log(data);
+        //     switch (data?.listRole[0]) {
+        //       case "Staff":
+        //         navigate("/staff/contract");
+        //         break;
+        //       case "Admin":
+        //         navigate("/admin/account");
+        //         break;
+        //       case "Manager":
+        //         navigate("/manager/institute");
+        //         break;
+        //       case "Director":
+        //         navigate("/director/dashboard");
+        //         break;
+        //       case "Nurse":
+        //         setDisabled(false);
+        //         setLogin(true);
+        //         setErrorMessage(
+        //           "Tài khoản không được phép đăng nhập vào hệ thống"
+        //         );
+        //         break;
+        //       default:
+        //         setDisabled(false);
+        //         setLogin(true);
+        //         setErrorMessage(
+        //           "Tài khoản không được phép đăng nhập vào hệ thống"
+        //         );
+        //         break;
+        //     }
+        //     resolve(); // Báo hiệu Promise đã hoàn thành
+        //   }, 0); // Thời gian chờ 0ms để đảm bảo setToken đã được thực hiện
+        // });
       })
       .catch((error) => {
         console.error("1111111 Error fetching items:", error);
         setDisabled(false);
-        if (error?.status === 401) {
-          setLogin(true);
-          setErrorMessage("Login.message.invalidCredential");
-        } else {
-          setLoginError(true);
-          setErrorMessage("Login.message.loginError");
-        }
+        setLoginError(true);
+        setErrorMessage("Tài khoản hoặc mật khẩu không đúng");
       });
   };
 
@@ -129,10 +130,10 @@ export default function LoginPage(props) {
                   >
                     <div>
                       <ComInput
-                        placeholder={"Nhập tài khoản"}
-                        label={"Tài khoản"}
+                        placeholder={"Nhập tài khoản Gmail"}
+                        label={"Gmail"}
                         type="text"
-                        {...register("username")}
+                        {...register("email")}
                         required
                       />
                     </div>
@@ -141,7 +142,7 @@ export default function LoginPage(props) {
                         placeholder={"Nhập mật khẩu"}
                         label={"Mật khẩu"}
                         type="password"
-                        maxLength={16}
+                        // maxLength={16}
                         {...register("password")}
                         required
                       />

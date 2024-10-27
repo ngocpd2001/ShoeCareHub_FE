@@ -23,11 +23,21 @@ const items = [
   },
   {
     key: "4",
-    label: "Đã hủy",
+    label: "Lưu kho",
     children: <ListOrder />,
   },
   {
     key: "5",
+    label: "Vận chuyển",
+    children: <ListOrder />,
+  },
+  {
+    key: "6",
+    label: "Đã huỷ",
+    children: <ListOrder />,
+  },
+  {
+    key: "7",
     label: "Hoàn tiền",
     children: <ListOrder />,
   },

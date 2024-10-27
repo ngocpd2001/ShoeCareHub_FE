@@ -1,14 +1,14 @@
 import axios from "axios";
 const api = axios.create({
   // baseURL: process.env.REACT_APP_BASE_URLS,
-  baseURL: "https://nursinghome.runasp.net/api/",
-  // baseURL: "https://nursinghome.runasp.net/api/",
-  withCredentials: true,
+  baseURL: "https://shoecarehub.site/api/",
+
+  // withCredentials: true,
 });
 
 api.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("accessToken"); // Lấy token từ localStorage (hoặc nơi bạn lưu trữ)
+    const accessToken = localStorage.getItem("token"); // Lấy token từ localStorage (hoặc nơi bạn lưu trữ)
 
     if (accessToken) {
       const Token = accessToken.replace(/"/g, ""); // Loại bỏ tất cả dấu ngoặc kép
