@@ -4,7 +4,10 @@ import { getData } from "../../api/api";
 import { useNavigate } from "react-router-dom";
 
 const ServiceCard = ({ item, navigate }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]">
+  <div 
+    className="bg-white rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]"
+    onClick={() => { navigate(`/servicedetail/${item.id}`); }}
+  >
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center">
       <img
         src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
@@ -23,7 +26,6 @@ const ServiceCard = ({ item, navigate }) => (
       <Star className="w-4 h-4 fill-current text-yellow-400" />
     </div>
     {item.promotion && item.promotion.newPrice ? (
-      // Nếu có giảm giá
       <>
         <div className="text-gray-500 line-through text-sm">
           {item.price.toLocaleString()}đ
@@ -33,7 +35,6 @@ const ServiceCard = ({ item, navigate }) => (
         </div>
       </>
     ) : (
-      // Nếu không có giảm giá
       <>
         <div className="h-[24px]"></div>
         <div className="text-red-500 font-bold">
@@ -41,7 +42,13 @@ const ServiceCard = ({ item, navigate }) => (
         </div>
       </>
     )}
-    <button onClick={()=>{navigate(`/service/${item.id}`);}} className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors">
+    <button 
+      onClick={(e) => { 
+        e.stopPropagation(); 
+        navigate(`/service/${item.id}`); 
+      }} 
+      className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
+    >
       Đặt Ngay
     </button>
   </div>

@@ -2,82 +2,81 @@ import React, { useEffect, useState } from "react";
 import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
-import { useNavigate } from "react-router-dom";
-
-const fetchCartItems = async () => {
-  return [
-    {
-      shopName: "Cửa Hàng 1",
-      shopAddress: "456 Trần Hưng Đạo",
-      products: [
-        {
-          id: 1,
-          name: "Tên Dịch Vụ 1",
-          originalPrice: 200000,
-          discountedPrice: 150000,
-          quantity: 1,
-          selected: false,
-          image: "https://via.placeholder.com/50",
-        },
-        {
-          id: 2,
-          name: "Tên Dịch Vụ 2",
-          originalPrice: 150000,
-          quantity: 1,
-          selected: false,
-          image: "https://via.placeholder.com/50",
-        },
-      ],
-    },
-    {
-      shopName: "Cửa Hàng 2",
-      shopAddress: "456 Ngô Quyền",
-      products: [
-        {
-          id: 3,
-          name: "Tên Dịch Vụ 3",
-          originalPrice: 100000,
-          discountedPrice: 80000,
-          quantity: 1,
-          selected: false,
-          image: "https://via.placeholder.com/50",
-        },
-        {
-          id: 4,
-          name: "Tên Dịch Vụ 4",
-          originalPrice: 250000,
-          discountedPrice: 225000,
-          quantity: 1,
-          selected: false,
-          image: "https://via.placeholder.com/50",
-        },
-      ],
-    },
-  ];
-};
+import { useNavigate, useLocation } from "react-router-dom";
+import { getServiceById } from "../../api/service"; 
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    const loadCartItems = async () => {
-      const items = await fetchCartItems();
-      setCartItems(items);
-    };
-
-    loadCartItems();
+    const storedCartItems = localStorage.getItem("cartItems");
+    if (storedCartItems) {
+      setCartItems(JSON.parse(storedCartItems));
+    }
   }, []);
+
+  useEffect(() => {
+    if (location.state && location.state.service) {
+      const newService = location.state.service;
+      if (newService.quantity === undefined) {
+        newService.quantity = 1;
+      }
+      setCartItems((prevItems) => {
+        const shopIndex = prevItems.findIndex(
+          (shop) => shop.shopName === newService.shopName
+        );
+        if (shopIndex !== -1) {
+          const serviceIndex = prevItems[shopIndex].services.findIndex(
+            (service) => service.id === newService.id
+          );
+          if (serviceIndex === -1) {
+            const updatedShops = [...prevItems];
+            updatedShops[shopIndex].services.push(newService);
+            return updatedShops;
+          }
+          return prevItems;
+        } else {
+          return [
+            ...prevItems,
+            {
+              shopName: newService.shopName,
+              shopAddress: newService.shopAddress,
+              services: [newService],
+            },
+          ];
+        }
+      });
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  const fetchServiceDetails = async (id) => {
+    try {
+      const serviceData = await getServiceById(id);
+      console.log("Service Data:", serviceData);
+      // Xử lý dữ liệu dịch vụ ở đây
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin dịch vụ", error);
+    }
+  };
+
+  // Gọi hàm fetchServiceDetails khi cần thiết, ví dụ khi nhấn vào một nút
+  // fetchServiceDetails(someServiceId);
 
   const handleCheckout = () => {
     const selectedItems = cartItems
       .map((shop) => ({
         shopName: shop.shopName,
         shopAddress: shop.shopAddress,
-        products: shop.products.filter((product) => product.selected),
+        services: shop.services.filter((service) => service.selected),
       }))
-      .filter((shop) => shop.products.length > 0);
+      .filter((shop) => shop.services.length > 0);
 
     if (selectedItems.length === 0) {
       setShowPopup(true);
@@ -94,14 +93,14 @@ const UserCart = () => {
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
-        products: shop.products.map((product) => {
-          if (product.id === id) {
+        services: shop.services.map((service) => {
+          if (service.id === id) {
             return {
-              ...product,
-              quantity: Math.max(product.quantity + delta, 1),
+              ...service,
+              quantity: Math.max(service.quantity + delta, 1),
             };
           }
-          return product;
+          return service;
         }),
       }))
     );
@@ -111,7 +110,7 @@ const UserCart = () => {
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
-        products: shop.products.filter((product) => product.id !== id),
+        services: shop.services.filter((service) => service.id !== id),
       }))
     );
   };
@@ -120,10 +119,10 @@ const UserCart = () => {
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
-        products: shop.products.map((product) =>
-          product.id === id
-            ? { ...product, selected: !product.selected }
-            : product
+        services: shop.services.map((service) =>
+          service.id === id
+            ? { ...service, selected: !service.selected }
+            : service
         ),
       }))
     );
@@ -135,8 +134,8 @@ const UserCart = () => {
         if (shop.shopName === shopName) {
           return {
             ...shop,
-            products: shop.products.map((product) => ({
-              ...product,
+            services: shop.services.map((service) => ({
+              ...service,
               selected: isChecked,
             })),
           };
@@ -151,21 +150,21 @@ const UserCart = () => {
       prevShops
         .map((shop) => ({
           ...shop,
-          products: shop.products.filter((product) => !product.selected),
+          services: shop.services.filter((service) => !service.selected),
         }))
-        .filter((shop) => shop.products.length > 0)
+        .filter((shop) => shop.services.length > 0)
     );
   };
 
   const totalAmount = cartItems.reduce(
     (total, shop) =>
       total +
-      shop.products.reduce(
-        (shopTotal, product) =>
-          product.selected
+      shop.services.reduce(
+        (shopTotal, service) =>
+          service.selected
             ? shopTotal +
-              (product.discountedPrice || product.originalPrice || 0) *
-                product.quantity
+              (service.promotion.newPrice || service.price || 0) *
+                service.quantity
             : shopTotal,
         0
       ),
@@ -175,11 +174,10 @@ const UserCart = () => {
   const totalSavings = cartItems.reduce(
     (total, shop) =>
       total +
-      shop.products.reduce(
-        (shopTotal, product) =>
-          product.selected && product.discountedPrice
-            ? (product.originalPrice - product.discountedPrice) *
-              product.quantity
+      shop.services.reduce(
+        (shopTotal, service) =>
+          service.selected && service.promotion.newPrice
+            ? (service.price - service.promotion.newPrice) * service.quantity
             : shopTotal,
         0
       ),
@@ -188,7 +186,7 @@ const UserCart = () => {
 
   const totalServices = cartItems.reduce(
     (count, shop) =>
-      count + shop.products.filter((product) => product.selected).length,
+      count + shop.services.filter((service) => service.selected).length,
     0
   );
 
@@ -214,7 +212,7 @@ const UserCart = () => {
                 <input
                   type="checkbox"
                   checked={cartItems.every((shop) =>
-                    shop.products.every((product) => product.selected)
+                    shop.services.every((service) => service.selected)
                   )}
                   onChange={(e) => {
                     const isChecked = e.target.checked;
@@ -252,7 +250,7 @@ const UserCart = () => {
               <input
                 type="checkbox"
                 checked={cartItems.every((shop) =>
-                  shop.products.every((product) => product.selected)
+                  shop.services.every((service) => service.selected)
                 )}
                 onChange={(e) => {
                   const isChecked = e.target.checked;

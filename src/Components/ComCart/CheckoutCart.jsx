@@ -25,11 +25,11 @@ const CheckoutCard = () => {
         </div>
 
         {cartItems.map((shop) => {
-          const shopTotal = shop.products.reduce(
-            (shopTotal, product) =>
-              shopTotal +
-              (product.discountedPrice || product.originalPrice) *
-                product.quantity,
+          const shopTotal = (shop.services || []).reduce(
+            (shopTotal, service) => {
+              const price = service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price;
+              return shopTotal + price * (service.quantity || 0);
+            },
             0
           );
 
@@ -64,43 +64,41 @@ const CheckoutCard = () => {
                 </div>
               </div>
 
-              {shop.products.map((product) => (
-                <div className="grid grid-cols-4 items-center justify-center mt-2 py-2">
-                  <div className="flex items-center">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-16 h-16 mr-4"
-                    />
-                    <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      {product.name}
-                    </span>
-                  </div>
+              {(shop.services || []).map((service) => {
+                const price = service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price;
+                const totalPrice = price * (service.quantity || 0);
 
-                  <div className="items-center justify-center text-center">
-                    <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      {(
-                        product.discountedPrice || product.originalPrice
-                      ).toLocaleString()}{" "}
-                      đ
-                    </span>
-                  </div>
+                return (
+                  <div className="grid grid-cols-4 items-center justify-center mt-2 py-2">
+                    <div className="flex items-center">
+                      <img
+                        src={service.image}
+                        alt={service.name}
+                        className="w-16 h-16 mr-4"
+                      />
+                      <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                        {service.name}
+                      </span>
+                    </div>
 
-                  <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    <span className="text-black"> {product.quantity}</span>
-                  </div>
+                    <div className="items-center justify-center text-center">
+                      <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                        {(service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price).toLocaleString()} đ
+                      </span>
+                    </div>
 
-                  <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    <span className="text-[#002278] text-right">
-                      {(
-                        (product.discountedPrice || product.originalPrice) *
-                        product.quantity
-                      ).toLocaleString()}{" "}
-                      đ
-                    </span>
+                    <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                      <span className="text-black"> {service.quantity || 0}</span>
+                    </div>
+
+                    <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                      <span className="text-[#002278] text-right">
+                        {totalPrice.toLocaleString()} đ
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
 
               <div className="flex justify-end font-semibold text-xl my-4 pr-3">
                 <span className="mr-3">Tổng tiền:</span>
@@ -146,7 +144,7 @@ const CheckoutCard = () => {
                               : "text-black"
                           }`}
                         >
-                          Đơn hàng sẽ giao tại địa chỉ của tài khoản bạn
+                          Đơn hàng sẽ giao tại địa chỉ của tài khon bạn
                         </p>
                       </div>
                       <p className="font-medium">Cập nhật sau</p>

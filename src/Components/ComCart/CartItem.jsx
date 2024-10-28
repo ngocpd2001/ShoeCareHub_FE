@@ -4,75 +4,86 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
 
 const CartItem = ({
-  product,
+  service,
   onQuantityChange,
   onRemove,
   onToggleSelect,
-  // updateProductQuantity,
+  updateServiceQuantity,
 }) => {
-  const [inputValue, setInputValue] = useState(product.quantity); // State để lưu giá trị input
+  const [inputValue, setInputValue] = useState(service.quantity); 
+  const [quantity, setQuantity] = useState(service?.quantity || 1);
 
-  const handleQuantityChange = (e) => {
-    const updatedQuantity = parseInt(e.target.value, 10);
-    if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
-      onQuantityChange(product.id, updatedQuantity - product.quantity);
-      setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
-    } else {
-      setInputValue(""); // Xóa giá trị khi không hợp lệ
-    }
+  // const handleQuantityChange = (e) => {
+  //   const updatedQuantity = parseInt(e.target.value, 10);
+  //   if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
+  //     onQuantityChange(service.id, updatedQuantity - service.quantity);
+  //     setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
+  //   } else {
+  //     setInputValue(""); // Xóa giá trị khi không hợp lệ
+  //   }
+  // };
+
+  const handleQuantityChange = (newQuantity) => {
+    if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
+    setQuantity(newQuantity);
+    updateServiceQuantity(service.id, newQuantity);
   };
 
   const handleIncrease = () => {
     const newQuantity = inputValue + 1;
-    onQuantityChange(product.id, 1);
+    onQuantityChange(service.id, 1);
     setInputValue(newQuantity); // Cập nhật state với giá trị mới
   };
 
   const handleDecrease = () => {
     if (inputValue > 0) {
       const newQuantity = inputValue - 1;
-      onQuantityChange(product.id, -1);
+      onQuantityChange(service.id, -1);
       setInputValue(newQuantity); // Cập nhật state với giá trị mới
     }
   };
 
   const handleRemove = () => {
     setInputValue(""); // Xóa giá trị khi nhấn nút xóa
-    onRemove(product.id);
+    onRemove(service.id);
   };
+
+  const formatCurrency = (value) => value ? value.toLocaleString("vi-VN") + ' đ' : 'N/A';
+
+  const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
       <div className="flex items-center col-span-1">
         <input
           type="checkbox"
-          checked={product.selected}
-          onChange={() => onToggleSelect(product.id)}
+          checked={service.selected}
+          onChange={() => onToggleSelect(service.id)}
           className="mr-4"
         />
         <img
-          src={product.image}
-          alt={product.name}
+          src={service.image}
+          alt={service.name}
           className="w-12 h-12 mr-4"
         />
         <span className="max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-          {product.name}
+          {service.name}
         </span>
       </div>
 
       <div className="text-center col-span-1">
-        {product.discountedPrice ? (
+        {service.promotion && service.promotion.newPrice ? (
           <>
             <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {product.discountedPrice.toLocaleString()} đ
+              {(service.promotion.newPrice || 0).toLocaleString()} đ
             </div>
             <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {product.originalPrice.toLocaleString()} đ
+              {(service.price || 0).toLocaleString()} đ
             </div>
           </>
         ) : (
           <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-            {product.originalPrice.toLocaleString()} đ
+            {price}đ
           </div>
         )}
       </div>
@@ -103,8 +114,8 @@ const CartItem = ({
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
           {(
-            (product.discountedPrice || product.originalPrice) *
-            product.quantity
+            ((service.promotion && service.promotion.newPrice) || service.price || 0) *
+            service.quantity
           ).toLocaleString()}{" "}
           đ
         </span>

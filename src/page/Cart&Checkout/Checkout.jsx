@@ -1,35 +1,86 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import CheckoutCart from "../../Components/ComCart/CheckoutCart";
+import { getServiceById } from "../../api/service";
 
 const Checkout = () => {
   const location = useLocation();
-  const { selectedItems: cartItems = [] } = location.state || {};
+  const { selectedItems: initialCartItems = [] } = location.state || {};
+  const [cartItems, setCartItems] = useState(initialCartItems);
 
-  const totalAmount = cartItems.reduce(
-    (total, shop) =>
-      total +
-      shop.products.reduce(
-        (shopTotal, product) =>
-          shopTotal +
-          (product.discountedPrice || product.originalPrice) * product.quantity,
-        0
-      ),
-    0
-  );
+  const fetchServiceDetails = async () => {
+    try {
+      const updatedCartItems = await Promise.all(
+        cartItems.map(async (shop) => {
+          if (shop.services && Array.isArray(shop.services)) { // Kiểm tra shop.services
+            const updatedServices = await Promise.all(
+              shop.services.map(async (service) => {
+                const serviceData = await getServiceById(service.id);
+                return { ...service, ...serviceData };
+              })
+            );
+            return { ...shop, services: updatedServices };
+          }
+          return shop; // Trả về shop nếu services không tồn tại hoặc không phải là mảng
+        })
+      );
+      setCartItems(updatedCartItems);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin dịch vụ", error);
+    }
+  };
 
-  const totalServices = cartItems.reduce(
-    (count, shop) => count + shop.products.length,
-    0
-  );
+  useEffect(() => {
+    if (initialCartItems.length > 0) {
+      fetchServiceDetails();
+    }
+  }, []);
+
+  useEffect(() => {
+    if (cartItems.length > 0) {
+      fetchServiceDetails();
+    }
+  }, [cartItems]);
+
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    const storedCartItems = localStorage.getItem("cartItems");
+    if (storedCartItems) {
+      setCartItems(JSON.parse(storedCartItems));
+    }
+  }, []);
+
+  // Tính tổng tiền
+  const totalAmount = cartItems.reduce((total, shop) => {
+    if (shop && Array.isArray(shop.services)) {
+      const shopTotal = shop.services.reduce((shopTotal, service) => {
+        const servicePrice =
+          (service.promotion && service.promotion.newPrice) ||
+          service.price ||
+          0;
+        return shopTotal + servicePrice * (service.quantity || 1);
+      }, 0);
+      return total + shopTotal;
+    }
+    return total;
+  }, 0);
+
+  // Tính tổng số dịch vụ
+  const totalServices = cartItems.reduce((count, shop) => {
+    if (shop && Array.isArray(shop.services)) {
+      return count + shop.services.length;
+    }
+    return count;
+  }, 0);
 
   return (
     <div className="p-4 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6 rounded-lg bg-white">
         <h1 className="text-3xl text-[#002278] font-bold mb-2">Thanh Toán</h1>
-
-        <CheckoutCart />
-
+        <CheckoutCart cartItems={cartItems} />
         <div className="border-t border-gray-300 p-4 mx-2">
           <div className="flex justify-end mb-2">
             <div className="flex justify-between w-full max-w-md">
@@ -48,7 +99,9 @@ const Checkout = () => {
           <div className="flex justify-end mb-2">
             <div className="flex justify-between w-full max-w-md">
               <h2 className="text-lg">Tiền giao hàng:</h2>
-              <span className="text-lg text-[#002278]text-right"></span>
+              <span className="text-lg text-[#002278] text-right">
+                0 đ
+              </span>
             </div>
           </div>
 

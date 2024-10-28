@@ -11,7 +11,7 @@ const ShopCart = ({
   onRemove,
   onToggleSelectAll,
   onToggleSelect,
-  updateProductQuantity,
+  updateServiceQuantity,
 }) => {
   return (
     <div className="mb-6 border rounded-lg bg-white">
@@ -19,7 +19,7 @@ const ShopCart = ({
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={shop.products.every((product) => product.selected)}
+            checked={Array.isArray(shop.services) && shop.services.every((service) => service.selected)}
             onChange={(e) => onToggleSelectAll(shop.shopName, e.target.checked)}
             className="mr-4"
           />
@@ -45,14 +45,14 @@ const ShopCart = ({
       </div>
 
       <div className="px-4">
-        {shop.products.map((product) => (
+        {shop.services.map((service) => (
           <CartItem
-            key={product.id}
-            product={product}
+            key={service.id}
+            service={service}
             onQuantityChange={onQuantityChange}
             onRemove={onRemove}
             onToggleSelect={onToggleSelect}
-            updateProductQuantity={updateProductQuantity}
+            updateServiceQuantity={updateServiceQuantity}
           />
         ))}
       </div>

@@ -15,15 +15,17 @@ import FeedbackService from "../../Components/ComService/FeedbackService";
 import InformationShop from "../../Components/ComService/InformationShop";
 import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [quantity, setQuantity] = useState(5);
+  const [quantity, setQuantity] = useState(1);
   const [currentService, setCurrentService] = useState(null);
   const containerRef = useRef(null);
   const { id } = useParams(); // Lấy id từ URL
+  const navigate = useNavigate();
+  const [cart, setCart] = useState([]);
 
   // Định nghĩa dataImages
   const dataImages = []; // Thay thế bằng dữ liệu thực tế nếu có
@@ -99,6 +101,29 @@ const ServiceDetail = () => {
 
   const shortDescription = currentService.description.slice(0, MAX_LENGTH);
   const isLongDescription = currentService.description.length > MAX_LENGTH;
+
+  const handleAddToCart = () => {
+    if (currentService) {
+      const service = {
+        ...currentService,
+        quantity: quantity || 1, 
+      };
+      setCart((prevCart) => [...prevCart, service]);
+      navigate("/cart", { state: { service } }); 
+    }
+  };
+
+  const handleCheckout = () => {
+    if (currentService) {
+      const service = {
+        ...currentService,
+        quantity: quantity || 1,
+      };
+      navigate("/checkout", { state: { selectedItems: [service] } }); 
+    } else {
+      alert("Không có dịch vụ nào để thanh toán!");
+    }
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -285,11 +310,17 @@ const ServiceDetail = () => {
 
               {/* Button cart&checkout */}
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
-                <button className="bg-[#3A4980] text-white rounded-xl py-4 px-6 flex items-center">
+                <button
+                  onClick={handleAddToCart}
+                  className="bg-[#3A4980] text-white rounded-xl py-4 px-6 flex items-center"
+                >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
                   Thêm vào giỏ hàng
                 </button>
-                <button className="bg-gray-200 text-[#3A4980] rounded-xl py-2 px-10">
+                <button
+                  onClick={handleCheckout}
+                  className="bg-gray-200 text-[#3A4980] rounded-xl py-2 px-10"
+                >
                   Thanh toán
                 </button>
               </div>
