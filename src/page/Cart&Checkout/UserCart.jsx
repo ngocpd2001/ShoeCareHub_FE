@@ -21,7 +21,7 @@ const UserCart = () => {
   useEffect(() => {
     if (location.state && location.state.service) {
       const newService = location.state.service;
-      if (newService.quantity === undefined) {
+      if (newService && newService.quantity === undefined) {
         newService.quantity = 1;
       }
       setCartItems((prevItems) => {
@@ -29,15 +29,18 @@ const UserCart = () => {
           (shop) => shop.shopName === newService.shopName
         );
         if (shopIndex !== -1) {
-          const serviceIndex = prevItems[shopIndex].services.findIndex(
+          const updatedShops = [...prevItems];
+          const services = updatedShops[shopIndex].services || [];
+          const serviceIndex = services.findIndex(
             (service) => service.id === newService.id
           );
-          if (serviceIndex === -1) {
-            const updatedShops = [...prevItems];
-            updatedShops[shopIndex].services.push(newService);
-            return updatedShops;
+          if (serviceIndex !== -1) {
+            services[serviceIndex].quantity += newService.quantity;
+          } else {
+            services.push(newService);
           }
-          return prevItems;
+          updatedShops[shopIndex].services = services;
+          return updatedShops;
         } else {
           return [
             ...prevItems,
@@ -163,8 +166,8 @@ const UserCart = () => {
         (shopTotal, service) =>
           service.selected
             ? shopTotal +
-              (service.promotion.newPrice || service.price || 0) *
-                service.quantity
+              ((service.promotion?.newPrice || service.price || 0) *
+                service.quantity)
             : shopTotal,
         0
       ),
@@ -176,7 +179,7 @@ const UserCart = () => {
       total +
       shop.services.reduce(
         (shopTotal, service) =>
-          service.selected && service.promotion.newPrice
+          service.selected && service.promotion?.newPrice
             ? (service.price - service.promotion.newPrice) * service.quantity
             : shopTotal,
         0

@@ -99,8 +99,12 @@ const ServiceDetail = () => {
 
   const MAX_LENGTH = 200;
 
-  const shortDescription = currentService.description.slice(0, MAX_LENGTH);
-  const isLongDescription = currentService.description.length > MAX_LENGTH;
+  const shortDescription = currentService.description
+    ? currentService.description.slice(0, MAX_LENGTH)
+    : "";
+  const isLongDescription = currentService.description
+    ? currentService.description.length > MAX_LENGTH
+    : false;
 
   const handleAddToCart = () => {
     if (currentService) {
@@ -114,15 +118,17 @@ const ServiceDetail = () => {
   };
 
   const handleCheckout = () => {
-    if (currentService) {
-      const service = {
-        ...currentService,
-        quantity: quantity || 1,
-      };
-      navigate("/checkout", { state: { selectedItems: [service] } }); 
-    } else {
-      alert("Không có dịch vụ nào để thanh toán!");
-    }
+    navigate("/checkout", {
+      state: { selectedItems: [{ services: [currentService] }] },
+    });
+  };
+
+  const formatCurrency = (value) => {
+    return value ? value.toLocaleString("vi-VN") + "đ" : "N/A";
+  };
+
+  const formatRating = (rating) => {
+    return rating !== undefined ? rating.toFixed(1) : "N/A";
   };
 
   return (
@@ -229,15 +235,15 @@ const ServiceDetail = () => {
                   {currentService.promotion && currentService.promotion.newPrice ? (
                     <>
                       <span className="text-3xl font-bold text-blue-800">
-                        {`${currentService.promotion.newPrice.toLocaleString("vi-VN")}đ`}
+                        {formatCurrency(currentService.promotion.newPrice)}
                       </span>
                       <span className="text-lg text-gray-400 line-through">
-                        {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                        {formatCurrency(currentService.price)}
                       </span>
                     </>
                   ) : (
                     <span className="text-[#3A4980] font-bold text-xl">
-                      {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                      {formatCurrency(currentService.price)}
                     </span>
                   )}
                 </div>
@@ -248,7 +254,7 @@ const ServiceDetail = () => {
                       className="text-[#D48D3B]"
                     />
                     <span className="ml-2 text-[#D48D3B]">
-                      {currentService.rating.toFixed(1)}
+                      {formatRating(currentService.rating)}
                     </span>
                   </div>
                   <span className="bg-[#EDF0F8] text-[#3A4980] font-semibold rounded-xl px-2 py-1">

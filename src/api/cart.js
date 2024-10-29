@@ -1,10 +1,9 @@
-const API_BASE_URL = "https://shoecarehub.site/api/user/${userId}/cart";
+import { axiosInstances } from "../utils/axios";
 
 export async function getCartById(userId) {  
-    const url = `https://shoecarehub.site/api/user/${userId}/cart`;  
     
     try {  
-        const response = await fetch(url);  
+        const response = await axiosInstances.login.get(`/user/${userId}/cart`);  
         
         if (!response.ok) {  
             throw new Error(`HTTP error! status: ${response.status}`);  
@@ -17,5 +16,23 @@ export async function getCartById(userId) {
     }  
 }  
 
+export async function getCartItemsByCartId(cartId) {
+  
+    try {
+        const response = await axiosInstances.login.get(`/cartitems/cart/${cartId}`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const cartItemsData = await response.json();
+        return cartItemsData;
+    } catch (error) {
+        console.error('Error fetching cart items:', error);
+    }
+}
 
 getCartById(id).then(cart => console.log(cart));
+
+getCartItemsByCartId(cartId).then(cartItems => console.log(cartItems));
+

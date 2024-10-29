@@ -13,16 +13,6 @@ const CartItem = ({
   const [inputValue, setInputValue] = useState(service.quantity); 
   const [quantity, setQuantity] = useState(service?.quantity || 1);
 
-  // const handleQuantityChange = (e) => {
-  //   const updatedQuantity = parseInt(e.target.value, 10);
-  //   if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
-  //     onQuantityChange(service.id, updatedQuantity - service.quantity);
-  //     setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
-  //   } else {
-  //     setInputValue(""); // Xóa giá trị khi không hợp lệ
-  //   }
-  // };
-
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
     setQuantity(newQuantity);
