@@ -19,7 +19,7 @@ const ShopCart = ({
         <div className="flex items-center">
           <input
             type="checkbox"
-            checked={Array.isArray(shop.services) && shop.services.every((service) => service.selected)}
+            checked={shop.services.every((service) => service.selected)}
             onChange={(e) => onToggleSelectAll(shop.shopName, e.target.checked)}
             className="mr-4"
           />

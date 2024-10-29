@@ -118,9 +118,15 @@ const ServiceDetail = () => {
   };
 
   const handleCheckout = () => {
-    navigate("/checkout", {
-      state: { selectedItems: [{ services: [currentService] }] },
-    });
+    if (currentService) {
+      const service = {
+        ...currentService,
+        quantity: quantity || 1,
+      };
+      navigate("/checkout", {
+        state: { selectedItems: [{ services: [service] }] },
+      });
+    }
   };
 
   const formatCurrency = (value) => {

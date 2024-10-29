@@ -17,7 +17,9 @@ const Checkout = () => {
               shop.services.map(async (service) => {
                 if (service && service.id) {
                   const response = await getServiceById(service.id);
-                  const serviceData = response.data.items.find(item => item.id === service.id);
+                  const serviceData = response.data && response.data.items 
+                    ? response.data.items.find(item => item.id === service.id)
+                    : null;
                   return { ...service, ...serviceData };
                 }
                 return service;

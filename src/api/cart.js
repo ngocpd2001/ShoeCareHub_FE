@@ -1,38 +1,30 @@
 import { axiosInstances } from "../utils/axios";
 
 export async function getCartById(userId) {  
-    
     try {  
         const response = await axiosInstances.login.get(`/user/${userId}/cart`);  
-        
-        if (!response.ok) {  
-            throw new Error(`HTTP error! status: ${response.status}`);  
-        }  
-
-        const cartData = await response.json();  
-        return cartData;  
+        return response.data;  
     } catch (error) {  
-        console.error('Error fetching cart:', error);  
+        console.error('Error fetching cart:', error.response ? error.response.data : error.message);  
+        throw error;  
     }  
 }  
 
 export async function getCartItemsByCartId(cartId) {
-  
     try {
         const response = await axiosInstances.login.get(`/cartitems/cart/${cartId}`);
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        const cartItemsData = await response.json();
-        return cartItemsData;
+        return response.data;
     } catch (error) {
-        console.error('Error fetching cart items:', error);
+        console.error('Error fetching cart items:', error.response ? error.response.data : error.message);
+        throw error;
     }
 }
 
-getCartById(id).then(cart => console.log(cart));
+// Đảm bảo rằng bạn định nghĩa id và cartId trước khi sử dụng
+const id = "someUserId"; // Thay thế bằng giá trị thực tế
+const cartId = "someCartId"; // Thay thế bằng giá trị thực tế
 
-getCartItemsByCartId(cartId).then(cartItems => console.log(cartItems));
+getCartById(id).then(cart => console.log(cart)).catch(error => console.error('Error in getCartById:', error));
+
+getCartItemsByCartId(cartId).then(cartItems => console.log(cartItems)).catch(error => console.error('Error in getCartItemsByCartId:', error));
 

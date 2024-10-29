@@ -1,35 +1,75 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
+import { getServiceById } from "../../api/service";
 
 const CartItem = ({
   service,
   onQuantityChange,
   onRemove,
   onToggleSelect,
-  updateServiceQuantity,
+  // updateServiceQuantity,
+  // fetchServiceDetails,
 }) => {
-  const [inputValue, setInputValue] = useState(service.quantity); 
-  const [quantity, setQuantity] = useState(service?.quantity || 1);
+  const [inputValue, setInputValue] = useState(service.quantity);
 
-  const handleQuantityChange = (newQuantity) => {
-    if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
-    setQuantity(newQuantity);
-    updateServiceQuantity(service.id, newQuantity);
+  // useEffect(() => {
+  //   const updateServiceData = async () => {
+  //     try {
+  //       const updatedService = await getServiceById(service.id);
+  //       setInputValue(updatedService.quantity);
+  //     } catch (error) {
+  //       console.error("Lỗi khi cập nhật dữ liệu dịch vụ", error);
+  //     }
+  //   };
+
+  //   updateServiceData();
+  // }, [service.id]);
+
+  useEffect(() => {
+    setInputValue(service.quantity);
+  }, [service.quantity]);
+
+  const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
+
+  const handleQuantityChange = (e) => {
+    const updatedQuantity = parseInt(e.target.value, 10);
+    if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
+      onQuantityChange(service.id, updatedQuantity - service.quantity);
+      setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
+    } else {
+      setInputValue(0); // Đặt giá trị mặc định khi không hợp lệ
+    }
   };
+
+  // const handleIncrease = () => {
+  //   const newQuantity = inputValue + 1;
+  //   onQuantityChange(service.id, 1);
+  //   setInputValue(newQuantity); // Cập nhật state với giá trị mới
+  // };
+
+  // const handleDecrease = () => {
+  //   if (inputValue > 0) {
+  //     const newQuantity = inputValue - 1;
+  //     onQuantityChange(service.id, -1);
+  //     setInputValue(newQuantity); // Cập nhật state với giá trị mới
+  //   }
+  // };
 
   const handleIncrease = () => {
     const newQuantity = inputValue + 1;
+    console.log("Tăng số lượng:", newQuantity);
     onQuantityChange(service.id, 1);
-    setInputValue(newQuantity); // Cập nhật state với giá trị mới
+    setInputValue(newQuantity);
   };
-
+  
   const handleDecrease = () => {
     if (inputValue > 0) {
       const newQuantity = inputValue - 1;
+      console.log("Giảm số lượng:", newQuantity);
       onQuantityChange(service.id, -1);
-      setInputValue(newQuantity); // Cập nhật state với giá trị mới
+      setInputValue(newQuantity);
     }
   };
 
@@ -37,10 +77,6 @@ const CartItem = ({
     setInputValue(""); // Xóa giá trị khi nhấn nút xóa
     onRemove(service.id);
   };
-
-  const formatCurrency = (value) => value ? value.toLocaleString("vi-VN") + ' đ' : 'N/A';
-
-  const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
@@ -83,6 +119,7 @@ const CartItem = ({
           <button
             onClick={handleDecrease}
             className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-lg"
+            disabled={inputValue <= 0}
           >
             -
           </button>
@@ -110,7 +147,7 @@ const CartItem = ({
           đ
         </span>
 
-        <button onClick={handleRemove} className="text-[#002278] w-[30%]">
+        <button onClick={() => onRemove(service.id)} className="text-[#002278] w-[30%]">
           <FontAwesomeIcon icon={faTrash} />
         </button>
       </div>

@@ -3,7 +3,7 @@ import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getServiceById } from "../../api/service"; 
+import { getServiceById } from "../../api/service";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -21,7 +21,7 @@ const UserCart = () => {
   useEffect(() => {
     if (location.state && location.state.service) {
       const newService = location.state.service;
-      if (newService && newService.quantity === undefined) {
+      if (newService.quantity === undefined) {
         newService.quantity = 1;
       }
       setCartItems((prevItems) => {
@@ -29,18 +29,15 @@ const UserCart = () => {
           (shop) => shop.shopName === newService.shopName
         );
         if (shopIndex !== -1) {
-          const updatedShops = [...prevItems];
-          const services = updatedShops[shopIndex].services || [];
-          const serviceIndex = services.findIndex(
+          const serviceIndex = prevItems[shopIndex].services.findIndex(
             (service) => service.id === newService.id
           );
-          if (serviceIndex !== -1) {
-            services[serviceIndex].quantity += newService.quantity;
-          } else {
-            services.push(newService);
+          if (serviceIndex === -1) {
+            const updatedShops = [...prevItems];
+            updatedShops[shopIndex].services.push(newService);
+            return updatedShops;
           }
-          updatedShops[shopIndex].services = services;
-          return updatedShops;
+          return prevItems;
         } else {
           return [
             ...prevItems,
@@ -166,8 +163,8 @@ const UserCart = () => {
         (shopTotal, service) =>
           service.selected
             ? shopTotal +
-              ((service.promotion?.newPrice || service.price || 0) *
-                service.quantity)
+              (service.promotion.newPrice || service.price || 0) *
+                service.quantity
             : shopTotal,
         0
       ),
@@ -179,7 +176,7 @@ const UserCart = () => {
       total +
       shop.services.reduce(
         (shopTotal, service) =>
-          service.selected && service.promotion?.newPrice
+          service.selected && service.promotion.newPrice
             ? (service.price - service.promotion.newPrice) * service.quantity
             : shopTotal,
         0
