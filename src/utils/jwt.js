@@ -20,4 +20,15 @@ const setSession = (token) => {
   }
 };
 
-export { isValidToken, setSession };
+// Sau khi đăng nhập thành công
+const loginSuccess = (token) => {
+  setSession(token);
+};
+
+// Kiểm tra trước khi truy cập trang cần đăng nhập
+const canAccessPage = () => {
+  const token = localStorage.getItem('token');
+  return isValidToken(token);
+};
+
+export { isValidToken, setSession, loginSuccess, canAccessPage };

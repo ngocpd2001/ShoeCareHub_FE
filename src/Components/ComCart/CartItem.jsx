@@ -5,31 +5,24 @@ import "./CartItem.css";
 import { getServiceById } from "../../api/service";
 
 const CartItem = ({
-  service,
+  service = {},
   onQuantityChange,
   onRemove,
   onToggleSelect,
   // updateServiceQuantity,
   // fetchServiceDetails,
 }) => {
-  const [inputValue, setInputValue] = useState(service.quantity);
-
-  // useEffect(() => {
-  //   const updateServiceData = async () => {
-  //     try {
-  //       const updatedService = await getServiceById(service.id);
-  //       setInputValue(updatedService.quantity);
-  //     } catch (error) {
-  //       console.error("Lỗi khi cập nhật dữ liệu dịch vụ", error);
-  //     }
-  //   };
-
-  //   updateServiceData();
-  // }, [service.id]);
+  const [inputValue, setInputValue] = useState(service.quantity || 0);
 
   useEffect(() => {
-    setInputValue(service.quantity);
+    if (service.quantity !== undefined) {
+      setInputValue(service.quantity);
+    }
   }, [service.quantity]);
+
+  if (!service.id) {
+    return null;
+  }
 
   const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
 
@@ -37,25 +30,11 @@ const CartItem = ({
     const updatedQuantity = parseInt(e.target.value, 10);
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
       onQuantityChange(service.id, updatedQuantity - service.quantity);
-      setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
+      setInputValue(updatedQuantity);
     } else {
-      setInputValue(0); // Đặt giá trị mặc định khi không hợp lệ
+      setInputValue(0);
     }
   };
-
-  // const handleIncrease = () => {
-  //   const newQuantity = inputValue + 1;
-  //   onQuantityChange(service.id, 1);
-  //   setInputValue(newQuantity); // Cập nhật state với giá trị mới
-  // };
-
-  // const handleDecrease = () => {
-  //   if (inputValue > 0) {
-  //     const newQuantity = inputValue - 1;
-  //     onQuantityChange(service.id, -1);
-  //     setInputValue(newQuantity); // Cập nhật state với giá trị mới
-  //   }
-  // };
 
   const handleIncrease = () => {
     const newQuantity = inputValue + 1;
@@ -74,7 +53,7 @@ const CartItem = ({
   };
 
   const handleRemove = () => {
-    setInputValue(""); // Xóa giá trị khi nhấn nút xóa
+    setInputValue("");
     onRemove(service.id);
   };
 

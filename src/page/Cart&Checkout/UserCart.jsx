@@ -3,20 +3,57 @@ import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getServiceById } from "../../api/service";
+import { getUserCart, getCartTotal, createCart, deleteCart } from "../../api/cart";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const userId = localStorage.getItem("userId");
+
+  const fetchCartItems = async () => {
+    try {
+      const data = await getUserCart(userId);
+      setCartItems(data);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin giỏ hàng", error);
+    }
+  };
+
+  const fetchTotalAmount = async () => {
+    try {
+      const data = await getCartTotal(userId);
+      setTotalAmount(data.total);
+    } catch (error) {
+      console.error("Lỗi khi lấy tổng giá trị giỏ hàng", error);
+    }
+  };
 
   useEffect(() => {
-    const storedCartItems = localStorage.getItem("cartItems");
-    if (storedCartItems) {
-      setCartItems(JSON.parse(storedCartItems));
+    fetchCartItems();
+    fetchTotalAmount();
+  }, [userId]);
+
+  const handleCreateCart = async () => {
+    try {
+      await createCart(userId);
+      fetchCartItems();
+    } catch (error) {
+      console.error("Lỗi khi tạo giỏ hàng mới", error);
     }
-  }, []);
+  };
+
+  const handleClearCart = async () => {
+    try {
+      await deleteCart(userId);
+      setCartItems([]);
+      setTotalAmount(0);
+    } catch (error) {
+      console.error("Lỗi khi xóa giỏ hàng", error);
+    }
+  };
 
   useEffect(() => {
     if (location.state && location.state.service) {
@@ -55,19 +92,6 @@ const UserCart = () => {
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
-
-  const fetchServiceDetails = async (id) => {
-    try {
-      const serviceData = await getServiceById(id);
-      console.log("Service Data:", serviceData);
-      // Xử lý dữ liệu dịch vụ ở đây
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin dịch vụ", error);
-    }
-  };
-
-  // Gọi hàm fetchServiceDetails khi cần thiết, ví dụ khi nhấn vào một nút
-  // fetchServiceDetails(someServiceId);
 
   const handleCheckout = () => {
     const selectedItems = cartItems
@@ -156,7 +180,7 @@ const UserCart = () => {
     );
   };
 
-  const totalAmount = cartItems.reduce(
+  const calculatedTotalAmount = cartItems.reduce(
     (total, shop) =>
       total +
       shop.services.reduce(
@@ -204,6 +228,9 @@ const UserCart = () => {
               0 Dịch vụ
             </h2>
             <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
+            <button onClick={handleCreateCart} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+              Tạo giỏ hàng mới
+            </button>
           </div>
         ) : (
           <div>
@@ -260,9 +287,11 @@ const UserCart = () => {
                 }}
                 className="mr-4"
               />
-              <span className="font-bold">Chọn tất cả</span>
+              <span className="font-bold">
+                Chọn tất cả ({cartItems.reduce((total, shop) => total + shop.services.length, 0)})
+              </span>
               <button
-                onClick={handleRemoveSelected}
+                onClick={handleClearCart}
                 className="ml-4 text-gray-500"
               >
                 Xóa
@@ -272,7 +301,7 @@ const UserCart = () => {
               <div className="text-xl">
                 <span>Tổng thanh toán:</span>
                 <span className="text-[#002278] font-bold ml-2">
-                  {totalAmount > 0 ? totalAmount.toLocaleString() : "0"} đ
+                  {calculatedTotalAmount > 0 ? calculatedTotalAmount.toLocaleString() : "0"} đ
                 </span>
               </div>
               <div className="text-lg">
