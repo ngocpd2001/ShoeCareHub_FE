@@ -1,6 +1,6 @@
 import { axiosInstances } from "../utils/axios";
 
-const getAllService = async () => {
+export const getAllService = async () => {
   try {
     const response = await axiosInstances.login.get('/services');
     return response.data;
@@ -10,7 +10,7 @@ const getAllService = async () => {
   }
 };
 
-const getServiceById = async (id) => {
+export const getServiceById = async (id) => {
   try {
     const response = await axiosInstances.login.get(`/services/${id}`);
     return response.data.data;
@@ -21,4 +21,4 @@ const getServiceById = async (id) => {
 };
 
 
-export { getAllService, getServiceById };
+

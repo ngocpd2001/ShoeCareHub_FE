@@ -3,57 +3,62 @@ import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getUserCart, getCartTotal, createCart, deleteCart } from "../../api/cart";
+import { getUserCart, createCart, deleteCart } from "../../api/cart";
+import { getServiceById } from "../../api/service";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
-  const userId = localStorage.getItem("userId");
-
-  const fetchCartItems = async () => {
-    try {
-      const data = await getUserCart(userId);
-      setCartItems(data);
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin giỏ hàng", error);
-    }
-  };
-
-  const fetchTotalAmount = async () => {
-    try {
-      const data = await getCartTotal(userId);
-      setTotalAmount(data.total);
-    } catch (error) {
-      console.error("Lỗi khi lấy tổng giá trị giỏ hàng", error);
-    }
-  };
+  const user = JSON.parse(localStorage.getItem("user"));
+  const userId = user ? user.id : null;
 
   useEffect(() => {
+    if (!userId) {
+      console.error("User ID is null or undefined");
+      return;
+    }
+
+    const fetchCartItems = async () => {
+      try {
+        const response = await getUserCart(userId);
+        
+        // Truy cập vào mảng data
+        const items = response.data;
+
+        if (!Array.isArray(items)) {
+          console.error("Expected an array but got:", items);
+          setCartItems([]);
+          return;
+        }
+
+        const detailedItems = await Promise.all(
+          items.map(async (item) => {
+            const serviceDetails = await getServiceById(item.serviceId);
+            return {
+              id: serviceDetails.id,
+              name: serviceDetails.name,
+              image: serviceDetails.image,
+              price: serviceDetails.price,
+              promotion: serviceDetails.promotion,
+              quantity: item.quantity,
+              selected: false,
+            };
+          })
+        );
+        setCartItems(detailedItems);
+      } catch (error) {
+        console.error("Lỗi khi lấy giỏ hàng:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchCartItems();
-    fetchTotalAmount();
   }, [userId]);
-
-  const handleCreateCart = async () => {
-    try {
-      await createCart(userId);
-      fetchCartItems();
-    } catch (error) {
-      console.error("Lỗi khi tạo giỏ hàng mới", error);
-    }
-  };
-
-  const handleClearCart = async () => {
-    try {
-      await deleteCart(userId);
-      setCartItems([]);
-      setTotalAmount(0);
-    } catch (error) {
-      console.error("Lỗi khi xóa giỏ hàng", error);
-    }
-  };
 
   useEffect(() => {
     if (location.state && location.state.service) {
@@ -213,6 +218,14 @@ const UserCart = () => {
       count + shop.services.filter((service) => service.selected).length,
     0
   );
+
+  const handleCreateCart = () => {
+    // Định nghĩa hàm handleCreateCart nếu cần thiết
+  };
+
+  const handleClearCart = () => {
+    // Định nghĩa hàm handleClearCart nếu cần thiết
+  };
 
   return (
     <div className="auto px-4 bg-gray-100 min-h-screen">

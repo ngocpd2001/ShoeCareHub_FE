@@ -29,7 +29,10 @@ import { isValidToken } from './utils/jwt';
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
   const token = localStorage.getItem('token');
-  return isValidToken(token);
+  console.log('Token:', token);
+  const isValid = isValidToken(token);
+  console.log('Is Valid Token:', isValid);
+  return isValid;
 };
 
 // Thành phần bảo vệ
@@ -67,7 +70,7 @@ export const routers = createBrowserRouter([
         element: <ServiceDetail />,
       },
       {
-        path: "/provider-landingpage",
+        path: "/provider-landingpage/:id",
         element: <ProviderLandingPage />,
       },
       {

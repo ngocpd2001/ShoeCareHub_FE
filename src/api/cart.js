@@ -14,17 +14,6 @@ export const getUserCart = async (userId) => {
   }
 };
 
-// Lấy tổng giá trị của giỏ hàng
-export const getCartTotal = async (cartId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/carts/${cartId}/total`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi lấy tổng giá trị giỏ hàng:', error);
-    throw error;
-  }
-};
-
 // Tạo một giỏ hàng mới cho người dùng
 export const createCart = async (userId) => {
   try {
@@ -60,35 +49,22 @@ export const getCartItems = async (cartId) => {
   }
 };
 
-// Lấy thông tin chi tiết về một mục cụ thể
-export const getCartItem = async (itemId) => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/cartitems/${itemId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi lấy thông tin chi tiết mục:', error);
-    throw error;
-  }
-};
-
-// Lấy tổng giá trị của tất cả các mục trong giỏ hàng
-export const getCartItemTotal = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/cartitems/total`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi lấy tổng giá trị giỏ hàng:', error);
-    throw error;
-  }
-};
-
 // Thêm một mục mới vào giỏ hàng
 export const addItemToCart = async (userId, itemData) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/cartitems?userId=${userId}`, itemData);
+    const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, itemData);
     return response.data;
   } catch (error) {
-    console.error('Lỗi khi thêm mục vào giỏ hàng:', error);
+    if (error.response) {
+      // Server responded with a status other than 2xx
+      console.error('Server error:', error.response.data);
+    } else if (error.request) {
+      // Request was made but no response received
+      console.error('Network error:', error.request);
+    } else {
+      // Something else happened
+      console.error('Error:', error.message);
+    }
     throw error;
   }
 };
@@ -96,21 +72,10 @@ export const addItemToCart = async (userId, itemData) => {
 // Cập nhật số lượng của một mục trong giỏ hàng
 export const updateCartItem = async (cartId, itemId, quantity) => {
   try {
-    const response = await axios.put(`${API_BASE_URL}/cartitems/cart/${cartId}/item/${itemId}`, { quantity });
+    const response = await axiosInstances.login.put(`/cartitems/cart/${cartId}/item/${itemId}`, { quantity });
     return response.data;
   } catch (error) {
     console.error('Lỗi khi cập nhật mục trong giỏ hàng:', error);
-    throw error;
-  }
-};
-
-// Xóa tất cả các mục trong giỏ hàng
-export const clearCartItems = async (cartId) => {
-  try {
-    const response = await axios.delete(`${API_BASE_URL}/cartitems/cart/${cartId}/items`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi xóa các mục trong giỏ hàng:', error);
     throw error;
   }
 };
