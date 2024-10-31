@@ -87,10 +87,7 @@ const Carousels = ({ title, items, type }) => {
 };
 
 const ServiceCard = ({ item, navigate }) => (
-  <div
-    onClick={() => navigate(`/servicedetail/${item.id}`)}
-    className="cursor-pointer"
-  >
+  <div className="cursor-pointer">
     <div className="mb-2 h-35 relative bg-gray-200 rounded-md flex items-center justify-center">
       <img
         src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
@@ -126,10 +123,7 @@ const ServiceCard = ({ item, navigate }) => (
       </>
     )}
     <button
-      onClick={(e) => {
-        e.stopPropagation(); // Ngăn chặn sự kiện onClick của thẻ cha
-        navigate(`/service/${item.id}`);
-      }}
+      onClick={() => navigate(`/servicedetail/${item.id}`)}
       className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
       Đặt Ngay

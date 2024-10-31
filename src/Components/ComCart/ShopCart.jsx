@@ -45,7 +45,7 @@ const ShopCart = ({
       </div>
 
       <div className="px-4">
-        {shop.services.map((service) => (
+        {(shop.services || []).map((service) => (
           <CartItem
             key={service.id}
             service={service}

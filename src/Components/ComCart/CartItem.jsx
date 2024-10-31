@@ -1,30 +1,16 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
-import { getServiceById } from "../../api/service";
 
 const CartItem = ({
-  service = {},
+  service,
   onQuantityChange,
   onRemove,
   onToggleSelect,
-  // updateServiceQuantity,
-  // fetchServiceDetails,
+  // updateProductQuantity,
 }) => {
-  const [inputValue, setInputValue] = useState(service.quantity || 0);
-
-  useEffect(() => {
-    if (service.quantity !== undefined) {
-      setInputValue(service.quantity);
-    }
-  }, [service.quantity]);
-
-  if (!service.id) {
-    return null;
-  }
-
-  const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
+  const [inputValue, setInputValue] = useState(service.quantity);
 
   const handleQuantityChange = (e) => {
     const updatedQuantity = parseInt(e.target.value, 10);
@@ -32,21 +18,19 @@ const CartItem = ({
       onQuantityChange(service.id, updatedQuantity - service.quantity);
       setInputValue(updatedQuantity);
     } else {
-      setInputValue(0);
+      setInputValue("");
     }
   };
 
   const handleIncrease = () => {
     const newQuantity = inputValue + 1;
-    console.log("Tăng số lượng:", newQuantity);
     onQuantityChange(service.id, 1);
     setInputValue(newQuantity);
   };
-  
+
   const handleDecrease = () => {
     if (inputValue > 0) {
       const newQuantity = inputValue - 1;
-      console.log("Giảm số lượng:", newQuantity);
       onQuantityChange(service.id, -1);
       setInputValue(newQuantity);
     }
@@ -77,18 +61,18 @@ const CartItem = ({
       </div>
 
       <div className="text-center col-span-1">
-        {service.promotion && service.promotion.newPrice ? (
+        {service.discountedPrice ? (
           <>
             <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {(service.promotion.newPrice || 0).toLocaleString()} đ
+              {service.discountedPrice.toLocaleString()} đ
             </div>
             <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {(service.price || 0).toLocaleString()} đ
+              {service.originalPrice.toLocaleString()} đ
             </div>
           </>
         ) : (
           <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-            {price}đ
+            {service.originalPrice.toLocaleString()} đ
           </div>
         )}
       </div>
@@ -98,7 +82,6 @@ const CartItem = ({
           <button
             onClick={handleDecrease}
             className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-lg"
-            disabled={inputValue <= 0}
           >
             -
           </button>
@@ -120,13 +103,13 @@ const CartItem = ({
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
           {(
-            ((service.promotion && service.promotion.newPrice) || service.price || 0) *
+            (service.discountedPrice || service.originalPrice) *
             service.quantity
           ).toLocaleString()}{" "}
           đ
         </span>
 
-        <button onClick={() => onRemove(service.id)} className="text-[#002278] w-[30%]">
+        <button onClick={handleRemove} className="text-[#002278] w-[30%]">
           <FontAwesomeIcon icon={faTrash} />
         </button>
       </div>

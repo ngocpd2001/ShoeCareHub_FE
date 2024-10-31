@@ -20,5 +20,15 @@ export const getServiceById = async (id) => {
   }
 };
 
+export const getServiceByBranchID = async (branchId) => {
+  try {
+    const response = await axiosInstances.login.get(`/services/branches/${branchId}`);
+    return response.data.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API", error);
+    throw error;
+  }
+};
+
 
 

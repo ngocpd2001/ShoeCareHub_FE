@@ -10,6 +10,7 @@ const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalAmount, setTotalAmount] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [branches, setBranches] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
@@ -17,41 +18,43 @@ const UserCart = () => {
   const userId = user ? user.id : null;
 
   useEffect(() => {
-    if (!userId) {
-      console.error("User ID is null or undefined");
-      return;
-    }
+  
 
     const fetchCartItems = async () => {
       try {
-        const response = await getUserCart(userId);
-        
-        // Truy cập vào mảng data
-        const items = response.data;
-
-        if (!Array.isArray(items)) {
-          console.error("Expected an array but got:", items);
-          setCartItems([]);
-          return;
-        }
+        const data = await getUserCart(userId);
+        console.log("data:", data);
+        setBranches(data);
+        console.log("Branches:", branches);
+        // if (!Array.isArray(branches)) {
+        //   console.error("Expected an array but got:", branches);
+        //   setCartItems([]);
+        //   return;
+        // }
 
         const detailedItems = await Promise.all(
-          items.map(async (item) => {
-            const serviceDetails = await getServiceById(item.serviceId);
-            return {
-              id: serviceDetails.id,
-              name: serviceDetails.name,
-              image: serviceDetails.image,
-              price: serviceDetails.price,
-              promotion: serviceDetails.promotion,
-              quantity: item.quantity,
-              selected: false,
-            };
-          })
+          branches.flatMap((branch) =>
+            (branch.items || []).map(async (item) => {
+              const serviceDetails = await getServiceById(item.serviceId);
+              console.log("Service details:", serviceDetails);
+              return {
+                id: item.id,
+                name: serviceDetails.name,
+                image: serviceDetails.image,
+                price: item.price,
+                promotion: serviceDetails.promotion,
+                quantity: item.quantity,
+                selected: false,
+              };
+            })
+          )
         );
-        setCartItems(detailedItems);
+
+        console.log("Detailed items:", detailedItems);
+        // setCartItems(detailedItems);
       } catch (error) {
         console.error("Lỗi khi lấy giỏ hàng:", error);
+        setCartItems([]);
       } finally {
         setLoading(false);
       }
@@ -185,14 +188,14 @@ const UserCart = () => {
     );
   };
 
-  const calculatedTotalAmount = cartItems.reduce(
+  const calculatedTotalAmount = (cartItems || []).reduce(
     (total, shop) =>
       total +
-      shop.services.reduce(
+      (shop.services || []).reduce(
         (shopTotal, service) =>
           service.selected
             ? shopTotal +
-              (service.promotion.newPrice || service.price || 0) *
+              (service.promotion?.newPrice || service.price || 0) *
                 service.quantity
             : shopTotal,
         0
@@ -200,12 +203,12 @@ const UserCart = () => {
     0
   );
 
-  const totalSavings = cartItems.reduce(
+  const totalSavings = (cartItems || []).reduce(
     (total, shop) =>
       total +
-      shop.services.reduce(
+      (shop.services || []).reduce(
         (shopTotal, service) =>
-          service.selected && service.promotion.newPrice
+          service.selected && service.promotion?.newPrice
             ? (service.price - service.promotion.newPrice) * service.quantity
             : shopTotal,
         0
@@ -213,19 +216,44 @@ const UserCart = () => {
     0
   );
 
-  const totalServices = cartItems.reduce(
+  const totalServices = (cartItems || []).reduce(
     (count, shop) =>
-      count + shop.services.filter((service) => service.selected).length,
+      count +
+      (shop.services || []).filter((service) => service.selected).length,
     0
   );
 
-  const handleCreateCart = () => {
-    // Định nghĩa hàm handleCreateCart nếu cần thiết
+  const handleCreateCart = async () => {
+    if (userId) {
+      try {
+        const newCart = await createCart(userId);
+        setCartItems([]); // Initialize with an empty cart
+        console.log("New cart created:", newCart);
+      } catch (error) {
+        console.error("Error creating a new cart:", error);
+      }
+    }
   };
 
-  const handleClearCart = () => {
-    // Định nghĩa hàm handleClearCart nếu cần thiết
+  const handleClearCart = async () => {
+    if (cartItems.length > 0) {
+      try {
+        await deleteCart(cartItems[0].id); // Assuming all items belong to the same cart
+        setCartItems([]); // Clear cart items in state
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+      }
+    }
   };
+
+  // const areAllServicesSelected = (services) => {
+  //   for (let i = 0; i < services.length; i++) {
+  //     if (!services[i].selected) {
+  //       return false;
+  //     }
+  //   }
+  //   return true;
+  // };
 
   return (
     <div className="auto px-4 bg-gray-100 min-h-screen">
@@ -241,7 +269,10 @@ const UserCart = () => {
               0 Dịch vụ
             </h2>
             <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
-            <button onClick={handleCreateCart} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded">
+            <button
+              onClick={handleCreateCart}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
+            >
               Tạo giỏ hàng mới
             </button>
           </div>
@@ -251,9 +282,9 @@ const UserCart = () => {
               <div className="font-semibold text-xl text-left flex items-center w-full">
                 <input
                   type="checkbox"
-                  checked={cartItems.every((shop) =>
-                    shop.services.every((service) => service.selected)
-                  )}
+                  // checked={cartItems.every((shop) =>
+                  //   areAllServicesSelected(shop.services)
+                  // )}
                   onChange={(e) => {
                     const isChecked = e.target.checked;
                     cartItems.forEach((shop) => {
@@ -273,6 +304,15 @@ const UserCart = () => {
               </div>
             </div>
             {cartItems.map((shop) => (
+              // <div key={shop.shopName}>
+              //   <input
+              //     type="checkbox"
+              //     checked={areAllServicesSelected(shop.services || [])}
+              //     onChange={(e) => handleToggleSelectAll(shop.shopName, e.target.checked)}
+              //     className="mr-4"
+              //   />
+              //   {/* Các phần tử khác */}
+              // </div>
               <ShopCart
                 key={shop.shopName}
                 shop={shop}
@@ -283,8 +323,9 @@ const UserCart = () => {
               />
             ))}
           </div>
+          // </div>
         )}
-        {cartItems.length > 0 && (
+        {branches.length > 0 && (
           <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
             <div className="flex items-center text-xl">
               <input
@@ -301,12 +342,14 @@ const UserCart = () => {
                 className="mr-4"
               />
               <span className="font-bold">
-                Chọn tất cả ({cartItems.reduce((total, shop) => total + shop.services.length, 0)})
+                Chọn tất cả (
+                {cartItems.reduce(
+                  (total, shop) => total + shop.services.length,
+                  0
+                )}
+                )
               </span>
-              <button
-                onClick={handleClearCart}
-                className="ml-4 text-gray-500"
-              >
+              <button onClick={handleClearCart} className="ml-4 text-gray-500">
                 Xóa
               </button>
             </div>
@@ -314,7 +357,10 @@ const UserCart = () => {
               <div className="text-xl">
                 <span>Tổng thanh toán:</span>
                 <span className="text-[#002278] font-bold ml-2">
-                  {calculatedTotalAmount > 0 ? calculatedTotalAmount.toLocaleString() : "0"} đ
+                  {calculatedTotalAmount > 0
+                    ? calculatedTotalAmount.toLocaleString()
+                    : "0"}{" "}
+                  đ
                 </span>
               </div>
               <div className="text-lg">
