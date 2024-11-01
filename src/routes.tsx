@@ -110,13 +110,13 @@ export const routers = createBrowserRouter([
         element: <CreateSevice />,
       },
       {
-          path: "/owner/service/:id",
-          element: <DetailService />,
-        },
-        {
-          path: "/owner/order",
-          element: <OrderManager />,
-        },
+        path: "/owner/service/:id",
+        element: <DetailService />,
+      },
+      {
+        path: "/owner/order",
+        element: <OrderManager />,
+      },
       {
         path: "/owner/order/detail",
         element: <OrderDetail />,
@@ -124,6 +124,10 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/dashboard",
         element: <Dashboard />,
+      },
+      {
+        path: "/owner/profile",
+        element: <ProfilePage />,
       },
       {
         path: "/owner/employee",

@@ -172,7 +172,7 @@ const ProfileForm = () => {
                   {...register("gender")}
                 />
               </div>
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <div className="relative">
                   <ComInput
                     placeholder="Nhập địa chỉ"
@@ -183,7 +183,7 @@ const ProfileForm = () => {
                     required={isEditing}
                   />
                 </div>
-              </div>
+              </div> */}
               <div className="mb-6">
                 <div className="relative">
                   <ComDatePicker
@@ -273,7 +273,7 @@ const ProfileForm = () => {
                   {...register("gender")}
                 />
               </div>
-              <div className="mb-6">
+              {/* <div className="mb-6">
                 <div className="relative">
                   <ComInput
                     placeholder="Nhập địa chỉ"
@@ -284,7 +284,7 @@ const ProfileForm = () => {
                     required={isEditing}
                   />
                 </div>
-              </div>
+              </div> */}
               <div className="mb-6">
                 <div className="relative">
                   <ComDatePicker

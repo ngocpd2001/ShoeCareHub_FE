@@ -77,6 +77,10 @@ const navigation = [
     href: "/owner/profile",
     icon: UserCircleIcon,
     current: false,
+    children: [
+      { name: "Hồ sơ của tôi", href: "/owner/profile" },
+      { name: "Đổi mật khẩu", href: "/owner/pass" },
+    ],
   },
 ];
 
