@@ -164,7 +164,7 @@ export default function ComHeader({ children }) {
                                 aria-hidden="true"
                                 className="ml-4 text-sm font-semibold leading-6 text-black"
                               >
-                                {user.fullname}
+                                {/* {user.fullname} */}
                               </span>
                               <ChevronDownIcon
                                 aria-hidden="true"

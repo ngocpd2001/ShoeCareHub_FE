@@ -81,7 +81,7 @@ const useColumnFilters = () => {
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#de1818" : "#fff" }} />
+      <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
     ),
     onFilter: (value, record) => {
       const nestedValue = getNestedValue(record, dataIndex);
@@ -152,7 +152,7 @@ const useColumnFilters = () => {
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#de1818" : "#fff" }} />
+      <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
     ),
     onFilter: (value, record) => {
       if (!value.length) return true;
@@ -221,7 +221,7 @@ const useColumnFilters = () => {
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#de1818" : "#fff" }} />
+      <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
     ),
     onFilter: (value, record) => {
       if (!value.length) return true;
@@ -285,7 +285,7 @@ const useColumnFilters = () => {
               width: 30,
               borderLeft: 0,
               pointerEvents: "none",
-              backgroundColor: "#fff",
+              backgroundColor: "#000",
             }}
             placeholder="~"
             disabled
@@ -332,7 +332,7 @@ const useColumnFilters = () => {
       </div>
     ),
     filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#de1818" : "#fff" }} />
+      <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
     ),
     onFilter: (value, record) => {
       if (!value.length) return true;

@@ -239,7 +239,7 @@ export default function CarouselsSection() {
     { id: 6, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
   ];
   useEffect(() => {
-    getData("/services?PageSize=99")
+    getData("/services?PageIndex=1&PageSize=99")
       .then((data) => {
         console.log(data?.data?.data?.items);
         const discountedServices = data?.data?.data?.items.filter(

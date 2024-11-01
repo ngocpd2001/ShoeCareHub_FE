@@ -59,10 +59,10 @@ export default function ServiceGrid() {
   const navigate = useNavigate();
 
     useEffect(() => {
-      getData("/services?PageSize=12")
+      getData("services?PageIndex=1&PageSize=12")
         .then((data) => {
           console.log(data?.data?.data?.items);
-       
+
           setServices(data?.data?.data?.items);
         })
         .catch((error) => {

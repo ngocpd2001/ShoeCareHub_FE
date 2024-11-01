@@ -54,7 +54,7 @@ export default function ComHeaderUser({ children }) {
                 src={user.imageUrl}
                 className="h-16 w-16 rounded-full object-cover"
               />
-              {user.fullname}
+              {/* {user.fullname} */}
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">

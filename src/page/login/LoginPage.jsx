@@ -47,45 +47,39 @@ export default function LoginPage(props) {
         console.log(111111, data);
         setToken(data.data.token);
         setUser(data.data);
-        setTimeout(() => {
-          navigate("/");
-        }, 500);
-
+   
         // Chờ setToken hoàn thành trước khi navigate
-        // return new Promise((resolve) => {
-        //   setTimeout(() => {
-        //     console.log(data);
-        //     switch (data?.listRole[0]) {
-        //       case "Staff":
-        //         navigate("/staff/contract");
-        //         break;
-        //       case "Admin":
-        //         navigate("/admin/account");
-        //         break;
-        //       case "Manager":
-        //         navigate("/manager/institute");
-        //         break;
-        //       case "Director":
-        //         navigate("/director/dashboard");
-        //         break;
-        //       case "Nurse":
-        //         setDisabled(false);
-        //         setLogin(true);
-        //         setErrorMessage(
-        //           "Tài khoản không được phép đăng nhập vào hệ thống"
-        //         );
-        //         break;
-        //       default:
-        //         setDisabled(false);
-        //         setLogin(true);
-        //         setErrorMessage(
-        //           "Tài khoản không được phép đăng nhập vào hệ thống"
-        //         );
-        //         break;
-        //     }
-        //     resolve(); // Báo hiệu Promise đã hoàn thành
-        //   }, 0); // Thời gian chờ 0ms để đảm bảo setToken đã được thực hiện
-        // });
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            console.log(data);
+            switch (data.data?.role) {
+              case "OWNER":
+                navigate("/owner/dashboard");
+                break;
+              case "CUSTOMER":
+                navigate("/");
+                break;
+              case "EMPLOYEE":
+                navigate("/EMPLOYEE");
+                break;
+              case "ADMIN":
+                navigate("/ADMIN");
+                break;
+              case "MODERATOR":
+                navigate("/MODERATOR");
+                break;
+          ;
+              default:
+                setDisabled(false);
+                setLogin(true);
+                setErrorMessage(
+                  "Tài khoản không được phép đăng nhập vào hệ thống"
+                );
+                break;
+            }
+            resolve(); // Báo hiệu Promise đã hoàn thành
+          }, 0); // Thời gian chờ 0ms để đảm bảo setToken đã được thực hiện
+        });
       })
       .catch((error) => {
         console.error("1111111 Error fetching items:", error);

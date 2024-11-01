@@ -70,8 +70,8 @@ code {
   background-color: var(--scrollbar-track-color);
 }
 .ant-table-thead .ant-table-cell {
-  background-color: #0f296d !important; /* Thay đổi màu nền header */
-  color: #ffffff !important; /* Thay đổi màu chữ header */
+  background-color: #E0E2E7 !important; /* Thay đổi màu nền header */
+  color: #000000 !important; /* Thay đổi màu chữ header */
 }
 
 .anticon-filter {

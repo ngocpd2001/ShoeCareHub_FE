@@ -24,6 +24,8 @@ import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
 import UpdateEmployee from "./page/Owner/Employee/UpdateEmployee";
 import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
+import BranchManager from "./page/Owner/Branch/BranchManager";
+import CreateBranch from "./page/Owner/Branch/CreateBranch";
 export const routers = createBrowserRouter([
   {
     path: "*",
@@ -116,6 +118,14 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/order",
         element: <OrderManager />,
+      },
+      {
+        path: "/owner/branch",
+        element: <BranchManager />,
+      },
+      {
+        path: "/owner/branch/create",
+        element: <CreateBranch />,
       },
       {
         path: "/owner/order/detail",
