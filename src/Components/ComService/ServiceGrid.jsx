@@ -20,11 +20,7 @@ const ServiceGrid = () => {
     const fetchServices = async () => {
       try {
         const response = await getAllService();
-        if (response && response.data && response.data.items) {
-          setServices(response.data.items); // Lấy danh sách dịch vụ từ response
-        } else {
-          console.error("Dữ liệu không hợp lệ", response);
-        }
+        setServices(response);
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
       }

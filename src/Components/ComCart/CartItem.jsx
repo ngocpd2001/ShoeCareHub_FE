@@ -8,49 +8,38 @@ const CartItem = ({
   onQuantityChange,
   onRemove,
   onToggleSelect,
-  updateServiceQuantity,
+  // updateProductQuantity,
 }) => {
-  const [inputValue, setInputValue] = useState(service.quantity); 
-  const [quantity, setQuantity] = useState(service?.quantity || 1);
+  const [inputValue, setInputValue] = useState(service.quantity);
 
-  // const handleQuantityChange = (e) => {
-  //   const updatedQuantity = parseInt(e.target.value, 10);
-  //   if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
-  //     onQuantityChange(service.id, updatedQuantity - service.quantity);
-  //     setInputValue(updatedQuantity); // Cập nhật state với giá trị mới
-  //   } else {
-  //     setInputValue(""); // Xóa giá trị khi không hợp lệ
-  //   }
-  // };
-
-  const handleQuantityChange = (newQuantity) => {
-    if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
-    setQuantity(newQuantity);
-    updateServiceQuantity(service.id, newQuantity);
+  const handleQuantityChange = (e) => {
+    const updatedQuantity = parseInt(e.target.value, 10);
+    if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
+      onQuantityChange(service.id, updatedQuantity - service.quantity);
+      setInputValue(updatedQuantity);
+    } else {
+      setInputValue("");
+    }
   };
 
   const handleIncrease = () => {
     const newQuantity = inputValue + 1;
     onQuantityChange(service.id, 1);
-    setInputValue(newQuantity); // Cập nhật state với giá trị mới
+    setInputValue(newQuantity);
   };
 
   const handleDecrease = () => {
     if (inputValue > 0) {
       const newQuantity = inputValue - 1;
       onQuantityChange(service.id, -1);
-      setInputValue(newQuantity); // Cập nhật state với giá trị mới
+      setInputValue(newQuantity);
     }
   };
 
   const handleRemove = () => {
-    setInputValue(""); // Xóa giá trị khi nhấn nút xóa
+    setInputValue("");
     onRemove(service.id);
   };
-
-  const formatCurrency = (value) => value ? value.toLocaleString("vi-VN") + ' đ' : 'N/A';
-
-  const price = service && service.price ? service.price.toLocaleString("vi-VN") : "N/A";
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
@@ -72,18 +61,18 @@ const CartItem = ({
       </div>
 
       <div className="text-center col-span-1">
-        {service.promotion && service.promotion.newPrice ? (
+        {service.discountedPrice ? (
           <>
             <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {(service.promotion.newPrice || 0).toLocaleString()} đ
+              {service.discountedPrice.toLocaleString()} đ
             </div>
             <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {(service.price || 0).toLocaleString()} đ
+              {service.originalPrice.toLocaleString()} đ
             </div>
           </>
         ) : (
           <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-            {price}đ
+            {service.originalPrice.toLocaleString()} đ
           </div>
         )}
       </div>
@@ -114,7 +103,7 @@ const CartItem = ({
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
           {(
-            ((service.promotion && service.promotion.newPrice) || service.price || 0) *
+            (service.discountedPrice || service.originalPrice) *
             service.quantity
           ).toLocaleString()}{" "}
           đ

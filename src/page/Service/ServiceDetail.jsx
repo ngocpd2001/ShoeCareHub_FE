@@ -16,33 +16,39 @@ import InformationShop from "../../Components/ComService/InformationShop";
 import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate } from "react-router-dom";
+import { addItemToCart, getCartItems } from "../../api/cart";
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [currentService, setCurrentService] = useState(null);
+  const [service, setService] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
   const containerRef = useRef(null);
-  const { id } = useParams(); // Lấy id từ URL
+  const { id } = useParams();
   const navigate = useNavigate();
-  const [cart, setCart] = useState([]);
+  const serviceId = id;
+  const [cartItems, setCartItems] = useState([]);
 
-  // Định nghĩa dataImages
-  const dataImages = []; // Thay thế bằng dữ liệu thực tế nếu có
+  const dataImages = [];
 
   useEffect(() => {
-    const fetchService = async () => {
+    const fetchServiceData = async () => {
+      if (!serviceId) return;
       try {
-        const service = await getServiceById(id);
-        setCurrentService(service);
+        const fetchedService = await getServiceById(serviceId);
+        setService(fetchedService);
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin dịch vụ:", error);
-        // Thêm thông báo lỗi cho người dùng nếu cần
+        console.error("Lỗi khi tải thông tin dịch vụ:", error);
+        setError("Couldn't fetch service data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchService();
-  }, [id]); // Đảm bảo rằng id là dependency để gọi lại khi id thay đổi
+    fetchServiceData();
+  }, [serviceId]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -60,18 +66,35 @@ const ServiceDetail = () => {
     };
   }, []);
 
-  // Kiểm tra currentService và currentService.images trước khi sử dụng
-  const combinedData = currentService && currentService.images ? [
-    ...dataImages,
-    ...currentService.images.thumbnails.map((img) => ({
-      img,
-      type: "image",
-    })),
-  ] : [];
+  // useEffect(() => {
+  //   const fetchCartItems = async () => {
+  //     try {
+  //       const items = await getCartItems();
+  //       if (!items || items.length === 0) {
+  //         console.error("Cart is empty or data is not structured as expected");
+  //       }
+  //       setCartItems(items);
+  //     } catch (error) {
+  //       console.error("Lỗi khi tải giỏ hàng:", error.message || error);
+  //     }
+  //   };
 
-  if (!currentService) {
-    return <div>Đang tải...</div>;
-  }
+  //   fetchCartItems();
+  // }, []);
+
+  if (loading) return <div>Loading service details...</div>;
+  if (error) return <div>{error}</div>;
+
+  const combinedData =
+    service && service.images
+      ? [
+          ...dataImages,
+          ...service.images.thumbnails.map((img) => ({
+            img,
+            type: "image",
+          })),
+        ]
+      : [];
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
@@ -99,31 +122,94 @@ const ServiceDetail = () => {
 
   const MAX_LENGTH = 200;
 
-  const shortDescription = currentService.description.slice(0, MAX_LENGTH);
-  const isLongDescription = currentService.description.length > MAX_LENGTH;
+  const shortDescription = service.description
+    ? service.description.slice(0, MAX_LENGTH)
+    : "";
+  const isLongDescription = service.description
+    ? service.description.length > MAX_LENGTH
+    : false;
 
-  const handleAddToCart = () => {
-    if (currentService) {
-      const service = {
-        ...currentService,
-        quantity: quantity || 1, 
+  const handleAddToCart = async () => {
+    if (!service || service.id === 0) {
+      console.error("Service not found or service ID is 0");
+      return;
+    }
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const userId = user ? user.id : null;
+
+      if (!userId) {
+        console.error("User not logged in");
+        return;
+      }
+
+      const itemData = {
+        serviceId: service.id,
+        quantity: quantity,
       };
-      setCart((prevCart) => [...prevCart, service]);
-      navigate("/cart", { state: { service } }); 
+      console.log("Adding to cart:", { userId, itemData });
+      await addItemToCart(userId, itemData);
+      console.log("Item added to cart successfully");
+
+      // Điều hướng đến trang giỏ hàng sau khi thêm thành công
+      navigate("/cart");
+    } catch (error) {
+      if (error.response) {
+        console.error("Server error:", error.response.data);
+      } else if (error.request) {
+        console.error("Network error:", error.request);
+      } else {
+        console.error("Error:", error.message);
+      }
     }
   };
 
   const handleCheckout = () => {
-    if (currentService) {
-      const service = {
-        ...currentService,
+    if (service) {
+      const checkoutService = {
+        ...service,
         quantity: quantity || 1,
       };
-      navigate("/checkout", { state: { selectedItems: [service] } }); 
-    } else {
-      alert("Không có dịch vụ nào để thanh toán!");
+      navigate("/checkout", {
+        state: { selectedItems: [{ services: [checkoutService] }] },
+      });
     }
   };
+
+  const formatCurrency = (value) => {
+    return value ? value.toLocaleString("vi-VN") + "đ" : "N/A";
+  };
+
+  const formatRating = (rating) => {
+    return rating !== undefined ? rating.toFixed(1) : "N/A";
+  };
+
+  // const handleQuantityChange = async (id, change) => {
+  //   const itemToUpdate = cartItems.find(item => item.id === id);
+
+  //   if (!itemToUpdate) {
+  //     console.error("Item not found in cart");
+  //     return;
+  //   }
+
+  //   const newQuantity = itemToUpdate.quantity + change;
+
+  //   if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
+
+  //   try {
+  //     // Gọi API để cập nhật số lượng
+  //     await updateCartItem(id, newQuantity);
+
+  //     // Cập nhật trạng thái giỏ hàng
+  //     setCartItems(prevItems =>
+  //       prevItems.map(item =>
+  //         item.id === id ? { ...item, quantity: newQuantity } : item
+  //       )
+  //     );
+  //   } catch (error) {
+  //     console.error("Lỗi khi cập nhật số lượng:", error);
+  //   }
+  // };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -134,10 +220,10 @@ const ServiceDetail = () => {
             <div className="w-full md:w-1/2 p-6" ref={containerRef}>
               <div className="relative">
                 {/* Main Image */}
-                {currentService.images && (
+                {service.images && (
                   <img
-                    src={currentService.images.main}
-                    alt={currentService.name}
+                    src={service.images.main}
+                    alt={service.name}
                     className="w-full h-[500px] object-cover rounded-lg"
                   />
                 )}
@@ -204,15 +290,15 @@ const ServiceDetail = () => {
               <div className="flex flex-row justify-between items-center">
                 <div className="flex flex-col space-y-2 max-w-[70%]">
                   <h1 className="text-3xl font-bold text-gray-800 break-words">
-                    {currentService.name}
+                    {service.name}
                   </h1>
                   <h2 className="text-lg text-gray-400">
-                    Hiệu giày: {currentService.brand}
+                    Hiệu giày: {service.brand}
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
                   <h2 className="text-lg font-semibold text-[#D46F77] bg-[#EDF0F8] rounded-xl px-4 py-1 shadow-md whitespace-nowrap">
-                    {currentService.usage} Sử dụng
+                    {service.usage} Sử dụng
                   </h2>
                   <div className="ml-2 bg-[#FEE2E2] rounded-full h-10 w-10 flex items-center justify-center">
                     <FontAwesomeIcon
@@ -226,18 +312,18 @@ const ServiceDetail = () => {
               {/* Price-rating & feedback */}
               <div className="flex items-center justify-between mt-5 border-t pt-4">
                 <div className="flex flex-col items-start">
-                  {currentService.promotion && currentService.promotion.newPrice ? (
+                  {service.promotion && service.promotion.newPrice ? (
                     <>
                       <span className="text-3xl font-bold text-blue-800">
-                        {`${currentService.promotion.newPrice.toLocaleString("vi-VN")}đ`}
+                        {formatCurrency(service.promotion.newPrice)}
                       </span>
                       <span className="text-lg text-gray-400 line-through">
-                        {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                        {formatCurrency(service.price)}
                       </span>
                     </>
                   ) : (
                     <span className="text-[#3A4980] font-bold text-xl">
-                      {`${currentService.price.toLocaleString("vi-VN")}đ`}
+                      {formatCurrency(service.price)}
                     </span>
                   )}
                 </div>
@@ -248,12 +334,12 @@ const ServiceDetail = () => {
                       className="text-[#D48D3B]"
                     />
                     <span className="ml-2 text-[#D48D3B]">
-                      {currentService.rating.toFixed(1)}
+                      {formatRating(service.rating)}
                     </span>
                   </div>
                   <span className="bg-[#EDF0F8] text-[#3A4980] font-semibold rounded-xl px-2 py-1">
                     <FontAwesomeIcon icon={faCommentDots} className="pr-2" />
-                    {currentService.feedbackedNum} đánh giá
+                    {service.feedbackedNum} đánh giá
                   </span>
                 </div>
               </div>
@@ -271,7 +357,7 @@ const ServiceDetail = () => {
                 >
                   <p>
                     {isExpanded
-                      ? currentService.description
+                      ? service.description
                       : `${shortDescription}${isLongDescription ? "..." : ""}`}
                   </p>
                 </div>
@@ -287,6 +373,27 @@ const ServiceDetail = () => {
               </div>
 
               {/* Quantity */}
+              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6">
+                <span className="text-gray-500 text-xl font-semibold">
+                  Số lợng giày:
+                </span>
+                <div className="flex items-center bg-[#F3F3F3] rounded-full py-3 px-8 text-[#3A4980]">
+                  <button
+                    onClick={() => handleQuantityChange(service.id, -1)}
+                    className="mx-2 pr-6 text-xl font-medium"
+                  >
+                    -
+                  </button>
+                  <span className="text-2xl font-semibold">{quantity}</span>
+                  <button
+                    onClick={() => handleQuantityChange(service.id, 1)}
+                    className="mx-2 pl-6 text-2xl font-medium"
+                  >
+                    +
+                  </button>
+                </div>
+              </div> */}
+
               <div className="flex items-center mt-5 border-t pt-4 space-x-6">
                 <span className="text-gray-500 text-xl font-semibold">
                   Số lượng giày:

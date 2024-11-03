@@ -15,19 +15,15 @@ const ServiceCard = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getAllService();
+        const response = await getAllService(); // Gọi API với các tham số mặc định
         console.log(response); // Kiểm tra response từ API
-        if (response && response.data && response.data.items) {
-          setServices(response.data.items); // Lấy danh sách dịch vụ từ response
-        } else {
-          console.error("Dữ liệu không hợp lệ", response);
-        }
+        setServices(response); // Cập nhật danh sách dịch vụ từ response
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
       }
     };
 
-    fetchServices();
+    fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
   }, []); // Chỉ chạy một lần khi component được mount
 
   const handleFavoriteClick = (serviceId) => {

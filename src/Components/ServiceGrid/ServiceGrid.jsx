@@ -6,7 +6,6 @@ import { useNavigate } from "react-router-dom";
 const ServiceCard = ({ item, navigate }) => (
   <div 
     className="bg-white rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]"
-    onClick={() => { navigate(`/servicedetail/${item.id}`); }}
   >
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center">
       <img
@@ -45,7 +44,7 @@ const ServiceCard = ({ item, navigate }) => (
     <button 
       onClick={(e) => { 
         e.stopPropagation(); 
-        navigate(`/service/${item.id}`); 
+        navigate(`/servicedetail/${item.id}`); 
       }} 
       className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
