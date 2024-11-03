@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { API_ROOT } from 'utils/constants';
+
 
 // Custom Axios Type
 const AxiosClientFactoryEnum = {
@@ -7,7 +7,8 @@ const AxiosClientFactoryEnum = {
 };
 
 // ----------------------------------------------------------------------
-
+ const API_ROOT = 'https://shoecarehub.site/api';
+ 
 const parseParams = (params) => {
   const keys = Object.keys(params);
   let options = '';
@@ -35,13 +36,6 @@ const account = `${API_ROOT}`;
 const requestWebAdmin = axios.create({
   baseURL: account,
   paramsSerializer: parseParams
-});
-
-const requestWithAuth = axios.create({
-  baseURL: API_ROOT,
-  headers: {
-    'Content-Type': 'application/json'
-  }
 });
 
 requestWebAdmin.interceptors.request.use((options) => {
@@ -78,16 +72,6 @@ requestLogin.interceptors.response.use(
   (error) => Promise.reject((error.response && error.response.data) || 'Có lỗi xảy ra')
 );
 
-requestWithAuth.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers['Authorization'] = `Bearer ${token}`; 
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
-
 class AxiosClientFactory {
   getAxiosClient(type, config = {}) {
     switch (type) {
@@ -104,5 +88,3 @@ export const axiosInstances = {
 };
 
 export default axiosInstances.webAdmin;
-
-export { requestWithAuth };

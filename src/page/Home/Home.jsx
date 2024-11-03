@@ -9,6 +9,7 @@ import ShoeSlide4 from "../../assets/images/giatgiay.webp";
 import ShoeSlide5 from "../../assets/images/vaGiay.webp";
 import { getData } from "../../api/api";
 import { useNavigate } from "react-router-dom";
+import { getAllBusiness } from "../../api/businesses";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_HEIGHT = 360;
@@ -86,10 +87,7 @@ const Carousels = ({ title, items, type }) => {
 };
 
 const ServiceCard = ({ item, navigate }) => (
-  <div
-    onClick={() => navigate(`/servicedetail/${item.id}`)}
-    className="cursor-pointer"
-  >
+  <div className="cursor-pointer">
     <div className="mb-2 h-35 relative bg-gray-200 rounded-md flex items-center justify-center">
       <img
         src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
@@ -125,10 +123,7 @@ const ServiceCard = ({ item, navigate }) => (
       </>
     )}
     <button
-      onClick={(e) => {
-        e.stopPropagation(); // Ngăn chặn sự kiện onClick của thẻ cha
-        navigate(`/service/${item.id}`);
-      }}
+      onClick={() => navigate(`/servicedetail/${item.id}`)}
       className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
       Đặt Ngay
@@ -136,7 +131,7 @@ const ServiceCard = ({ item, navigate }) => (
   </div>
 );
 
-const SupplierCard = ({ item }) => (
+const SupplierCard = ({ item, navigate }) => (
   <>
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center py-2">
       <img
@@ -151,9 +146,12 @@ const SupplierCard = ({ item }) => (
       <Star className="w-4 h-4 fill-current text-yellow-400" />
     </div>
     <div className="text-sm text-gray-600">
-      Đã bán {item.orderCount.toLocaleString()} trong năm
+      Đã bán {item.orderCount ? item.orderCount.toLocaleString() : '0'} trong năm
     </div>
-    <button className="mt-2 w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition-colors">
+    <button 
+      onClick={() => navigate(`/provider-landingpage/${item.id}`)}
+      className="mt-2 w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition-colors"
+    >
       Chi Tiết
     </button>
   </>
@@ -161,58 +159,10 @@ const SupplierCard = ({ item }) => (
 
 export default function CarouselsSection() {
   const [services, setServices] = useState([]);
-  const services123 = [
-    {
-      id: 1,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-    {
-      id: 2,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-    {
-      id: 3,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-    {
-      id: 4,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-    {
-      id: 5,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-    {
-      id: 6,
-      name: "Tên Dịch Vụ",
-      rating: "5.0",
-      originalPrice: 1000000,
-      discountedPrice: 800000,
-      discount: 20,
-    },
-  ];
+  const [business, setBusiness] = useState([]);
 
-  const [dataImg, setDataImg] = useState([
+  // Đảm bảo rằng dataImg được khai báo và khởi tạo
+  const dataImg = [
     {
       img: ShoeSlide1,
     },
@@ -228,16 +178,8 @@ export default function CarouselsSection() {
     {
       img: ShoeSlide5,
     },
-  ]);
-
-  const suppliers = [
-    { id: 1, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
-    { id: 2, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
-    { id: 3, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
-    { id: 4, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
-    { id: 5, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
-    { id: 6, name: "Tên Nhà Cung Cấp", rating: "5.0", orderCount: 1000 },
   ];
+
   useEffect(() => {
     getData("/services?PageSize=99")
       .then((data) => {
@@ -250,7 +192,16 @@ export default function CarouselsSection() {
       .catch((error) => {
         console.log(error);
       });
+
+    getAllBusiness()
+      .then((data) => {
+        setBusiness(data);
+      })
+      .catch((error) => {
+        console.error('Lỗi khi lấy danh sách nhà cung cấp:', error);
+      });
   }, []);
+
   return (
     <div className="bg-[#F9F9F9]">
       {/* Using Marquee for auto-scrolling images */}
@@ -283,7 +234,7 @@ export default function CarouselsSection() {
         />
         <Carousels
           title="Nhà cung cấp tiêu biểu"
-          items={suppliers}
+          items={business}
           type="supplier"
         />
         <ServiceGrid />

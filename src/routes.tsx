@@ -1,4 +1,4 @@
-import { Outlet, createBrowserRouter } from "react-router-dom";
+import { Outlet, createBrowserRouter, Navigate } from "react-router-dom";
 import React from "react";
 import LoginPage from "./page/login/LoginPage";
 import ErrorPage from "./page/404/ErrorPage";
@@ -24,6 +24,22 @@ import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
 import UpdateEmployee from "./page/Owner/Employee/UpdateEmployee";
 import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
+import { isValidToken } from './utils/jwt';
+
+// Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
+const isAuthenticated = () => {
+  const token = localStorage.getItem('token');
+  console.log('Token:', token);
+  const isValid = isValidToken(token);
+  console.log('Is Valid Token:', isValid);
+  return isValid;
+};
+
+// Thành phần bảo vệ
+const RequireAuth = ({ children }: { children: JSX.Element }) => {
+  return isAuthenticated() ? children : <Navigate to="/login" />;
+};
+
 export const routers = createBrowserRouter([
   {
     path: "*",
@@ -54,7 +70,7 @@ export const routers = createBrowserRouter([
         element: <ServiceDetail />,
       },
       {
-        path: "/provider-landingpage",
+        path: "/provider-landingpage/:id",
         element: <ProviderLandingPage />,
       },
       {
@@ -81,11 +97,19 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/cart",
-        element: <UserCart />,
+        element: (
+          <RequireAuth>
+            <UserCart />
+          </RequireAuth>
+        ),
       },
       {
         path: "/checkout",
-        element: <Checkout />,
+        element: (
+          <RequireAuth>
+            <Checkout />
+          </RequireAuth>
+        ),
       },
     ],
   },

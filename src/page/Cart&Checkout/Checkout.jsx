@@ -12,16 +12,22 @@ const Checkout = () => {
     try {
       const updatedCartItems = await Promise.all(
         cartItems.map(async (shop) => {
-          if (shop.services && Array.isArray(shop.services)) { // Kiểm tra shop.services
+          if (shop.services && Array.isArray(shop.services)) {
             const updatedServices = await Promise.all(
               shop.services.map(async (service) => {
-                const serviceData = await getServiceById(service.id);
-                return { ...service, ...serviceData };
+                if (service && service.id) {
+                  const response = await getServiceById(service.id);
+                  const serviceData = response.data && response.data.items 
+                    ? response.data.items.find(item => item.id === service.id)
+                    : null;
+                  return { ...service, ...serviceData };
+                }
+                return service;
               })
             );
             return { ...shop, services: updatedServices };
           }
-          return shop; // Trả về shop nếu services không tồn tại hoặc không phải là mảng
+          return shop;
         })
       );
       setCartItems(updatedCartItems);
@@ -34,13 +40,7 @@ const Checkout = () => {
     if (initialCartItems.length > 0) {
       fetchServiceDetails();
     }
-  }, []);
-
-  useEffect(() => {
-    if (cartItems.length > 0) {
-      fetchServiceDetails();
-    }
-  }, [cartItems]);
+  }, [initialCartItems]);
 
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
@@ -53,22 +53,21 @@ const Checkout = () => {
     }
   }, []);
 
-  // Tính tổng tiền
   const totalAmount = cartItems.reduce((total, shop) => {
     if (shop && Array.isArray(shop.services)) {
       const shopTotal = shop.services.reduce((shopTotal, service) => {
         const servicePrice =
-          (service.promotion && service.promotion.newPrice) ||
-          service.price ||
+          (service && service.promotion && service.promotion.newPrice) ||
+          (service && service.price) ||
           0;
-        return shopTotal + servicePrice * (service.quantity || 1);
+        const serviceQuantity = service ? service.quantity || 1 : 1;
+        return shopTotal + servicePrice * serviceQuantity;
       }, 0);
       return total + shopTotal;
     }
     return total;
   }, 0);
 
-  // Tính tổng số dịch vụ
   const totalServices = cartItems.reduce((count, shop) => {
     if (shop && Array.isArray(shop.services)) {
       return count + shop.services.length;

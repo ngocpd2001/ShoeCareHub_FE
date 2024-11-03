@@ -27,7 +27,10 @@ const CheckoutCard = () => {
         {cartItems.map((shop) => {
           const shopTotal = (shop.services || []).reduce(
             (shopTotal, service) => {
-              const price = service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price;
+              if (!service) return shopTotal;
+              const price = service.promotion && service.promotion.newPrice !== undefined 
+                ? service.promotion.newPrice 
+                : service.price;
               return shopTotal + price * (service.quantity || 0);
             },
             0
@@ -65,7 +68,10 @@ const CheckoutCard = () => {
               </div>
 
               {(shop.services || []).map((service) => {
-                const price = service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price;
+                if (!service) return null;
+                const price = service.promotion && service.promotion.newPrice !== undefined 
+                  ? service.promotion.newPrice 
+                  : service.price;
                 const totalPrice = price * (service.quantity || 0);
 
                 return (
@@ -83,7 +89,7 @@ const CheckoutCard = () => {
 
                     <div className="items-center justify-center text-center">
                       <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                        {(service.promotion.newPrice !== undefined ? service.promotion.newPrice : service.price).toLocaleString()} đ
+                        {price.toLocaleString()} đ
                       </span>
                     </div>
 
