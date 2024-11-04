@@ -29,6 +29,11 @@ const ShopCart = ({
       fetchBranchData();
     }
   }, [shop.branchId]);
+
+  const handleQuantityChange = (serviceId, delta) => {
+    onQuantityChange(serviceId, delta);
+  };
+
   return (
     <div className="mb-6 border rounded-lg bg-white">
       {branchData && (
@@ -71,7 +76,10 @@ const ShopCart = ({
             onQuantityChange={onQuantityChange}
             onRemove={onRemove}
             onSelect={onSelect}
-          />
+          >
+            <button onClick={() => handleQuantityChange(service.id, 1)}>+</button>
+            <button onClick={() => handleQuantityChange(service.id, -1)}>-</button>
+          </CartItem>
         ))}
       </div>
     </div>

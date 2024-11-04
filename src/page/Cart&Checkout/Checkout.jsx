@@ -139,7 +139,7 @@ const Checkout = () => {
 
           <div className="flex justify-end mb-2">
             <div className="flex justify-between w-full max-w-md">
-              <h2 className="text-xl">Tổng thanh toán:</h2>
+              <h2 className="text-xl">Tổng tiền tạm tính:</h2>
               <span className="text-xl text-[#002278] text-right">
                 {totalAmount.toLocaleString()} đ
               </span>

@@ -3,13 +3,15 @@ import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getUserCart, createCart, deleteCart } from "../../api/cart";
+import { getUserCart, deleteCartItem } from "../../api/cart";
 import { getServiceById } from "../../api/service";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [showPopup, setShowPopup] = useState(false);
   const [branches, setBranches] = useState([]);
+  const [totalAmount, setTotalAmount] = useState(0);
+  const [savingsAmount, setSavingsAmount] = useState(0);
   const navigate = useNavigate();
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
@@ -102,14 +104,36 @@ const UserCart = () => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
+  useEffect(() => {
+    const calculateTotalAmount = () => {
+      return cartItems.reduce((sum, shop) => {
+        return sum + shop.services.reduce((serviceSum, service) => {
+          return serviceSum + (service.selected ? (service.promotion?.newPrice || service.price) * service.quantity : 0);
+        }, 0);
+      }, 0);
+    };
+
+    const total = calculateTotalAmount();
+    setTotalAmount(total);
+    setSavingsAmount(calculateSavings(cartItems));
+  }, [cartItems]);
+
+  useEffect(() => {
+    if (cartItems.length === 0) {
+      fetchCartItems();
+    }
+  }, [cartItems]);
+
   const handleCheckout = () => {
     const selectedItems = (cartItems || [])
       .map((shop) => ({
+        branchId: shop.branchId,
         shopName: shop.shopName,
         shopAddress: shop.shopAddress,
         services: (shop.services || []).filter((service) => service.selected),
       }))
       .filter((shop) => shop.services.length > 0);
+
     if (selectedItems.length === 0) {
       setShowPopup(true);
     } else {
@@ -132,54 +156,20 @@ const UserCart = () => {
     );
   };
 
-  const handleRemove = async (id) => {
+  const handleRemove = async (serviceId) => {
     try {
-      await deleteCart(id);
-      await fetchCartItems();
+      await deleteCartItem(serviceId);
+      setCartItems((prevShops) =>
+        prevShops.map((shop) => ({
+          ...shop,
+          services: shop.services.filter((service) => service.id !== serviceId),
+        })).filter((shop) => shop.services.length > 0)
+      );
+      console.log("Item removed successfully");
     } catch (error) {
-      console.error("Lỗi khi xóa mục:", error);
+      console.error("Error removing item:", error);
     }
   };
-
-  const handleCreateCart = async () => {
-    if (userId) {
-      try {
-        const newCart = await createCart(userId);
-        setCartItems([]);
-        console.log("New cart created:", newCart);
-      } catch (error) {
-        console.error("Error creating a new cart:", error);
-      }
-    }
-  };
-
-  const handleClearCart = async () => {
-    if (cartItems.length > 0) {
-      try {
-        await deleteCart(cartItems[0].id);
-        setCartItems([]);
-        console.log("Cart cleared successfully");
-      } catch (error) {
-        console.error("Error clearing cart:", error);
-      }
-    }
-  };
-
-  const totalAmount = cartItems.reduce((total, shop) => {
-    if (!shop || !Array.isArray(shop.services)) return total;
-    return (
-      total +
-      shop.services.reduce(
-        (shopTotal, service) =>
-          service.selected
-            ? shopTotal +
-              (service.promotion?.newPrice || service.price || 0) *
-                service.quantity
-            : shopTotal,
-        0
-      )
-    );
-  }, 0);
 
   const selectedServiceCount = cartItems.reduce((count, shop) => {
     if (!shop || !Array.isArray(shop.services)) return count;
@@ -230,6 +220,35 @@ const UserCart = () => {
     );
   };
 
+  const handleRemoveSelectedItems = async () => {
+    const selectedItems = cartItems.flatMap((shop) =>
+      shop.services.filter((service) => service.selected).map((service) => service.id)
+    );
+
+    try {
+      await Promise.all(selectedItems.map((itemId) => deleteCartItem(itemId)));
+      setCartItems((prevShops) =>
+        prevShops.map((shop) => ({
+          ...shop,
+          services: shop.services.filter((service) => !service.selected),
+        })).filter((shop) => shop.services.length > 0)
+      );
+      console.log("Selected items removed successfully");
+    } catch (error) {
+      console.error("Error removing selected items:", error);
+    }
+  };
+
+  const calculateSavings = (items) => {
+    return items.reduce((totalSavings, shop) => {
+      return totalSavings + shop.services.reduce((shopSavings, service) => {
+        return shopSavings + (service.selected && service.promotion?.newPrice
+          ? (service.price - service.promotion.newPrice) * service.quantity
+          : 0);
+      }, 0);
+    }, 0);
+  };
+
   return (
     <div className="auto px-4 bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
@@ -243,13 +262,7 @@ const UserCart = () => {
             <h2 className="text-[#002278] text-3xl font-bold mb-2">
               0 Dịch vụ
             </h2>
-            <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
-            <button
-              onClick={handleCreateCart}
-              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded"
-            >
-              Tạo giỏ hàng mới
-            </button>
+            <p className="text-gray-500 text-xl">Giỏ hàng của b���n trống</p>
           </div>
         ) : (
           <div>
@@ -263,11 +276,11 @@ const UserCart = () => {
                   onChange={handleSelectAllShops}
                   className="mr-2"
                 />
-                <h2 className="text-left">Sản phẩm</h2>
+                <h2 className="text-left">Dịch vụ</h2>
               </div>
               <div className="font-semibold text-xl text-center">Đơn giá</div>
-              <div className="font-semibold text-xl text-center pr-8">
-                Số lượng
+              <div className="font-semibold text-xl text-center">
+                Số lượng (đôi giày)
               </div>
               <div className="flex flex-row items-center">
                 <div className="font-semibold text-xl text-center w-[70%] pr-6">
@@ -281,6 +294,8 @@ const UserCart = () => {
                   key={item.branchId}
                   shop={item}
                   userId={userId}
+                  setCartItems={setCartItems}
+                  setTotalAmount={setTotalAmount}
                   onQuantityChange={handleQuantityChange}
                   onRemove={handleRemove}
                   onSelectAll={handleSelectAll}
@@ -292,25 +307,29 @@ const UserCart = () => {
         {branches.length > 0 && (
           <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
             <div className="flex items-center text-xl">
-              <button onClick={handleClearCart} className="ml-4 text-gray-500">
+                 <input
+                  type="checkbox"
+                  checked={cartItems.every((shop) =>
+                    shop.services.every((service) => service.selected)
+                  )}
+                  onChange={handleSelectAllShops}
+                  className="mr-4"
+                />
+              <span className="font-bold">Chọn tất cả</span>
+              <button onClick={handleRemoveSelectedItems} className="ml-4 text-gray-500">
                 Xóa
               </button>
-              <button
-                onClick={handleSelectAllShops}
-                className="ml-4 text-gray-500"
-              >
-                Chọn tất cả
-              </button>
+
             </div>
             <div className="text-right">
               <div className="text-xl">
-                <span>Tổng thanh toán: {totalAmount.toLocaleString()} đ</span>
+                <span>Tổng tiền dịch vụ: {totalAmount.toLocaleString()} đ</span>
               </div>
               <div className="text-lg">
                 <span>({selectedServiceCount} dịch vụ)</span>
               </div>
               <div className="text-lg">
-                <span>Tiết kiệm: </span>
+                <span>Tiết kiệm: {savingsAmount.toLocaleString()} đ</span>
               </div>
             </div>
             <button

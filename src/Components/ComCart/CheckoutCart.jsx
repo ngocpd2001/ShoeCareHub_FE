@@ -37,13 +37,16 @@ const CheckoutCart = ({ cartItems }) => {
     <div className="px-4 pt-4 bg-white">
       <div>
         <div className="grid grid-cols-4 items-center justify-center p-4 h-15">
-          <div className="font-semibold text-xl text-center">Sản phẩm</div>
+          <div className="font-semibold text-xl text-center">Dịch vụ</div>
           <div className="font-semibold text-xl text-center">Đơn giá</div>
-          <div className="font-semibold text-xl text-center">Số lượng</div>
+          <div className="font-semibold text-xl text-center">Số lượng (đôi giày)</div>
           <div className="font-semibold text-xl text-center">Thành tiền</div>
         </div>
 
         {cartItems.map((shop) => {
+          const branch = shop.branchId ? { name: shop.shopName, address: shop.shopAddress } : shop.services?.[0]?.branchServices?.[0]?.branch;
+          const shopName = branch ? branch.name : "Tên cửa hàng không có";
+          const shopAddress = branch ? branch.address : "Địa chỉ không có";
           const shopTotal = (shop.services || []).reduce(
             (shopTotal, service) => {
               if (!service) return shopTotal;
@@ -67,8 +70,8 @@ const CheckoutCart = ({ cartItems }) => {
                     icon={faStore}
                     className="text-[#002278] mr-3"
                   />
-                  <h2 className="text-xl font-bold text-[#002278] mr-2 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    {shop.shopName || "Tên cửa hàng không có"}
+                  <h2 className="text-xl font-medium text-[#002278] mr-2 max-w-sm break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                    {shopName}
                   </h2>
                   <FontAwesomeIcon
                     icon={faMessage}
@@ -82,7 +85,7 @@ const CheckoutCart = ({ cartItems }) => {
                     className="text-[#002278] bg-[#F9F1E7] mr-3"
                   />
                   <h2 className="text-xl text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    {shop.shopAddress || "Địa chỉ không có"}
+                    {shopAddress}
                   </h2>
                 </div>
               </div>
