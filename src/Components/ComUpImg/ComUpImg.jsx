@@ -13,11 +13,11 @@ const ComUpImg = ({
   const [fileList, setFileList] = useState([]);
   const maxImages = numberImg || 15;
   const isImageFile = (file) => {
-    const acceptedFormats = [".jpeg", ".jpg", ".png", ".gif"];
+    const acceptedFormats = [".jpeg", ".jpg", ".png", ".gif", ".mp4"];
     const fileExtension = file.name.toLowerCase();
 
     if (!acceptedFormats.some((format) => fileExtension.endsWith(format))) {
-      message.error("Chỉ cho phép chọn các tệp hình ảnh.");
+      message.error("Chỉ cho phép chọn các tệp hình ảnh và video.");
       return false; // Ngăn tải lên nếu không phải là hình ảnh
     }
 
@@ -55,7 +55,7 @@ const ComUpImg = ({
         listType={listType || "picture-card"}
         onChange={handleFileChange}
         beforeUpload={() => false} // Để tránh tải lên tự động
-        accept=".jpg,.jpeg,.png,.gif" // Chỉ cho phép chọn các tệp hình ảnh
+        accept=".jpg,.jpeg,.png,.gif,.mp4" // Chỉ cho phép chọn các tệp hình ảnh
         multiple={multiple || true} // Cho phép chọn nhiều tệp
       >
         <PlusOutlined />
