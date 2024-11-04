@@ -1,8 +1,8 @@
 import axios from "axios";
 const api = axios.create({
   // baseURL: process.env.REACT_APP_BASE_URLS,
-  baseURL: "http://localhost:5129/api",
-  // baseURL: "https://shoecarehub.site/api/",
+  // baseURL: "http://localhost:5129/api",
+  baseURL: "https://shoecarehub.site/api/",
 
   // withCredentials: true,
 });
