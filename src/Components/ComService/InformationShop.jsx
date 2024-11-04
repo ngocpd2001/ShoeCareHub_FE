@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faCommentDots } from "@fortawesome/free-solid-svg-icons";
 import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { getBusinessById } from "../../api/businesses";
 import { getBranchByBusinessId } from "../../api/branch";
@@ -13,6 +13,7 @@ const InformationShop = () => {
   const [branches, setBranches] = useState([]);
   const location = useLocation();
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const toggleDropdown = async () => {
     setDropdownOpen(!isDropdownOpen);
@@ -102,7 +103,10 @@ const InformationShop = () => {
                 )}
               </div>
             ) : (
-              <button className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3">
+              <button
+                onClick={() => navigate(`/provider-landingpage/${business.id}`)}
+                className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3"
+              >
                 Xem Shop
               </button>
             )}
@@ -164,13 +168,13 @@ const InformationShop = () => {
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Tham gia</span>
           <span className="text-lg text-[#002278] font-normal">
-            {business.joined}
+            {business.createdDate}
           </span>
         </div>
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Số lượt sử dụng</span>
           <span className="text-lg text-[#002278] font-normal">
-            {business.usage}
+            {business.totalOrder}
           </span>
         </div>
       </div>

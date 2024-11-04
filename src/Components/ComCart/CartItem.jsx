@@ -1,45 +1,86 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
+import { updateCartItemQuantity, deleteCartItem } from "../../api/cart";
 
-const CartItem = ({
-  service,
-  onQuantityChange,
-  onRemove,
-  onToggleSelect,
-  // updateProductQuantity,
-}) => {
-  const [inputValue, setInputValue] = useState(service.quantity);
+const CartItem = ({ service, userId, onQuantityChange, onRemove, onToggleSelect }) => {
+  // console.log("Service", service);
 
-  const handleQuantityChange = (e) => {
+  const [inputValue, setInputValue] = useState(service.quantity || 0);
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  useEffect(() => {
+    const price = service.promotion && service.promotion.newPrice ? service.promotion.newPrice : service.price;
+    setTotalPrice(price * inputValue);
+  }, [inputValue, service]);
+
+  const handleQuantityChange = async (e) => {
     const updatedQuantity = parseInt(e.target.value, 10);
+    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', updatedQuantity);
+    if (!userId) {
+      console.error('User ID is undefined for service:', service);
+      return;
+    }
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
-      onQuantityChange(service.id, updatedQuantity - service.quantity);
-      setInputValue(updatedQuantity);
+      try {
+        await updateCartItemQuantity(service.id, updatedQuantity);
+        onQuantityChange(service.id, updatedQuantity - service.quantity);
+        setInputValue(updatedQuantity);
+        service.quantity = updatedQuantity;
+      } catch (error) {
+        console.error('Có lỗi xảy ra khi cập nhật số lượng:', error);
+      }
     } else {
-      setInputValue("");
+      setInputValue(e.target.value);
     }
   };
 
-  const handleIncrease = () => {
-    const newQuantity = inputValue + 1;
-    onQuantityChange(service.id, 1);
-    setInputValue(newQuantity);
+  const handleIncrease = async () => {  
+    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue + 1);  
+    if (!userId) {  
+      console.error('User ID is undefined for service:', service);  
+      return;  
+    }  
+    try {  
+      await updateCartItemQuantity(service.id, inputValue + 1);  
+      setInputValue(inputValue + 1);
+      service.quantity = inputValue + 1;
+    } catch (error) {  
+      console.error('Có lỗi xảy ra:', error);  
+    }  
   };
 
-  const handleDecrease = () => {
-    if (inputValue > 0) {
+  const handleDecrease = async () => {
+    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue - 1);
+    if (!userId) {
+      console.error('User ID is undefined for service:', service);
+      return;
+    }
+    if (inputValue > 1) {
       const newQuantity = inputValue - 1;
-      onQuantityChange(service.id, -1);
-      setInputValue(newQuantity);
+      try {
+        await updateCartItemQuantity(service.id, newQuantity);
+        setInputValue(newQuantity);
+        service.quantity = newQuantity;
+      } catch (error) {
+        console.error('Có lỗi xảy ra:', error);
+      }
     }
   };
 
-  const handleRemove = () => {
-    setInputValue("");
-    onRemove(service.id);
+  const handleRemove = async () => {
+    try {
+      await deleteCartItem(service.id);
+      setInputValue("");
+      onRemove(service.id);
+    } catch (error) {
+      console.error('Có lỗi xảy ra khi xóa mục:', error);
+    }
   };
+
+  // Kiểm tra giá trị userId
+  // console.log("User ID trong CartItem:", userId);
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
@@ -61,18 +102,18 @@ const CartItem = ({
       </div>
 
       <div className="text-center col-span-1">
-        {service.discountedPrice ? (
+        {service.promotion && service.promotion.newPrice ? (
           <>
             <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {service.discountedPrice.toLocaleString()} đ
+              {service.promotion.newPrice.toLocaleString()} đ
             </div>
             <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {service.originalPrice.toLocaleString()} đ
+              {service.price.toLocaleString()} đ
             </div>
           </>
         ) : (
           <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-            {service.originalPrice.toLocaleString()} đ
+            {service.price.toLocaleString()} đ
           </div>
         )}
       </div>
@@ -89,6 +130,7 @@ const CartItem = ({
             type="number"
             value={inputValue}
             onChange={handleQuantityChange}
+            onFocus={() => setInputValue("")}
             className="w-10 h-full border-r-2 border-[#002278] text-lg text-center cart-item-input"
           />
           <button
@@ -102,11 +144,7 @@ const CartItem = ({
 
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-          {(
-            (service.discountedPrice || service.originalPrice) *
-            service.quantity
-          ).toLocaleString()}{" "}
-          đ
+          {totalPrice.toLocaleString()}{" "} đ
         </span>
 
         <button onClick={handleRemove} className="text-[#002278] w-[30%]">

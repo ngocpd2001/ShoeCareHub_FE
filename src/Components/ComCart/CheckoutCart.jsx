@@ -1,17 +1,69 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faStore } from "@fortawesome/free-solid-svg-icons";
 import { faMessage } from "@fortawesome/free-regular-svg-icons";
 import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
+import { getAddressByAccountId } from '../../api/user';
 
 const CheckoutCard = () => {
   const location = useLocation();
   const { selectedItems: cartItems = [] } = location.state || {};
   const [deliveryOption, setDeliveryOption] = useState("delivery");
+  const [address, setAddress] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const accountId = user ? user.id : null;
+  const [note, setNote] = useState("");
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (accountId) {
+        try {
+          const addressData = await getAddressByAccountId(accountId);
+          setAddress(addressData);
+        } catch (error) {
+          console.error("Lỗi khi lấy địa chỉ:", error);
+        }
+      }
+    };
+
+    fetchAddress();
+  }, [accountId]);
 
   const handleDeliveryOptionChange = (event) => {
     setDeliveryOption(event.target.value);
+  };
+
+  const handleSubmit = async () => {
+    const payload = {
+      cartItemIds: cartItems.map(item => item.id), // Lấy danh sách ID sản phẩm từ giỏ hàng
+      accountId: accountId || "your_user_id", // ID tài khoản, thay thế bằng giá trị hợp lệ
+      addressId: address ? address[0].id : "your_address_id", // ID địa chỉ, thay thế bằng giá trị hợp lệ
+      isAutoReject: false, // Giá trị mặc định
+      note: note || "Ghi chú nếu cần...", // Gắn giá trị cho lời nhắn
+      deliveredFee: 0, // Phí giao hàng (có thể thay đổi theo logic của bạn)
+      shippingUnit: "string", // Đơn vị giao hàng (có thể thay đổi theo logic của bạn)
+      shippingCode: "string" // Mã giao hàng (có thể thay đổi theo logic của bạn)
+    };
+
+    try {
+      const response = await fetch('/api/your-endpoint', { // Thay đổi '/api/your-endpoint' thành endpoint thực tế
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error('Lỗi khi gửi yêu cầu');
+      }
+
+      const data = await response.json();
+      console.log('Phản hồi từ server:', data);
+    } catch (error) {
+      console.error('Lỗi:', error);
+    }
   };
 
   return (
@@ -38,7 +90,7 @@ const CheckoutCard = () => {
 
           return (
             <div
-              key={shop}
+              key={shop.id}
               className="bg-white p-4 border border-[#002278] rounded-lg mb-8"
             >
               <div className="grid grid-cols-2 py-3 border-b bg-[#F9F1E7] px-4">
@@ -48,7 +100,7 @@ const CheckoutCard = () => {
                     className="text-[#002278] mr-3"
                   />
                   <h2 className="text-xl font-bold text-[#002278] mr-2 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    {shop.shopName}
+                    {shop.shopName || "Tên cửa hàng không có"}
                   </h2>
                   <FontAwesomeIcon
                     icon={faMessage}
@@ -62,7 +114,7 @@ const CheckoutCard = () => {
                     className="text-[#002278] bg-[#F9F1E7] mr-3"
                   />
                   <h2 className="text-xl text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    {shop.shopAddress}
+                    {shop.shopAddress || "Địa chỉ không có"}
                   </h2>
                 </div>
               </div>
@@ -119,6 +171,8 @@ const CheckoutCard = () => {
                   <textarea
                     className="w-full p-2 border border-gray-300 rounded h-34"
                     placeholder="Lưu ý cho cửa hàng..."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
                   />
                 </div>
 
@@ -130,7 +184,7 @@ const CheckoutCard = () => {
                         deliveryOption === "delivery"
                           ? "bg-[#002278] text-white"
                           : "bg-white text-black"
-                      } flex items-center justify-between`}
+                      } flex items-center justify-between h-29`}
                     >
                       <div className="flex flex-col">
                         <label className="flex items-center font-semibold text-xl">
@@ -148,12 +202,18 @@ const CheckoutCard = () => {
                             deliveryOption === "delivery"
                               ? "text-white"
                               : "text-black"
-                          }`}
+                          } break-words`}
                         >
-                          Đơn hàng sẽ giao tại địa chỉ của tài khon bạn
+                          {address ? (
+                            <>
+                              {address[0].address}, {address[0].ward},<br /> {address[0].province}, {address[0].city}
+                            </>
+                          ) : (
+                            "Đang tải địa chỉ..."
+                          )}
                         </p>
                       </div>
-                      <p className="font-medium">Cập nhật sau</p>
+                      <p className="font-medium">Chỉnh sửa</p>
                     </div>
 
                     <div

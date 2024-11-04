@@ -4,7 +4,7 @@ import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { Button, Dropdown, Menu, Pagination } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { getAllService } from "../../api/service"; // Import hàm API
+import { getServiceByBusinessId } from "../../api/service"; // Cập nhật import
 import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 
@@ -12,14 +12,14 @@ const ServiceGrid = () => {
   const navigate = useNavigate(); // Sử dụng useNavigate
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
-  const [favorites, setFavorites] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 8;
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getAllService();
+        const businessId = 1; // Thay đổi giá trị BusinessId theo nhu cầu
+        const response = await getServiceByBusinessId(businessId, currentPage, pageSize);
         setServices(response);
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
@@ -27,7 +27,7 @@ const ServiceGrid = () => {
     };
 
     fetchServices();
-  }, []); // Chỉ chạy một lần khi component được mount
+  }, [currentPage]); // Chạy lại khi currentPage thay đổi
 
   const handleFocus = () => {
     setSelected(true);
@@ -37,26 +37,11 @@ const ServiceGrid = () => {
     setSelected(false);
   };
 
-  const handleFavoriteClick = (serviceId) => {
-    setFavorites((prevFavorites) => {
-      if (prevFavorites.includes(serviceId)) {
-        return prevFavorites.filter((id) => id !== serviceId);
-      } else {
-        return [...prevFavorites, serviceId];
-      }
-    });
-  };
-
   const totalPages = Math.ceil(services.length / pageSize);
 
   const onPageChange = (page) => {
     setCurrentPage(page);
   };
-
-  const displayedServices = services.slice(
-    (currentPage - 1) * pageSize,
-    currentPage * pageSize
-  );
 
   // Định nghĩa hàm handleMenuClick trước khi sử dụng
   const handleMenuClick = (e) => {
@@ -83,9 +68,7 @@ const ServiceGrid = () => {
         <h2 className="text-lg font-semibold text-center">SẮP XẾP THEO</h2>
 
         <Button
-          className={`mx-3 ${
-            selected ? "bg-white border-3 border-[#3A4980] text-white" : ""
-          } text-center`}
+          className={`mx-3 ${selected ? "bg-white border-3 border-[#3A4980] text-white" : ""} text-center`}
           onFocus={handleFocus}
           onBlur={handleBlur}
         >
@@ -99,37 +82,26 @@ const ServiceGrid = () => {
         </Dropdown>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 shadow-md">
-        {displayedServices.map((service) => (
+        {services.map((service) => (
           <div
             key={service.id}
-            className="bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[350px] relative"
-            onClick={() => handleCardClick(service.id)} 
+            className="bg-white p-2 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[350px] relative"
+            onClick={() => handleCardClick(service.id)}
           >
             <div className="relative flex-grow overflow-hidden">
               <img
-                src={service.image}
+                src={service.assetUrls[0]?.url} // Cập nhật để lấy hình ảnh từ assetUrls
                 alt={service.name}
                 className="w-full h-50 object-cover rounded"
               />
-              <div className="absolute top-2 right-2">
-                <button
-                  onClick={() => handleFavoriteClick(service.id)}
-                  className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center"
-                >
-                  <FontAwesomeIcon
-                    icon={
-                      favorites.includes(service.id)
-                        ? faHeartSolid
-                        : faHeartRegular
-                    }
-                    className={`text-[#3A4980] ${
-                      favorites.includes(service.id)
-                        ? "text-[#3A4980]"
-                        : "text-gray-400"
-                    }`}
-                    size="xl"
-                  />
-                </button>
+              <div className="absolute top-1 right-1">
+                {service.promotion && service.promotion.newPrice && (
+                  <div className="bg-red-500 text-white rounded-lg px-2 py-1">
+                    <span className="text-sm font-bold">
+                      -{Math.round(((service.price - service.promotion.newPrice) / service.price) * 100)}%
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
             <h3 className="text-lg font-semibold mt-2">{service.name}</h3>
@@ -150,16 +122,9 @@ const ServiceGrid = () => {
             <div className="flex items-center mt-1">
               <span className="text-yellow-500 flex">
                 {[...Array(5)].map((_, index) => {
-                  const fillPercentage = Math.max(
-                    0,
-                    Math.min(100, (services[0].rating - index) * 100)
-                  );
+                  const fillPercentage = Math.max(0, Math.min(100, (service.rating - index) * 100));
                   return (
-                    <div
-                      key={index}
-                      className="relative inline-block w-4 h-4"
-                      style={{ marginRight: "4px" }}
-                    >
+                    <div key={index} className="relative inline-block w-4 h-4" style={{ marginRight: "4px" }}>
                       <FaStar
                         style={{
                           position: "absolute",
@@ -185,16 +150,7 @@ const ServiceGrid = () => {
                   );
                 })}
               </span>
-              <span className="ml-1 text-xs text-gray-600">
-                ({service.rating})
-              </span>
-            </div>
-            <div className="mt-3 flex justify-start">
-              {service.promotion && service.promotion.saleOff ? (
-                <span className="bg-red-500 text-white rounded-full px-2 py-1">
-                  SaleOff: {service.promotion.saleOff}%
-                </span>
-              ) : null}
+              <span className="ml-1 text-xs text-gray-600">({service.rating})</span>
             </div>
           </div>
         ))}
@@ -203,7 +159,7 @@ const ServiceGrid = () => {
       <div className="flex justify-center mt-4">
         <Pagination
           current={currentPage}
-          total={services.length}
+          total={totalPages * pageSize} // Cập nhật tổng số trang
           pageSize={pageSize}
           onChange={onPageChange}
           showSizeChanger={false}

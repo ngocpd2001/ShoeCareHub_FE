@@ -1,7 +1,4 @@
-import axios from 'axios';
 import { axiosInstances } from '../utils/axios';
-
-const API_BASE_URL = 'https://shoecarehub.site/api';
 
 // Lấy thông tin giỏ hàng của người dùng
 export const getUserCart = async (userId) => {
@@ -17,7 +14,7 @@ export const getUserCart = async (userId) => {
 // Tạo một giỏ hàng mới cho người dùng
 export const createCart = async (userId) => {
   try {
-    const response = await axios.post(`${API_BASE_URL}/carts?userId=${userId}`);
+    const response = await axiosInstances.login.post(`/carts?userId=${userId}`);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi tạo giỏ hàng mới:', error);
@@ -28,7 +25,7 @@ export const createCart = async (userId) => {
 // Xóa tất cả các dịch vụ trong giỏ hàng
 export const deleteCart = async (cartId) => {
   try {
-    const response = await axios.delete(`${API_BASE_URL}/carts/${cartId}/clear`);
+    const response = await axiosInstances.login.delete(`/carts/${cartId}/clear`);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi xóa giỏ hàng:', error);
@@ -39,10 +36,8 @@ export const deleteCart = async (cartId) => {
 // Lấy danh sách tất cả các mục trong giỏ hàng
 export const getCartItems = async (cartId) => {
   try {
-    
-    const response = await axiosInstances.login.get(`/cartitems/cart/${cartId}`);
-    console.log(response.data.data);
-    return response.data.data;
+    const response = await axiosInstances.login.get(`/carts/${cartId}/items`);
+    return response.data;
   } catch (error) {
     console.error('Lỗi khi lấy danh sách mục trong giỏ hàng:', error);
     throw error;
@@ -52,20 +47,29 @@ export const getCartItems = async (cartId) => {
 // Thêm một mục mới vào giỏ hàng
 export const addItemToCart = async (userId, itemData) => {
   try {
-    const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, itemData);
+    // Đảm bảo rằng itemData có cấu trúc đúng
+    const requestBody = {
+      serviceId: itemData.serviceId,
+      branchId: itemData.branchId,
+      quantity: itemData.quantity,
+    };
+
+    const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, requestBody);
     return response.data;
   } catch (error) {
     if (error.response) {
       // Server responded with a status other than 2xx
-      console.error('Server error:', error.response.data);
+      console.error('Lỗi từ server:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
     } else if (error.request) {
       // Request was made but no response received
-      console.error('Network error:', error.request);
+      console.error('Lỗi mạng:', error.request);
+      throw new Error('Network error: No response received');
     } else {
       // Something else happened
-      console.error('Error:', error.message);
+      console.error('Lỗi:', error.message);
+      throw new Error(`Error: ${error.message}`);
     }
-    throw error;
   }
 };
 
@@ -79,3 +83,72 @@ export const updateCartItem = async (cartId, itemId, quantity) => {
     throw error;
   }
 };
+
+// Cập nhật số lượng của một mục trong giỏ hàng
+export const updateCartItemQuantity = async (serviceId, quantity) => {
+  try {
+    const response = await axiosInstances.login.put(`/cartitems/${serviceId}`, quantity);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi khi cập nhật số lượng mục trong giỏ hàng:', error.response.data);
+    } else if (error.request) {
+      console.error('Không nhận được phản hồi từ máy chủ:', error.request);
+    } else {
+      console.error('Lỗi khi thiết lập yêu cầu:', error.message);
+    }
+    throw error;
+  }
+};
+
+// Lấy tổng tiền của giỏ hàng
+export const getCartTotal = async (cartId) => {
+  try {
+    const response = await axiosInstances.login.get(`/carts/${cartId}/total`);
+    return response.data.total;
+  } catch (error) {
+    console.error('Lỗi khi lấy tổng tiền của giỏ hàng:', error);
+    throw error;
+  }
+};
+
+// Xóa một mục trong giỏ hàng
+export const deleteCartItem = async (itemId) => {
+  try {
+    const response = await axiosInstances.login.delete('/cartitems', {
+      data: [itemId], // Gửi ID của mục cần xóa trong body
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi từ server:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.error('Lỗi mạng:', error.request);
+      throw new Error('Network error: No response received');
+    } else {
+      console.error('Lỗi:', error.message);
+      throw new Error(`Error: ${error.message}`);
+    }
+  }
+};
+
+export const checkout = async (cartItemIds, accountId, addressId, note) => {
+  try {
+    const response = await axiosInstances.login.post('/carts/cart/checkout', {
+      cartItemIds,
+      accountId,
+      addressId,
+      isAutoReject: true,
+      note,
+      deliveredFee: 0,
+      shippingUnit: "string",
+      shippingCode: "string"
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi thực hiện checkout:', error);
+    throw error;
+  }
+};
+

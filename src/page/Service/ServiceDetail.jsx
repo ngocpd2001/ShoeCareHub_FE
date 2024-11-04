@@ -41,7 +41,7 @@ const ServiceDetail = () => {
         setService(fetchedService);
       } catch (error) {
         console.error("Lỗi khi tải thông tin dịch vụ:", error);
-        setError("Couldn't fetch service data");
+        setError("Cannot fetch service data!");
       } finally {
         setLoading(false);
       }
@@ -143,8 +143,11 @@ const ServiceDetail = () => {
         return;
       }
 
+      const branchId = service.branchServices[0]?.branch.id;
+
       const itemData = {
         serviceId: service.id,
+        branchId: branchId,
         quantity: quantity,
       };
       console.log("Adding to cart:", { userId, itemData });
@@ -293,19 +296,19 @@ const ServiceDetail = () => {
                     {service.name}
                   </h1>
                   <h2 className="text-lg text-gray-400">
-                    Hiệu giày: {service.brand}
+                    Chi nhánh: {service.branchServices[0]?.branch.name}
                   </h2>
                 </div>
                 <div className="flex items-center space-x-2">
                   <h2 className="text-lg font-semibold text-[#D46F77] bg-[#EDF0F8] rounded-xl px-4 py-1 shadow-md whitespace-nowrap">
-                    {service.usage} Sử dụng
+                    {service.orderedNum} Sử dụng
                   </h2>
-                  <div className="ml-2 bg-[#FEE2E2] rounded-full h-10 w-10 flex items-center justify-center">
+                  {/* <div className="ml-2 bg-[#FEE2E2] rounded-full h-10 w-10 flex items-center justify-center">
                     <FontAwesomeIcon
                       icon={faHeart}
                       className="text-[#D46F77]"
                     />
-                  </div>
+                  </div> */}
                 </div>
               </div>
 

@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-// import { faStar, faChevronRight } from "@fortawesome/free-solid-svg-icons";
-import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
-import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
-import { getAllService } from "../../api/service";
+import { getServiceByBusinessId } from "../../api/service";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate thay vì useHistory
 
@@ -15,7 +12,8 @@ const ServiceCard = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getAllService(); // Gọi API với các tham số mặc định
+        const businessId = 1; // Thay đổi giá trị BusinessId theo nhu cầu
+        const response = await getServiceByBusinessId(businessId); // Gọi API với BusinessId
         console.log(response); // Kiểm tra response từ API
         setServices(response); // Cập nhật danh sách dịch vụ từ response
       } catch (error) {
@@ -25,17 +23,6 @@ const ServiceCard = () => {
 
     fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
   }, []); // Chỉ chạy một lần khi component được mount
-
-  const handleFavoriteClick = (serviceId) => {
-    // Toggle trạng thái yêu thích
-    setFavorites((prevFavorites) => {
-      if (prevFavorites.includes(serviceId)) {
-        return prevFavorites.filter((id) => id !== serviceId);
-      } else {
-        return [...prevFavorites, serviceId];
-      }
-    });
-  };
 
   const handleCardClick = (serviceId) => {
     navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
@@ -50,30 +37,21 @@ const ServiceCard = () => {
           onClick={() => handleCardClick(service.id)} // Thêm sự kiện onClick
         >
           <img
-            src={service.image}
+            src={service.assetUrls[0]?.url} // Cập nhật để lấy hình ảnh từ assetUrls
             alt={service.name}
             className="w-full h-50 object-cover rounded"
           />
           <div className="absolute top-2 right-2">
-            <button
-              onClick={(e) => {
-                e.stopPropagation(); // Ngăn chặn sự kiện onClick của thẻ
-                handleFavoriteClick(service.id);
-              }}
-              className="bg-white rounded-full p-2 w-10 h-10 flex items-center justify-center"
-            >
-              <FontAwesomeIcon
-                icon={
-                  favorites.includes(service.id) ? faHeartSolid : faHeartRegular
-                }
-                className={`text-[#3A4980] ${
-                  favorites.includes(service.id)
-                    ? "text-[#3A4980]"
-                    : "text-gray-400"
-                }`}
-                size="xl"
-              />
-            </button>
+            {service.promotion && service.promotion.newPrice && (
+              <div className="bg-red-500 text-white rounded-lg px-2 py-1">
+                <span className="text-sm font-bold">
+                  -{Math.round(
+                    ((service.price - service.promotion.newPrice) / service.price) * 100
+                  )}
+                  %
+                </span>
+              </div>
+            )}
           </div>
           <div className="flex justify-between items-center mb-2">
             <h3 className="text-xl font-semibold">{service.name}</h3>
@@ -99,7 +77,7 @@ const ServiceCard = () => {
               {[...Array(5)].map((_, index) => {
                 const fillPercentage = Math.max(
                   0,
-                  Math.min(100, (services[0].rating - index) * 100)
+                  Math.min(100, (service.rating - index) * 100)
                 );
                 return (
                   <div
