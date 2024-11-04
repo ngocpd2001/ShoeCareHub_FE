@@ -1,20 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faStore } from "@fortawesome/free-solid-svg-icons";
-import { faMessage } from "@fortawesome/free-regular-svg-icons";
-import { faLocationDot } from "@fortawesome/free-solid-svg-icons";
-import { getAddressByAccountId } from '../../api/user';
+import {
+  faStore,
+  faMessage,
+  faLocationDot,
+} from "@fortawesome/free-solid-svg-icons";
+import { getAddressByAccountId } from "../../api/user";
 
-const CheckoutCard = () => {
-  const location = useLocation();
-  const { selectedItems: cartItems = [] } = location.state || {};
+const CheckoutCart = ({ cartItems }) => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [address, setAddress] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user ? user.id : null;
   const [note, setNote] = useState("");
-
+  console.log("cart", cartItems);
   useEffect(() => {
     const fetchAddress = async () => {
       if (accountId) {
@@ -34,38 +33,6 @@ const CheckoutCard = () => {
     setDeliveryOption(event.target.value);
   };
 
-  const handleSubmit = async () => {
-    const payload = {
-      cartItemIds: cartItems.map(item => item.id), // Lấy danh sách ID sản phẩm từ giỏ hàng
-      accountId: accountId || "your_user_id", // ID tài khoản, thay thế bằng giá trị hợp lệ
-      addressId: address ? address[0].id : "your_address_id", // ID địa chỉ, thay thế bằng giá trị hợp lệ
-      isAutoReject: false, // Giá trị mặc định
-      note: note || "Ghi chú nếu cần...", // Gắn giá trị cho lời nhắn
-      deliveredFee: 0, // Phí giao hàng (có thể thay đổi theo logic của bạn)
-      shippingUnit: "string", // Đơn vị giao hàng (có thể thay đổi theo logic của bạn)
-      shippingCode: "string" // Mã giao hàng (có thể thay đổi theo logic của bạn)
-    };
-
-    try {
-      const response = await fetch('/api/your-endpoint', { // Thay đổi '/api/your-endpoint' thành endpoint thực tế
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error('Lỗi khi gửi yêu cầu');
-      }
-
-      const data = await response.json();
-      console.log('Phản hồi từ server:', data);
-    } catch (error) {
-      console.error('Lỗi:', error);
-    }
-  };
-
   return (
     <div className="px-4 pt-4 bg-white">
       <div>
@@ -80,9 +47,10 @@ const CheckoutCard = () => {
           const shopTotal = (shop.services || []).reduce(
             (shopTotal, service) => {
               if (!service) return shopTotal;
-              const price = service.promotion && service.promotion.newPrice !== undefined 
-                ? service.promotion.newPrice 
-                : service.price;
+              const price =
+                service.promotion && service.promotion.newPrice !== undefined
+                  ? service.promotion.newPrice
+                  : service.price;
               return shopTotal + price * (service.quantity || 0);
             },
             0
@@ -90,7 +58,7 @@ const CheckoutCard = () => {
 
           return (
             <div
-              key={shop.id}
+              key={shop.branchId}
               className="bg-white p-4 border border-[#002278] rounded-lg mb-8"
             >
               <div className="grid grid-cols-2 py-3 border-b bg-[#F9F1E7] px-4">
@@ -121,13 +89,17 @@ const CheckoutCard = () => {
 
               {(shop.services || []).map((service) => {
                 if (!service) return null;
-                const price = service.promotion && service.promotion.newPrice !== undefined 
-                  ? service.promotion.newPrice 
-                  : service.price;
+                const price =
+                  service.promotion && service.promotion.newPrice !== undefined
+                    ? service.promotion.newPrice
+                    : service.price;
                 const totalPrice = price * (service.quantity || 0);
 
                 return (
-                  <div className="grid grid-cols-4 items-center justify-center mt-2 py-2">
+                  <div
+                    key={service.id}
+                    className="grid grid-cols-4 items-center justify-center mt-2 py-2"
+                  >
                     <div className="flex items-center">
                       <img
                         src={service.image}
@@ -146,7 +118,10 @@ const CheckoutCard = () => {
                     </div>
 
                     <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      <span className="text-black"> {service.quantity || 0}</span>
+                      <span className="text-black">
+                        {" "}
+                        {service.quantity || 0}
+                      </span>
                     </div>
 
                     <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
@@ -206,7 +181,8 @@ const CheckoutCard = () => {
                         >
                           {address ? (
                             <>
-                              {address[0].address}, {address[0].ward},<br /> {address[0].province}, {address[0].city}
+                              {address[0].address}, {address[0].ward},<br />{" "}
+                              {address[0].province}, {address[0].city}
                             </>
                           ) : (
                             "Đang tải địa chỉ..."
@@ -257,4 +233,4 @@ const CheckoutCard = () => {
   );
 };
 
-export default CheckoutCard;
+export default CheckoutCart;

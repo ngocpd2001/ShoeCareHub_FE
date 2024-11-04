@@ -4,7 +4,7 @@ import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
 import { updateCartItemQuantity, deleteCartItem } from "../../api/cart";
 
-const CartItem = ({ service, userId, onQuantityChange, onRemove, onToggleSelect }) => {
+const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => {
   // console.log("Service", service);
 
   const [inputValue, setInputValue] = useState(service.quantity || 0);
@@ -71,9 +71,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onToggleSelect 
 
   const handleRemove = async () => {
     try {
-      await deleteCartItem(service.id);
-      setInputValue("");
-      onRemove(service.id);
+      await onRemove(service.id);
     } catch (error) {
       console.error('Có lỗi xảy ra khi xóa mục:', error);
     }
@@ -84,13 +82,13 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onToggleSelect 
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
+      <input
+        type="checkbox"
+        checked={service.selected}
+        onChange={() => onSelect(service.id)}
+        className="mr-2"
+      />
       <div className="flex items-center col-span-1">
-        <input
-          type="checkbox"
-          checked={service.selected}
-          onChange={() => onToggleSelect(service.id)}
-          className="mr-4"
-        />
         <img
           src={service.image}
           alt={service.name}

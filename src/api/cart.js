@@ -25,6 +25,7 @@ export const createCart = async (userId) => {
 // Xóa tất cả các dịch vụ trong giỏ hàng
 export const deleteCart = async (cartId) => {
   try {
+    console.log('cartId:', cartId);
     const response = await axiosInstances.login.delete(`/carts/${cartId}/clear`);
     return response.data;
   } catch (error) {

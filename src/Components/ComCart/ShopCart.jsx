@@ -10,9 +10,8 @@ const ShopCart = ({
   userId,
   onQuantityChange,
   onRemove,
-  onToggleSelectAll,
-  onToggleSelect,
-  updateServiceQuantity,
+  onSelectAll,
+  onSelect,
 }) => {
   const [branchData, setBranchData] = useState(null);
   // console.log("Shop", shop);
@@ -37,10 +36,9 @@ const ShopCart = ({
           <div className="flex items-center">
             <input
               type="checkbox"
-              onChange={(e) =>
-                onToggleSelectAll(shop.branchId, e.target.checked)
-              }
-              className="mr-4"
+              checked={shop.services.every(service => service.selected)}
+              onChange={() => onSelectAll(shop.branchId)}
+              className="mr-2"
             />
             <FontAwesomeIcon icon={faStore} className="text-[#002278] mr-3" />
             <h2 className="text-xl font-medium text-[#002278] mr-2 max-w-sm break-words whitespace-normal overflow-hidden overflow-ellipsis">
@@ -65,14 +63,16 @@ const ShopCart = ({
       )}
 
       <div className="px-4">
-        <CartItem
-          key={shop.id}
-          service={shop}
-          userId={userId}
-          onQuantityChange={onQuantityChange}
-          onRemove={onRemove}
-          onToggleSelect={onToggleSelect}
-        />
+        {shop.services.map(service => (
+          <CartItem
+            key={service.id}
+            service={service}
+            userId={userId}
+            onQuantityChange={onQuantityChange}
+            onRemove={onRemove}
+            onSelect={onSelect}
+          />
+        ))}
       </div>
     </div>
   );

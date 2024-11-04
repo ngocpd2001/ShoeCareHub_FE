@@ -3,7 +3,7 @@ import ShopCart from "../../Components/ComCart/ShopCart";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
-import { getUserCart, createCart, deleteCart} from "../../api/cart";
+import { getUserCart, createCart, deleteCart } from "../../api/cart";
 import { getServiceById } from "../../api/service";
 
 const UserCart = () => {
@@ -15,38 +15,55 @@ const UserCart = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user ? user.id : null;
 
+  const fetchCartItems = async () => {
+    try {
+      const data = await getUserCart(userId);
+      setBranches(data || []);
+      console.log("data:", data);
+
+      const detailedItems = await Promise.all(
+        (data || []).flatMap((branch) =>
+          (branch.items || []).map(async (item) => {
+            const serviceDetails = await getServiceById(item.serviceId);
+            return {
+              id: item.id,
+              branchId: branch.branchId,
+              shopName: branch.shopName,
+              shopAddress: branch.shopAddress,
+              name: serviceDetails.name,
+              image: serviceDetails.image,
+              price: item.price,
+              promotion: serviceDetails.promotion,
+              quantity: item.quantity,
+              selected: false,
+            };
+          })
+        )
+      );
+
+      const groupedItems = detailedItems.reduce((acc, item) => {
+        const branch = acc.find((b) => b.branchId === item.branchId);
+        if (branch) {
+          branch.services.push(item);
+        } else {
+          acc.push({
+            branchId: item.branchId,
+            shopName: item.shopName,
+            shopAddress: item.shopAddress,
+            services: [item],
+          });
+        }
+        return acc;
+      }, []);
+
+      setCartItems(groupedItems);
+    } catch (error) {
+      console.error("Lỗi khi lấy giỏ hàng:", error);
+      setCartItems([]);
+    }
+  };
+
   useEffect(() => {
-    const fetchCartItems = async () => {
-      try {
-        const data = await getUserCart(userId);
-        setBranches(data || []);
-        console.log("data:", data);
-        console.log("Fetched data:", data);
-
-        const detailedItems = await Promise.all(
-          (data || []).flatMap((branch) =>
-            (branch.items || []).map(async (item) => {
-              const serviceDetails = await getServiceById(item.serviceId);
-              return {
-                id: item.id,
-                branchId: branch.branchId,
-                name: serviceDetails.name,
-                image: serviceDetails.image,
-                price: item.price,
-                promotion: serviceDetails.promotion,
-                quantity: item.quantity,
-                selected: false,
-              };
-            })
-          )
-        );
-        setCartItems(detailedItems);
-      } catch (error) {
-        console.error("Lỗi khi lấy giỏ hàng:", error);
-        setCartItems([]);
-      }
-    };
-
     fetchCartItems();
   }, [userId]);
 
@@ -93,7 +110,6 @@ const UserCart = () => {
         services: (shop.services || []).filter((service) => service.selected),
       }))
       .filter((shop) => shop.services.length > 0);
-
     if (selectedItems.length === 0) {
       setShowPopup(true);
     } else {
@@ -116,53 +132,14 @@ const UserCart = () => {
     );
   };
 
-  const handleRemove = (id) => {
-    setCartItems((prevShops) =>
-      (prevShops || []).map((shop) => ({
-        ...shop,
-        services: (shop.services || []).filter((service) => service.id !== id),
-      }))
-    );
+  const handleRemove = async (id) => {
+    try {
+      await deleteCart(id);
+      await fetchCartItems();
+    } catch (error) {
+      console.error("Lỗi khi xóa mục:", error);
+    }
   };
-
-  const handleToggleSelectAll = (branchId, isChecked) => {
-    setCartItems((prevItems) =>
-      (prevItems || []).map((item) =>
-        item.branchId === branchId
-          ? {
-              ...item,
-              services: (item.services || []).map((service) => ({
-                ...service,
-                selected: isChecked,
-              })),
-            }
-          : item
-      )
-    );
-  };
-
-  const handleToggleSelect = (id) => {
-    setCartItems((prevShops) =>
-      (prevShops || []).map((shop) => ({
-        ...shop,
-        services: (shop.services || []).map((service) =>
-          service.id === id
-            ? { ...service, selected: !service.selected }
-            : service
-        ),
-      }))
-    );
-  };
-
-  // const handleRemoveSelected = () => {
-  //   setCartItems((prevShops) =>
-  //     (prevShops || []).map((shop) => ({
-  //       ...shop,
-  //       services: (shop.services || []).filter((service) => !service.selected),
-  //     }))
-  //     .filter((shop) => shop.services.length > 0)
-  //   );
-  // };
 
   const handleCreateCart = async () => {
     if (userId) {
@@ -188,21 +165,70 @@ const UserCart = () => {
     }
   };
 
-  const totalAmount = (cartItems || []).reduce(
-    (total, shop) => {
-      if (!shop || !Array.isArray(shop.services)) return total;
-      return total +
-        shop.services.reduce(
-          (shopTotal, service) =>
-            service.selected
-              ? shopTotal +
-                (service.promotion || service.price || 0) * service.quantity
-              : shopTotal,
-          0
-        );
-    },
-    0
-  );
+  const totalAmount = cartItems.reduce((total, shop) => {
+    if (!shop || !Array.isArray(shop.services)) return total;
+    return (
+      total +
+      shop.services.reduce(
+        (shopTotal, service) =>
+          service.selected
+            ? shopTotal +
+              (service.promotion?.newPrice || service.price || 0) *
+                service.quantity
+            : shopTotal,
+        0
+      )
+    );
+  }, 0);
+
+  const selectedServiceCount = cartItems.reduce((count, shop) => {
+    if (!shop || !Array.isArray(shop.services)) return count;
+    return count + shop.services.filter((service) => service.selected).length;
+  }, 0);
+
+  const handleSelectAll = (branchId) => {
+    setCartItems((prevShops) =>
+      prevShops.map((shop) =>
+        shop.branchId === branchId
+          ? {
+              ...shop,
+              services: shop.services.map((service) => ({
+                ...service,
+                selected: !shop.services.every((s) => s.selected),
+              })),
+            }
+          : shop
+      )
+    );
+  };
+
+  const handleSelect = (serviceId) => {
+    setCartItems((prevShops) =>
+      prevShops.map((shop) => ({
+        ...shop,
+        services: shop.services.map((service) =>
+          service.id === serviceId
+            ? { ...service, selected: !service.selected }
+            : service
+        ),
+      }))
+    );
+  };
+
+  const handleSelectAllShops = () => {
+    const allSelected = cartItems.every((shop) =>
+      shop.services.every((service) => service.selected)
+    );
+    setCartItems((prevShops) =>
+      prevShops.map((shop) => ({
+        ...shop,
+        services: shop.services.map((service) => ({
+          ...service,
+          selected: !allSelected,
+        })),
+      }))
+    );
+  };
 
   return (
     <div className="auto px-4 bg-gray-100 min-h-screen">
@@ -231,51 +257,49 @@ const UserCart = () => {
               <div className="font-semibold text-xl text-left flex items-center w-full">
                 <input
                   type="checkbox"
-                  onChange={(e) => {
-                    const isChecked = e.target.checked;
-                    handleToggleSelectAll(cartItems[0].branchId, isChecked);
-                  }}
-                  className="mr-4"
+                  checked={cartItems.every((shop) =>
+                    shop.services.every((service) => service.selected)
+                  )}
+                  onChange={handleSelectAllShops}
+                  className="mr-2"
                 />
                 <h2 className="text-left">Sản phẩm</h2>
               </div>
               <div className="font-semibold text-xl text-center">Đơn giá</div>
-              <div className="font-semibold text-xl text-center pr-8">Số lượng</div>
+              <div className="font-semibold text-xl text-center pr-8">
+                Số lượng
+              </div>
               <div className="flex flex-row items-center">
                 <div className="font-semibold text-xl text-center w-[70%] pr-6">
                   Thành tiền
                 </div>
               </div>
             </div>
-            {cartItems && cartItems.map((item) => (
-              <ShopCart
-                key={item.branchId}
-                shop={item}
-                userId={userId}
-                onQuantityChange={handleQuantityChange}
-                onRemove={handleRemove}
-                onToggleSelectAll={handleToggleSelectAll}
-                onToggleSelect={handleToggleSelect}
-                updateServiceQuantity={handleQuantityChange}
-              />
-            ))}
+            {cartItems &&
+              cartItems.map((item) => (
+                <ShopCart
+                  key={item.branchId}
+                  shop={item}
+                  userId={userId}
+                  onQuantityChange={handleQuantityChange}
+                  onRemove={handleRemove}
+                  onSelectAll={handleSelectAll}
+                  onSelect={handleSelect}
+                />
+              ))}
           </div>
-          // </div>
         )}
         {branches.length > 0 && (
           <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
             <div className="flex items-center text-xl">
-              <input
-                type="checkbox"
-                onChange={(e) => {
-                  const isChecked = e.target.checked;
-                  handleToggleSelectAll(cartItems[0].branchId, isChecked);
-                }}
-                className="mr-4"
-              />
-                <span className="font-bold">Chọn tất cả</span>
               <button onClick={handleClearCart} className="ml-4 text-gray-500">
                 Xóa
+              </button>
+              <button
+                onClick={handleSelectAllShops}
+                className="ml-4 text-gray-500"
+              >
+                Chọn tất cả
               </button>
             </div>
             <div className="text-right">
@@ -283,7 +307,7 @@ const UserCart = () => {
                 <span>Tổng thanh toán: {totalAmount.toLocaleString()} đ</span>
               </div>
               <div className="text-lg">
-                <span>( dịch vụ)</span>
+                <span>({selectedServiceCount} dịch vụ)</span>
               </div>
               <div className="text-lg">
                 <span>Tiết kiệm: </span>
