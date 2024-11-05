@@ -12,15 +12,15 @@ export const getUserCart = async (userId) => {
 };
 
 // Tạo một giỏ hàng mới cho người dùng
-export const createCart = async (userId) => {
-  try {
-    const response = await axiosInstances.login.post(`/carts?userId=${userId}`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi tạo giỏ hàng mới:', error);
-    throw error;
-  }
-};
+// export const createCart = async (userId) => {
+//   try {
+//     const response = await axiosInstances.login.post(`/carts?userId=${userId}`);
+//     return response.data;
+//   } catch (error) {
+//     console.error('Lỗi khi tạo giỏ hàng mới:', error);
+//     throw error;
+//   }
+// };
 
 // Xóa tất cả các dịch vụ trong giỏ hàng
 export const deleteCart = async (cartId) => {
@@ -41,6 +41,17 @@ export const getCartItems = async (cartId) => {
     return response.data;
   } catch (error) {
     console.error('Lỗi khi lấy danh sách mục trong giỏ hàng:', error);
+    throw error;
+  }
+};
+
+// Lấy tổng tiền của giỏ hàng
+export const getCartTotal = async (cartId) => {
+  try {
+    const response = await axiosInstances.login.get(`/carts/${cartId}/total`);
+    return response.data.total;
+  } catch (error) {
+    console.error('Lỗi khi lấy tổng tiền của giỏ hàng:', error);
     throw error;
   }
 };
@@ -98,17 +109,6 @@ export const updateCartItemQuantity = async (serviceId, quantity) => {
     } else {
       console.error('Lỗi khi thiết lập yêu cầu:', error.message);
     }
-    throw error;
-  }
-};
-
-// Lấy tổng tiền của giỏ hàng
-export const getCartTotal = async (cartId) => {
-  try {
-    const response = await axiosInstances.login.get(`/carts/${cartId}/total`);
-    return response.data.total;
-  } catch (error) {
-    console.error('Lỗi khi lấy tổng tiền của giỏ hàng:', error);
     throw error;
   }
 };

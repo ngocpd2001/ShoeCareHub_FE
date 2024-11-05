@@ -25,7 +25,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
       try {
         await updateCartItemQuantity(service.id, updatedQuantity);
-        onQuantityChange(service.id, updatedQuantity - service.quantity);
+        onQuantityChange(service.id, updatedQuantity - service.quantity); 
         setInputValue(updatedQuantity);
         service.quantity = updatedQuantity;
       } catch (error) {
@@ -69,26 +69,30 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
     }
   };
 
-  const handleRemove = async () => {
-    try {
-      await onRemove(service.id);
-    } catch (error) {
-      console.error('Có lỗi xảy ra khi xóa mục:', error);
-    }
+  const handleRemoveClick = () => {
+    onRemove(service.id);
   };
 
   // Kiểm tra giá trị userId
   // console.log("User ID trong CartItem:", userId);
 
+  const handleQuantityIncrease = () => {
+    onQuantityChange(service.id, 1); // Tăng quantity
+  };
+
+  const handleQuantityDecrease = () => {
+    onQuantityChange(service.id, -1); // Giảm quantity
+  };
+
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
+      <div className="flex items-center col-span-1">
       <input
         type="checkbox"
         checked={service.selected}
         onChange={() => onSelect(service.id)}
         className="mr-2"
       />
-      <div className="flex items-center col-span-1">
         <img
           src={service.image}
           alt={service.name}
@@ -145,9 +149,12 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
           {totalPrice.toLocaleString()}{" "} đ
         </span>
 
-        <button onClick={handleRemove} className="text-[#002278] w-[30%]">
+        <button onClick={handleRemoveClick} className="text-[#002278] w-[30%]">
           <FontAwesomeIcon icon={faTrash} />
         </button>
+        {/* <button onClick={handleRemoveClick} className="text-red-500">
+          Xóa
+        </button> */}
       </div>
     </div>
   );
