@@ -21,7 +21,7 @@ export const getAllService = async (keyword = '', status = '', pageIndex = 1, pa
 
     const response = await axiosInstances.login.get(`/services?${params.toString()}`);  
     
-    console.log("Dữ liệu nhận được:", response.data); // Log the entire response  
+    // console.log("Dữ liệu nhận được:", response.data); // Log the entire response  
 
     // Make sure to check both the message and the existence of data  
     if (response.data && response.data.message === "Lấy dịch vụ thành công") {  
@@ -46,7 +46,7 @@ export const getAllService = async (keyword = '', status = '', pageIndex = 1, pa
 export const getServiceById = async (id) => {
   try {
     const response = await axiosInstances.login.get(`/services/${id}`);
-    console.log("Dữ liệu nhận được:", response.data); // Log dữ liệu nhận được từ API
+    // console.log("Dữ liệu nhận được:", response.data); // Log dữ liệu nhận được từ API
     return response.data.data; // Đảm bảo rằng dữ liệu trả về có cấu trúc đúng
   } catch (error) {
     console.error("Lỗi khi gọi API", error);
@@ -65,7 +65,7 @@ export const getServiceByBusinessId = async (businessId, pageNum = 1, pageSize =
 
     const response = await axiosInstances.login.get(`/services/business?${params.toString()}`);
 
-    console.log("Dữ liệu nhận được:", response.data); // Log dữ liệu nhận được từ API
+    // console.log("Dữ liệu nhận được:", response.data); // Log dữ liệu nhận được từ API
 
     if (response.data && response.data.message === "Lấy Dữ Liệu Dịch Vụ Thành Công!") {
       return response.data.data; // Trả về dữ liệu dịch vụ

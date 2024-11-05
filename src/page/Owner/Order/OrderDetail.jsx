@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Truck,
@@ -9,80 +9,47 @@ import {
 } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
 import { Breadcrumb } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouseUser, faStore, faFile, faCopy, faTruck, faInfoCircle, faShoppingCart, faUser, faEnvelope, faPhone, faCalendar } from '@fortawesome/free-solid-svg-icons';
+import { getOrderByBusiness, getOrderDetailsByOrderId } from "../../../api/order";
 
 const OrderDetail = () => {
   const navigate = useNavigate();
-
-  const [orderData, setOrderData] = React.useState({
-    orderId: "#20192",
-    status: "Hoàn thành",
-    date: "13/10/2023, 14:00",
-    customer: {
-      name: "Nguyễn Minh Lan",
-      email: "minlan.nguyen@email.com",
-      phone: "0904444789",
-    },
-    items: [
-      {
-        id: "202011",
-        name: "Vé sinh chuyên sâu",
-        quantity: 1,
-        price: 50000,
-        total: 50000,
-        image: "/api/placeholder/40/40",
-      },
-      {
-        id: "302011",
-        name: "Vệ sinh đặc biệt",
-        quantity: 2,
-        price: 100000,
-        total: 200000,
-        image: "/api/placeholder/40/40",
-      },
-    ],
-    shipping: 25000,
-    total: 275000,
-    address: "227 Thống Nhất, Đường Bình Tân Bì, Thuận An, Thủ Đức",
-    deliveryCode: "SHPI909231",
-    shippingUnit: "Grab",
-    vat: 0,
-    branch: {
-      id: "BR001",
-      name: "Chi nhánh Thủ Đức",
-      address: "123 Đường ABC, Thủ Đức, TP.HCM",
-      phone: "0901234567",
-    },
-  });
+  const { orderId } = useParams();
+  const [orderData, setOrderData] = useState({});
+  const [serviceCount, setServiceCount] = useState(0);
 
   useEffect(() => {
-    const fetchOrderDetail = async () => {
+    const fetchOrderData = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:3001/orders/${orderData.orderId}`
-        );
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        setOrderData(data);
+        // Gọi hàm getOrderDetailsByOrderId để lấy chi tiết đơn hàng
+        const orderDetailsResponse = await getOrderDetailsByOrderId(orderId);
+        const orderDetails = orderDetailsResponse.data;
+
+        // Gọi hàm getOrderByBusiness để lấy thêm thông tin đơn hàng
+        const orderBusinessResponse = await getOrderByBusiness(orderId);
+        const orderBusinessData = orderBusinessResponse.data;
+
+        // Kết hợp dữ liệu từ cả hai nguồn
+        const combinedData = {
+          ...orderDetails,
+          ...orderBusinessData,
+        };
+
+        // Cập nhật state với dữ liệu kết hợp
+        setOrderData(combinedData);
+
+        // Tính toán số lượng dịch vụ
+        const serviceCount = orderDetails.items.length;
+        setServiceCount(serviceCount);
       } catch (error) {
         console.error("Lỗi khi fetch dữ liệu:", error);
       }
     };
 
-    fetchOrderDetail();
-  }, [orderData.orderId]);
-
-  const timelineSteps = [
-    { status: "Đã đặt hàng", time: "12/10/2023, 07:30", icon: FileText },
-    { status: "Xử lý", time: "20/04/YY, 08:30", icon: CheckCircle },
-    { status: "Đã đưa vào kho", time: "20/04/YY, 09:30", icon: Home },
-    { status: "Vận chuyển", time: "20/04/YY, 10:30", icon: Truck },
-    { status: "Đã giao hàng", time: "20/04/YY, 11:30", icon: Box },
-  ];
+    fetchOrderData();
+  }, [orderId]);
 
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text).catch(err => {
@@ -90,20 +57,23 @@ const OrderDetail = () => {
     });
   };
 
+  // Giả sử bạn có một mảng các bước trạng thái trong orderData
+  const timelineSteps = orderData.statusHistory || []; // Sử dụng statusHistory hoặc một trường tương tự từ orderData
+
   return (
     <div className="max-w-6xl mx-auto p-4 bg-gray-50">
       {/* Header */}
       <div className="flex justify-between items-center pb-4 px-4">
         <div>
           <h2 className="text-xl font-semibold text-blue-800">
-            Đơn hàng {orderData.orderId}
+            Đơn hàng {orderId}
           </h2>
           <Breadcrumb
             separator=">"
             items={[
               { title: "Cửa hàng" },
               { title: <Link to="/owner/order">Đơn hàng</Link> },
-              { title: `Đơn hàng ${orderData.orderId}` },
+              { title: `Đơn hàng ${orderId}` },
             ]}
           />
         </div>
@@ -123,14 +93,10 @@ const OrderDetail = () => {
             <div className="flex items-center space-x-2">
               <h2 className="text-lg font-semibold">Service</h2>
               <span className="bg-green-100 text-green-600 px-2 py-1 rounded">
-                {orderData.items.length} dịch vụ
+                {orderData.items?.length || 0} dịch vụ
               </span>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="flex items-center text-gray-500">
-                <FontAwesomeIcon icon={faCalendar} className="mr-2" />
-                {orderData.date}
-              </div>
               <span className="bg-green-100 text-green-600 px-2 py-1 rounded">
                 {orderData.status}
               </span>
@@ -149,7 +115,7 @@ const OrderDetail = () => {
               </tr>
             </thead>
             <tbody>
-              {orderData.items.map((item) => (
+              {orderData.items?.map((item) => (
                 <tr key={item.id} className="border-t">
                   <td className="py-3">
                     <div className="flex items-center">
@@ -179,23 +145,20 @@ const OrderDetail = () => {
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Tổng tiền hàng</span>
               <span>
-                {orderData.items
-                  .reduce((acc, item) => acc + item.total, 0)
-                  .toLocaleString()}
-                đ
+                {orderData.items?.reduce((acc, item) => acc + item.total, 0).toLocaleString()}đ
               </span>
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Phí giao hàng</span>
-              <span>{orderData.shipping.toLocaleString()}đ</span>
+              <span>{orderData.deliveredFee?.toLocaleString()}đ</span>
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">VAT</span>
-              <span>{orderData.vat.toLocaleString()}đ</span>
+              <span>{orderData.vat?.toLocaleString()}đ</span>
             </div>
             <div className="flex justify-between font-semibold">
               <span>Tổng thanh toán</span>
-              <span>{orderData.total.toLocaleString()}đ</span>
+              <span>{orderData.totalPrice?.toLocaleString()}đ</span>
             </div>
           </div>
         </div>
@@ -225,7 +188,7 @@ const OrderDetail = () => {
                   <FontAwesomeIcon icon={faUser} className="mr-2" />
                   Khách hàng
                 </p>
-                <p className="font-medium">{orderData.customer.name}</p>
+                <p className="font-medium">{orderData.fullName}</p>
               </div>
               <div>
                 <div className="flex justify-between items-center">
@@ -236,10 +199,10 @@ const OrderDetail = () => {
                   <FontAwesomeIcon 
                     icon={faCopy} 
                     className="cursor-pointer" 
-                    onClick={() => handleCopy(orderData.customer.email)} 
+                    onClick={() => handleCopy(orderData.email)} 
                   />
                 </div>
-                <p className="text-gray-600">{orderData.customer.email}</p>
+                <p className="text-gray-600">{orderData.email}</p>
               </div>
              
               <div>
@@ -251,10 +214,10 @@ const OrderDetail = () => {
                   <FontAwesomeIcon 
                     icon={faCopy} 
                     className="cursor-pointer" 
-                    onClick={() => handleCopy(orderData.customer.phone)} 
+                    onClick={() => handleCopy(orderData.phone)} 
                   />
                 </div>
-                <p>{orderData.customer.phone}</p>
+                <p>{orderData.phone}</p>
               </div>
             </div>
           </div>
@@ -299,7 +262,7 @@ const OrderDetail = () => {
               Chi nhánh:
             </p>
             <p className="text-gray-600">
-              {orderData.branch.name}
+              {orderData.branch?.name || "Không có thông tin chi nhánh"}
             </p>
             {/* Thêm thông tin bổ sung nếu cần */}
           </div>
@@ -318,11 +281,11 @@ const OrderDetail = () => {
               <FontAwesomeIcon 
                 icon={faCopy} 
                 className="cursor-pointer" 
-                onClick={() => handleCopy(orderData.deliveryCode)} 
+                onClick={() => handleCopy(orderData.shippingCode)} 
               />
             </div>
             <p className="text-gray-600">
-              {orderData.deliveryCode}
+              {orderData.shippingCode}
             </p>
             <p className="text-gray-600 mt-2 text-lg">
               <FontAwesomeIcon icon={faTruck} className="mr-2" />

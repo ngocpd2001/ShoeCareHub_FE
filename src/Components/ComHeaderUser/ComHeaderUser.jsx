@@ -16,7 +16,7 @@ const navigation = [
       { name: "Thông tin tài khoản", href: "/user/profile" },
       { name: "Đổi mật khẩu", href: "/" },
       { name: "Địa chỉ nhận hàng", href: "/", current: true },
-      { name: "trở thành nhà cung cấp", href: "/" },
+      { name: "Trở thành nhà cung cấp", href: "/" },
       { name: "Sản phẩm yêu thích", href: "/" },
     ],
   },

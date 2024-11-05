@@ -152,7 +152,7 @@ export const routers = createBrowserRouter([
         element: <CreateBranch />,
       },
       {
-        path: "/owner/order/detail",
+        path: "/owner/order/:id",
         element: <OrderDetail />,
       },
       {

@@ -49,3 +49,39 @@ input[type="date"]::-moz-calendar-picker-indicator {
   padding: 0.5rem 1rem; /* Giảm padding */
   font-size: 0.875rem; /* Giảm kích thước chữ */
 }
+
+.table-container {
+  width: 100%;
+  overflow-x: auto; /* Cho phép cuộn ngang */
+  margin-bottom: 1.5rem; /* Tạo khoảng cách với đáy */
+}
+
+table {
+  width: 100%; /* Bảng chiếm toàn bộ chiều rộng của container */
+}
+
+.pagination {
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+}
+
+.action-popup {
+  position: absolute;
+  top: 100%; /* Đặt popup ngay dưới nút */
+  left: 0; /* Căn trái với nút */
+  z-index: 10;
+  background-color: white;
+  border: 1px solid #ddd;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.status-column {
+  width: 180px; /* Điều chỉnh kích thước theo ý muốn */
+}
+
+

@@ -21,7 +21,7 @@ const UserCart = () => {
     try {
       const data = await getUserCart(userId);
       setBranches(data || []);
-      console.log("data:", data);
+      // console.log("data:", data);
 
       const detailedItems = await Promise.all(
         (data || []).flatMap((branch) =>
@@ -163,7 +163,7 @@ const UserCart = () => {
           services: shop.services.filter((service) => service.id !== serviceId),
         })).filter((shop) => shop.services.length > 0)
       );
-      console.log("Item removed successfully");
+      // console.log("Item removed successfully");
     } catch (error) {
       console.error("Error removing item:", error);
     }
@@ -231,7 +231,7 @@ const UserCart = () => {
           services: shop.services.filter((service) => !service.selected),
         })).filter((shop) => shop.services.length > 0)
       );
-      console.log("Selected items removed successfully");
+      // console.log("Selected items removed successfully");
     } catch (error) {
       console.error("Error removing selected items:", error);
     }

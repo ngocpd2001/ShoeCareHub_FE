@@ -9,7 +9,7 @@ import {
 import { getAddressByAccountId } from "../../api/user";
 import { getBranchByBranchId } from "../../api/branch";
 
-const CheckoutCart = ({ cartItems }) => {
+const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [address, setAddress] = useState(null);
   const user = JSON.parse(localStorage.getItem("user"));
@@ -62,8 +62,14 @@ const CheckoutCart = ({ cartItems }) => {
     fetchBranchData();
   }, [cartItems]);
 
+  const handleNoteChange = (e) => {
+    setNote(e.target.value);
+    onNoteChange(e.target.value);
+  };
+
   const handleDeliveryOptionChange = (event) => {
     setDeliveryOption(event.target.value);
+    onDeliveryOptionChange(event.target.value);
   };
 
   return (
@@ -194,7 +200,7 @@ const CheckoutCart = ({ cartItems }) => {
                     className="w-full p-2 border border-gray-300 rounded h-34"
                     placeholder="Lưu ý cho cửa hàng..."
                     value={note}
-                    onChange={(e) => setNote(e.target.value)}
+                    onChange={handleNoteChange}
                   />
                 </div>
 
@@ -236,7 +242,7 @@ const CheckoutCart = ({ cartItems }) => {
                           )}
                         </p>
                       </div>
-                      <p className="font-medium">Chỉnh sửa</p>
+                      <p className="font-medium">Thay đổi</p>
                     </div>
 
                     <div
