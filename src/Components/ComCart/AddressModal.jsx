@@ -57,7 +57,7 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
           </button>
           {addresses.map((address, index) => (
             <div key={index} className="mb-4">
-              <div className="flex items-center">
+              <div className="flex items-center py-2">
                 <input
                   type="radio"
                   name="address"
@@ -74,18 +74,20 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
             </div>
           ))}
         </div>
-        <button
-          className="mt-4 bg-gray-200 text-black py-2 px-4 rounded mr-2"
-          onClick={onClose}
-        >
-          Hủy
-        </button>
-        <button
-          className="mt-4 bg-[#002278] text-white py-2 px-4 rounded"
-          onClick={handleConfirm}
-        >
-          Xác nhận
-        </button>
+        <div className="flex justify-end mt-6">
+          <button
+            className="bg-gray-200 text-black py-2 px-4 rounded mr-2"
+            onClick={onClose}
+          >
+            Hủy
+          </button>
+          <button
+            className="bg-[#002278] text-white py-2 px-4 rounded"
+            onClick={handleConfirm}
+          >
+            Xác nhận
+          </button>
+        </div>
       </div>
       {isEditPopupOpen && (
         <EditAddressPopup onClose={() => setIsEditPopupOpen(false)} />

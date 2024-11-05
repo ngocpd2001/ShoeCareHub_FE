@@ -121,13 +121,13 @@ const EditAddressPopup = ({ onClose }) => {
               className="bg-gray-200 text-black py-2 px-4 rounded mr-2"
               onClick={onClose}
             >
-              Cancel
+              Hủy
             </button>
             <button
               type="submit"
               className="bg-[#002278] text-white py-2 px-4 rounded"
             >
-              Submit
+              Xác nhận
             </button>
           </div>
         </form>
