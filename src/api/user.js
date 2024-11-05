@@ -24,4 +24,14 @@ export const getAddressByAccountId = async (accountId) => {
     console.error('Lỗi khi lấy địa chỉ theo ID tài khoản:', error);  
     throw error;  
   }  
-}; 
+};  
+
+export const createAddress = async (addressData) => {
+  try {
+    const response = await axiosInstances.login.post('/addresses', addressData);
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi tạo địa chỉ:', error);
+    throw error;
+  }
+};

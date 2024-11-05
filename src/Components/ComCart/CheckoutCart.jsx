@@ -8,6 +8,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getAddressByAccountId } from "../../api/user";
 import { getBranchByBranchId } from "../../api/branch";
+import AddressModal from './AddressModal';
 
 const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
@@ -19,13 +20,15 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
   const [branchDataList, setBranchDataList] = useState({});
   const location = useLocation();
   const { selectedItems } = location.state || { selectedItems: [] };
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchAddress = async () => {
       if (accountId) {
         try {
           const addressData = await getAddressByAccountId(accountId);
-          setAddress(addressData);
+          const availableAddress = addressData.find(addr => addr.status === "AVAILABLE");
+          setAddress(availableAddress);
         } catch (error) {
           console.error("Lỗi khi lấy địa chỉ:", error);
         }
@@ -70,6 +73,18 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
   const handleDeliveryOptionChange = (event) => {
     setDeliveryOption(event.target.value);
     onDeliveryOptionChange(event.target.value);
+  };
+
+  const handleAddressModalOpen = () => {
+    setIsAddressModalOpen(true);
+  };
+
+  const handleAddressModalClose = () => {
+    setIsAddressModalOpen(false);
+  };
+
+  const handleSelectAddress = (selectedAddress) => {
+    setAddress(selectedAddress);
   };
 
   return (
@@ -234,15 +249,15 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                         >
                           {address ? (
                             <>
-                              {address[0].address}, {address[0].ward},<br />{" "}
-                              {address[0].province}, {address[0].city}
+                              {address.address}, {address.ward},<br />
+                              {address.province}, {address.city}
                             </>
                           ) : (
                             "Đang tải địa chỉ..."
                           )}
                         </p>
                       </div>
-                      <p className="font-medium">Thay đổi</p>
+                      <button className="font-medium" onClick={handleAddressModalOpen}>Thay đổi</button>
                     </div>
 
                     <div
@@ -282,6 +297,12 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
           );
         })}
       </div>
+      <AddressModal
+        isOpen={isAddressModalOpen}
+        onClose={handleAddressModalClose}
+        accountId={accountId}
+        onSelectAddress={handleSelectAddress}
+      />
     </div>
   );
 };

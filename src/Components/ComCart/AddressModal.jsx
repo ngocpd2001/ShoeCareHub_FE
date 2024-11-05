@@ -1,8 +1,41 @@
-import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes, faPlus } from "@fortawesome/free-solid-svg-icons";
+import { getAddressByAccountId } from "../../api/user";
+import EditAddressPopup from "./EditAddressPopup";
 
-const AddressModal = ({ isOpen, onClose, addresses }) => {
+const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
+  const [addresses, setAddresses] = useState([]);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [isEditPopupOpen, setIsEditPopupOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      const fetchAddresses = async () => {
+        try {
+          const fetchedAddresses = await getAddressByAccountId(accountId);
+          setAddresses(fetchedAddresses);
+          const defaultAddress = fetchedAddresses.find(
+            (addr) => addr.isDefault
+          );
+          setSelectedAddress(defaultAddress);
+        } catch (error) {
+          console.error("Lỗi khi lấy địa chỉ:", error);
+        }
+      };
+      fetchAddresses();
+    }
+  }, [isOpen, accountId]);
+
+  const handleAddressSelect = (address) => {
+    setSelectedAddress(address);
+  };
+
+  const handleConfirm = () => {
+    onSelectAddress(selectedAddress);
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -15,23 +48,48 @@ const AddressModal = ({ isOpen, onClose, addresses }) => {
           </button>
         </div>
         <div>
+          <button
+            className="mt-1 mb-3 bg-gray-200 text-black py-2 px-4 rounded w-full flex items-center justify-center"
+            onClick={() => setIsEditPopupOpen(true)}
+          >
+            <FontAwesomeIcon icon={faPlus} className="mr-2" />
+            Thêm Địa Chỉ Mới
+          </button>
           {addresses.map((address, index) => (
             <div key={index} className="mb-4">
               <div className="flex items-center">
-                <input type="radio" name="address" className="mr-2" />
+                <input
+                  type="radio"
+                  name="address"
+                  className="mr-2"
+                  checked={selectedAddress === address}
+                  onChange={() => handleAddressSelect(address)}
+                />
                 <div>
-                  <p className="font-semibold">{address.name}</p>
-                  <p>{address.details}</p>
+                  <p className="font-semibold">{address.address}</p>
+                  <p>{`${address.ward}, ${address.province}, ${address.city}`}</p>
+                  {/* <p>{`Trạng thái: ${address.status}`}</p> */}
                 </div>
               </div>
-              <button className="text-[#002278] mt-2">Cập nhật</button>
             </div>
           ))}
         </div>
-        <button className="mt-4 bg-[#002278] text-white py-2 px-4 rounded" onClick={onClose}>
+        <button
+          className="mt-4 bg-gray-200 text-black py-2 px-4 rounded mr-2"
+          onClick={onClose}
+        >
+          Hủy
+        </button>
+        <button
+          className="mt-4 bg-[#002278] text-white py-2 px-4 rounded"
+          onClick={handleConfirm}
+        >
           Xác nhận
         </button>
       </div>
+      {isEditPopupOpen && (
+        <EditAddressPopup onClose={() => setIsEditPopupOpen(false)} />
+      )}
     </div>
   );
 };
