@@ -7,8 +7,8 @@ const AxiosClientFactoryEnum = {
 };
 
 // ----------------------------------------------------------------------
- const API_ROOT = 'http://localhost:5129/api';
-// const API_ROOT = 'https://shoecarehub.site/api';
+//  const API_ROOT = 'http://localhost:5129/api';
+const API_ROOT = 'https://shoecarehub.site/api';
  
 const parseParams = (params) => {
   const keys = Object.keys(params);
