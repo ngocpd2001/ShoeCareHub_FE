@@ -94,14 +94,12 @@ const Checkout = () => {
         addressId,  
         isAutoReject: false, // Set based on your requirements  
         note,  
-        deliveredFee: 0, // Set based on your logic  
-        shippingUnit: "string", // Replace with actual shipping unit if needed  
-        shippingCode: "string" // Replace with actual shipping code if needed  
+        isShip: true, // Ensure this matches the API requirements
       };  
   
       console.log(requestBody); // Check the request body structure  
   
-      const result = await checkout(requestBody); // Make sure the checkout function is revised to accept an object  
+      const result = await checkout(requestBody); // Pass the entire requestBody object
       console.log("Đặt dịch vụ đã được thực hiện", result);  
     } catch (error) {  
       console.error("Lỗi khi thực hiện checkout:", error);  

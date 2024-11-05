@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faStore,
@@ -6,6 +7,7 @@ import {
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { getAddressByAccountId } from "../../api/user";
+import { getBranchByBranchId } from "../../api/branch";
 
 const CheckoutCart = ({ cartItems }) => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
@@ -13,7 +15,11 @@ const CheckoutCart = ({ cartItems }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user ? user.id : null;
   const [note, setNote] = useState("");
-  console.log("cart", cartItems);
+  // console.log("cart", cartItems);
+  const [branchDataList, setBranchDataList] = useState({});
+  const location = useLocation();
+  const { selectedItems } = location.state || { selectedItems: [] };
+
   useEffect(() => {
     const fetchAddress = async () => {
       if (accountId) {
@@ -29,6 +35,33 @@ const CheckoutCart = ({ cartItems }) => {
     fetchAddress();
   }, [accountId]);
 
+  useEffect(() => {
+    const fetchBranchData = async () => {
+      const branchDataPromises = cartItems.map(async (shop) => {
+        if (shop.branchId) {
+          try {
+            const data = await getBranchByBranchId(shop.branchId);
+            return { branchId: shop.branchId, data };
+          } catch (error) {
+            console.error("Lỗi khi lấy dữ liệu thương hiệu:", error);
+            return { branchId: shop.branchId, data: null };
+          }
+        }
+        return { branchId: shop.branchId, data: null };
+      });
+
+      const branchDataResults = await Promise.all(branchDataPromises);
+      const branchDataMap = branchDataResults.reduce((acc, { branchId, data }) => {
+        acc[branchId] = data;
+        return acc;
+      }, {});
+
+      setBranchDataList(branchDataMap);
+    };
+
+    fetchBranchData();
+  }, [cartItems]);
+
   const handleDeliveryOptionChange = (event) => {
     setDeliveryOption(event.target.value);
   };
@@ -43,7 +76,21 @@ const CheckoutCart = ({ cartItems }) => {
           <div className="font-semibold text-xl text-center">Thành tiền</div>
         </div>
 
-        {cartItems.map((shop) => {
+        {selectedItems.map((shop) => {
+          let shopName, shopAddress;
+
+          if (shop.branchId) {
+            // Dữ liệu từ trang Cart
+            const branchData = branchDataList[shop.branchId];
+            shopName = branchData ? branchData.name : "Tên cửa hàng không có";
+            shopAddress = branchData ? branchData.address : "Địa chỉ không có";
+          } else {
+            // Dữ liệu từ trang ServiceDetail
+            const branch = shop.services?.[0]?.branchServices?.[0]?.branch;
+            shopName = branch ? branch.name : "Tên cửa hàng không có";
+            shopAddress = branch ? branch.address : "Địa chỉ không có";
+          }
+
           const shopTotal = (shop.services || []).reduce(
             (shopTotal, service) => {
               if (!service) return shopTotal;

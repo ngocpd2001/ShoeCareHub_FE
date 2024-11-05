@@ -136,15 +136,17 @@ export const deleteCartItem = async (itemId) => {
 
 export const checkout = async (cartItemIds, accountId, addressId, note) => {
   try {
+    if (!Array.isArray(cartItemIds)) {
+      throw new Error('cartItemIds phải là một mảng');
+    }
+
     const response = await axiosInstances.login.post('/carts/cart/checkout', {
       cartItemIds,
       accountId,
       addressId,
-      isAutoReject: true,
+      isAutoReject: false,
       note,
-      deliveredFee: 0,
-      shippingUnit: "string",
-      shippingCode: "string"
+      isShip: true,
     });
     return response.data;
   } catch (error) {

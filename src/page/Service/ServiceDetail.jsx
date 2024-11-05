@@ -172,6 +172,8 @@ const ServiceDetail = () => {
       const checkoutService = {
         ...service,
         quantity: quantity || 1,
+        shopName: service.branchServices[0]?.branch.name,
+        shopAddress: service.branchServices[0]?.branch.address,
       };
       navigate("/checkout", {
         state: { selectedItems: [{ services: [checkoutService] }] },
