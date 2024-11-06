@@ -1,39 +1,156 @@
 import React, { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNotification } from "../../../Notification/Notification";
+import { getData, putData } from "../../../api/api";
 import ComInput from "../../../Components/ComInput/ComInput";
-import ComButton from "../../../Components/ComButton/ComButton";
 import ComUpImgOne from "../../../Components/ComUpImg/ComUpImgOne";
+import ComButton from "../../../Components/ComButton/ComButton";
 import ComTextArea from "../../../Components/ComInput/ComTextArea";
-import { getData, postData } from "../../../api/api";
-import { Breadcrumb, Upload } from "antd";
-import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
-import ComSelect from "./../../../Components/ComInput/ComSelect";
-import ComUpImg from "./../../../Components/ComUpImg/ComUpImg";
-import ComNumber from "./../../../Components/ComInput/ComNumber";
-import ComDatePicker from "./../../../Components/ComDatePicker/ComDatePicker";
+import ComNumber from "../../../Components/ComInput/ComNumber";
+import ComSelect from "../../../Components/ComInput/ComSelect";
+import ComUpImg from "../../../Components/ComUpImg/ComUpImg";
 import { YupSevice } from "../../../yup/YupSevice";
-import { firebaseImgs } from "./../../../upImgFirebase/firebaseImgs";
 import { useStorage } from "../../../hooks/useLocalStorage";
+import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
 
-export default function CreateSevice() {
+export default function EditService({ selectedUpgrede, onClose, tableRef }) {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
   const [image, setImages] = useState(null);
   const [branches, setBranches] = useState([]);
   const [categories, setCategories] = useState([]);
   const [user, setUser] = useStorage("user", null);
-
   const methods = useForm({
     resolver: yupResolver(YupSevice),
-    defaultValues: {
-      title: "",
-      content: "",
-      newPrice:null
-    },
+    values: selectedUpgrede,
   });
+
+  useEffect(() => {
+    setValue("branchId", selectedUpgrede.branchId);
+    setValue("categoryId", selectedUpgrede.category.id);
+    setValue(
+      "status",
+      selectedUpgrede.status === "Hoạt Động" ? "AVAILABLE" : "UNAVAILABLE"
+    );
+    if (selectedUpgrede?.promotion?.newPrice) {
+      setValue("newPrice", selectedUpgrede?.promotion?.newPrice);
+    } else {
+      setValue("newPrice", null);
+      
+    }
+ const getBranchIds = (branchesData) => {
+   return branchesData
+     .filter((item) => item.status === "Hoạt Động") // Lọc các chi nhánh có status là AVAILABLE
+     .map((item) => item.branch.id); // Sau đó lấy id của các chi nhánh đã lọc
+ };
+    console.log(333333333333, getBranchIds(selectedUpgrede?.branchServices));
+    console.log(333333333333, (selectedUpgrede?.branchServices));
+
+    setValue("branchId", getBranchIds(selectedUpgrede?.branchServices));
+  }, [selectedUpgrede]);
+  const {
+    handleSubmit,
+    register,
+    setFocus,
+    watch,
+    setValue,
+    setError,
+    trigger,
+    formState: { errors },
+    control,
+  } = methods;
+
+
+  const onChange = (data) => {
+    const selectedImages = data;
+    const newImages = selectedImages.map((file) => file.originFileObj);
+    setImages(newImages);
+  };
+
+  // Hàm submit form
+  const onSubmit = (data) => {
+    // Kiểm tra nếu chưa chọn hình ảnh
+    setDisabled(true);
+    console.log(data);
+    if (!image) {
+      putData(`/services`, selectedUpgrede.id, {
+        ...data,
+        newPrice: data.newPrice === "" ? null : data.newPrice,
+      })
+        .then((response) => {
+          console.log("Tạo dịch vụ thành công:", response);
+          setDisabled(false);
+          tableRef();
+          notificationApi(
+            "success",
+            "Thành công",
+            "Dịch vụ đã được cập nhật thành công."
+          );
+        })
+        .catch((error) => {
+          setDisabled(false);
+          console.error("Lỗi khi tạo dịch vụ:", error);
+          notificationApi("error", "Lỗi", `${error?.data?.message}`);
+        });
+
+      setDisabled(false);
+
+      return;
+    } else {
+      setDisabled(true);
+      // Upload hình ảnh lên Firebase và lấy URLs
+      firebaseImgs(image)
+        .then((uploadedUrls) => {
+          // Phân loại URL nào là ảnh, URL nào là video
+          const assetUrls = uploadedUrls.map((url) => {
+            const isImage = url.includes("mp4"); // Điều kiện giả định để kiểm tra xem có phải là hình ảnh
+            return {
+              url: url,
+              isImage: !isImage,
+              type: isImage ? "video" : "image",
+            };
+          });
+
+          // Tạo dữ liệu dịch vụ mới với các URL đã được phân loại
+          const serviceData = {
+            ...data,
+            assetUrls: assetUrls,
+            newPrice: data.newPrice === "" ? null : data.newPrice,
+          };
+
+          // Gửi yêu cầu tạo dịch vụ
+          console.log(serviceData);
+
+          putData(`/services`, selectedUpgrede.id, serviceData)
+            .then((response) => {
+              console.log("Tạo dịch vụ thành công:", response);
+              setDisabled(false);
+          tableRef();
+
+              notificationApi(
+                "success",
+                "Thành công",
+                "Dịch vụ đã được tạo thành công."
+              );
+            })
+            .catch((error) => {
+              setDisabled(false);
+              console.error("Lỗi khi tạo dịch vụ:", error);
+              notificationApi("error", "Lỗi", `${error?.data?.message}`);
+            });
+        })
+        .catch((error) => {
+          setDisabled(false);
+          console.error("Lỗi khi upload hình ảnh/video:", error);
+          notificationApi(
+            "error",
+            "Lỗi",
+            "Không thể upload hình ảnh/video. Vui lòng thử lại."
+          );
+        });
+    }
+  };
   useEffect(() => {
     getData(`branches/business/${user?.businessId}`)
       .then((response) => {
@@ -66,109 +183,17 @@ export default function CreateSevice() {
         console.error("Lỗi khi lấy danh mục:", error);
       });
   }, [user?.id]);
-  const {
-    handleSubmit,
-    register,
-    setValue,
-    formState: { errors },
-  } = methods;
-
-  // Hàm thay đổi hình ảnh
-  const onChange = (data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
-    setImages(newImages);
-  };
-
-  // Hàm submit form
-  const onSubmit = (data) => {
-    // Kiểm tra nếu chưa chọn hình ảnh
-    if (!image) {
-      notificationApi(
-        "error",
-        "Hình ảnh không hợp lệ",
-        "Vui lòng chọn hình ảnh."
-      );
-      return;
-    } else {
-      setDisabled(true);
-      // Upload hình ảnh lên Firebase và lấy URLs
-      firebaseImgs(image)
-        .then((uploadedUrls) => {
-          // Phân loại URL nào là ảnh, URL nào là video
-          const assetUrls = uploadedUrls.map((url) => {
-            const isImage = url.includes("mp4"); // Điều kiện giả định để kiểm tra xem có phải là hình ảnh
-            return {
-              url: url,
-              isImage: isImage ? false : true,
-              type: isImage ? "video" : "image",
-            };
-          });
-
-          // Tạo dữ liệu dịch vụ mới với các URL đã được phân loại
-          const serviceData = {
-            ...data,
-            assetUrls: assetUrls,
-            newPrice: data.newPrice === "" ? null : data.newPrice,
-          };
-
-          // Gửi yêu cầu tạo dịch vụ
-          console.log(serviceData);
-
-          postData(`services`, serviceData)
-            .then((response) => {
-              console.log("Tạo dịch vụ thành công:", response);
-              setDisabled(false);
-
-              notificationApi(
-                "success",
-                "Thành công",
-                "Dịch vụ đã được tạo thành công."
-              );
-            })
-            .catch((error) => {
-              setDisabled(false);
-              console.error("Lỗi khi tạo dịch vụ:", error);
-              notificationApi("error", "Lỗi", `${error.data.message}`);
-            });
-        })
-        .catch((error) => {
-          setDisabled(false);
-          console.error("Lỗi khi upload hình ảnh/video:", error);
-          notificationApi(
-            "error",
-            "Lỗi",
-            "Không thể upload hình ảnh/video. Vui lòng thử lại."
-          );
-        });
-    }
-  };
-
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
-        Thêm dịch vụ
-      </h2>
-      <Breadcrumb
-        className="ml-4"
-        items={[
-          {
-            title: "Cửa hàng",
-          },
-          {
-            title: <Link to="/owner/service">Dịch vụ</Link>,
-          },
-          {
-            title: "Thêm dịch vụ",
-          },
-        ]}
-      />
-      <div className="">
+      <div className="bg-white">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Cập nhật dịch vụ
+        </h2>
         <FormProvider {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
             <div className="overflow-y-auto p-4">
               <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-4">
-                <div className="sm:col-span-3 bg-white  rounded border-[#E0E2E7] border p-5">
+                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5">
                   <h2 className="text-xl font-semibold mb-4">
                     Thông tin chung
                   </h2>
@@ -195,7 +220,7 @@ export default function CreateSevice() {
                   </div>
                 </div>
 
-                <div className="sm:col-span-1 h-full flex flex-col justify-between ">
+                <div className="sm:col-span-2 h-full flex flex-col justify-between ">
                   <div className=" bg-white rounded border-[#E0E2E7] border p-5 h-full ">
                     <h2 className="text-xl font-semibold mb-4">Danh mục</h2>
                     <ComSelect
@@ -203,6 +228,7 @@ export default function CreateSevice() {
                       style={{
                         width: "100%",
                       }}
+                      value={watch("categoryId")}
                       label="Danh mục dịch vụ"
                       placeholder="Lựa chọn"
                       onChangeValue={(e, value) => {
@@ -223,6 +249,7 @@ export default function CreateSevice() {
                       }}
                       label="Trạng thái dịch vụ"
                       placeholder="Lựa chọn"
+                      value={watch("status")}
                       onChangeValue={(e, value) => {
                         setValue(e, value);
                       }}
@@ -260,6 +287,7 @@ export default function CreateSevice() {
                     style={{
                       width: "100%",
                     }}
+                    value={watch("branchId")}
                     label="Tên chi nhánh"
                     placeholder="Lựa chọn"
                     onChangeValue={(e, value) => {
@@ -279,7 +307,7 @@ export default function CreateSevice() {
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-4">
                   <div className="sm:col-span-2">
                     <ComNumber
-                      defaultValue={1000}
+                      value={watch("price")}
                       min={1000}
                       label={"Giá dịch vụ"}
                       placeholder={"Vui lòng nhập số tiền"}
@@ -291,7 +319,7 @@ export default function CreateSevice() {
                     <ComNumber
                       label={"Giá giảm (đ)"}
                       placeholder={"Vui lòng nhập số tiền"}
-                      {...register("newPrice")}
+                      value={watch("newPrice")}
                       onChangeValue={(e, value) => {
                         console.log(e, value);
 
@@ -299,6 +327,7 @@ export default function CreateSevice() {
                           setValue(e, null);
                         }
                       }}
+                      {...register("newPrice")}
                       // required
                     />
                   </div>
@@ -320,7 +349,7 @@ export default function CreateSevice() {
                       disabled ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {disabled ? "Đang tạo..." : "Tạo mới"}
+                    {disabled ? "Đang cập nhật..." : "Cập nhật"}
                   </ComButton>
                 </div>
               </div>

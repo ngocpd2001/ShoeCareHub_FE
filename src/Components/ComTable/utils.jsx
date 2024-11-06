@@ -244,11 +244,11 @@ const useColumnFilters = () => {
   };
 
   const formatNumber = (value) => {
-    return value.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    return value?.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   };
 
   const parseNumber = (value) => {
-    return value.replace(/,/g, "");
+    return value?.replace(/,/g, "");
   };
 
   const handleInputChange = (e, setSelectedKeys, index, selectedKeys) => {
@@ -260,91 +260,97 @@ const useColumnFilters = () => {
       setSelectedKeys([newValues]);
     }
   };
+const getValueFromRecord = (record, dataIndex) => {
+  return dataIndex.split(".").reduce((acc, key) => acc && acc[key], record);
+};
 
-  const getColumnPriceRangeProps = (dataIndex, title) => ({
-    filterDropdown: ({
-      setSelectedKeys,
-      selectedKeys,
-      confirm,
-      clearFilters,
-      close,
-    }) => (
-      <div style={{ padding: 8 }}>
-        <Input.Group compact>
-          <Input
-            style={{ width: 100, textAlign: "center" }}
-            placeholder="Tối thiểu"
-            value={selectedKeys[0] ? formatNumber(selectedKeys[0][0]) : ""}
-            onChange={(e) =>
-              handleInputChange(e, setSelectedKeys, 0, selectedKeys)
-            }
-            onKeyPress={handleKeyPress}
-          />
-          <Input
-            style={{
-              width: 30,
-              borderLeft: 0,
-              pointerEvents: "none",
-              backgroundColor: "#000",
-            }}
-            placeholder="~"
-            disabled
-          />
-          <Input
-            style={{ width: 100, textAlign: "center", borderLeft: 0 }}
-            placeholder="Tối đa"
-            value={selectedKeys[0] ? formatNumber(selectedKeys[0][1]) : ""}
-            onChange={(e) =>
-              handleInputChange(e, setSelectedKeys, 1, selectedKeys)
-            }
-            onKeyPress={handleKeyPress}
-          />
-        </Input.Group>
-        <Space style={{ marginTop: 8 }}>
-          <Button
-            type="dashed"
-            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            <div className="justify-center flex">
-              <SearchOutlined />
-              Tìm kiếm
-            </div>
-          </Button>
-          <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
-            size="small"
-            style={{ width: 90 }}
-          >
-            Đặt lại
-          </Button>
-          <Button
-            type="link"
-            size="small"
-            onClick={() => {
-              close();
-            }}
-          >
-            Đóng
-          </Button>
-        </Space>
-      </div>
-    ),
-    filterIcon: (filtered) => (
-      <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
-    ),
-    onFilter: (value, record) => {
-      if (!value.length) return true;
-      const recordPrice = record[dataIndex];
-      const [min, max] = value.map(parseNumber);
-      return (
-        (min ? recordPrice >= parseFloat(min) : true) &&
-        (max ? recordPrice <= parseFloat(max) : true)
-      );
-    },
-    render: (text) => formatNumber(text.toString()),
-  });
+const getColumnPriceRangeProps = (dataIndex, title) => ({
+  filterDropdown: ({
+    setSelectedKeys,
+    selectedKeys,
+    confirm,
+    clearFilters,
+    close,
+  }) => (
+    <div style={{ padding: 8 }}>
+      <Input.Group compact>
+        <Input
+          style={{ width: 100, textAlign: "center" }}
+          placeholder="Tối thiểu"
+          value={selectedKeys[0] ? formatNumber(selectedKeys[0][0]) : ""}
+          onChange={(e) =>
+            handleInputChange(e, setSelectedKeys, 0, selectedKeys)
+          }
+          onKeyPress={handleKeyPress}
+        />
+        <Input
+          style={{
+            width: 30,
+            borderLeft: 0,
+            pointerEvents: "none",
+            backgroundColor: "#fff",
+          }}
+          placeholder="~"
+          disabled
+        />
+        <Input
+          style={{ width: 100, textAlign: "center", borderLeft: 0 }}
+          placeholder="Tối đa"
+          value={selectedKeys[0] ? formatNumber(selectedKeys[0][1]) : ""}
+          onChange={(e) =>
+            handleInputChange(e, setSelectedKeys, 1, selectedKeys)
+          }
+          onKeyPress={handleKeyPress}
+        />
+      </Input.Group>
+      <Space style={{ marginTop: 8 }}>
+        <Button
+          type="dashed"
+          onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          size="small"
+          style={{ width: 90 }}
+        >
+          <div className="justify-center flex">
+            <SearchOutlined />
+            Tìm kiếm
+          </div>
+        </Button>
+        <Button
+          onClick={() => clearFilters && handleReset(clearFilters)}
+          size="small"
+          style={{ width: 90 }}
+        >
+          Đặt lại
+        </Button>
+        <Button
+          type="link"
+          size="small"
+          onClick={() => {
+            close();
+          }}
+        >
+          Đóng
+        </Button>
+      </Space>
+    </div>
+  ),
+  filterIcon: (filtered) => (
+    <SearchOutlined style={{ color: filtered ? "#de1818" : "#000" }} />
+  ),
+  onFilter: (value, record) => {
+    if (!value.length) return true;
+    const recordPrice = getValueFromRecord(record, dataIndex); // Sử dụng hàm lấy giá trị
+    const [min, max] = value.map(parseNumber);
+    return (
+      (min ? recordPrice >= parseFloat(min) : true) &&
+      (max ? recordPrice <= parseFloat(max) : true)
+    );
+  },
+  render: (text, record) => {
+    const value = getValueFromRecord(record, dataIndex); // Sử dụng hàm lấy giá trị
+    return formatNumber(value?.toString());
+  },
+});
     const getUniqueValues = (data, key) => {
       const uniqueValues = new Set();
       data.forEach((item) => {

@@ -19,7 +19,7 @@ const ProfileForm = () => {
   const [disabled, setDisabled] = useState(false);
 
   const CreateProductMessenger = yup.object({
-    fullname: yup
+    fullName: yup
       .string()
       .required("Vui lòng nhập tên")
       .min(2, "Tên quá ngắn, vui lòng nhập tối thiểu 2 ký tự")
@@ -115,7 +115,7 @@ const ProfileForm = () => {
                   placeholder={"Vui lòng nhập Họ và Tên"}
                   readOnly={!isEditing}
                   required={isEditing}
-                  {...register("fullname")}
+                  {...register("fullName")}
                 />
               </div>
               <div className="mb-4">
@@ -164,7 +164,7 @@ const ProfileForm = () => {
                     {
                       value: "FEMALE",
                       label: `Nữ`,
-                    }
+                    },
                   ]}
                   // readOnly={!isEditing}
                   // open={false}
@@ -213,7 +213,7 @@ const ProfileForm = () => {
                   type="name"
                   label={"Họ và Tên"}
                   placeholder={"Vui lòng nhập Họ và Tên"}
-                  {...register("fullname")}
+                  {...register("fullName")}
                   readOnly={!isEditing}
                   required={isEditing}
                 />
@@ -329,7 +329,7 @@ const ProfileForm = () => {
             type="button"
             onClick={() => {
               setIsEditing(true);
-              setFocus("fullname");
+              setFocus("fullName");
             }}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
           >
