@@ -5,7 +5,7 @@ export const YupBranch = yup.object({
     address: yup.string().trim().required("Vui lòng nhập địa chỉ"),
     ward: yup.string().trim().required("Vui lòng nhập phường "),
     province: yup.string().trim().required("Vui lòng nhập tỉnh"),
-    city: yup.string().trim().required("Vui lòng nhập thành phố"),
+    district: yup.string().trim().required("Vui lòng nhập thành phố"),
 
   
 });

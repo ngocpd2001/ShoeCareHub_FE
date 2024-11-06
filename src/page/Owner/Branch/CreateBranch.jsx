@@ -4,23 +4,19 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useNotification } from "../../../Notification/Notification";
 import ComInput from "../../../Components/ComInput/ComInput";
 import ComButton from "../../../Components/ComButton/ComButton";
-import ComUpImgOne from "../../../Components/ComUpImg/ComUpImgOne";
-import ComTextArea from "../../../Components/ComInput/ComTextArea";
-import { postData } from "../../../api/api";
-import { Breadcrumb, Upload } from "antd";
-import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
-import ComSelect from "./../../../Components/ComInput/ComSelect";
-import ComUpImg from "./../../../Components/ComUpImg/ComUpImg";
-import ComNumber from "./../../../Components/ComInput/ComNumber";
-import ComDatePicker from "./../../../Components/ComDatePicker/ComDatePicker";
+import { getData, postData } from "../../../api/api";
+
 import { YupBranch } from "./../../../yup/YupBranch";
+import ComSelect from "../../../Components/ComInput/ComSelect";
+// Thiết lập icon cho Marker (khắc phục vấn đề với icon mặc định của Leaflet)
 
 export default function CreateBranch() {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
-  const [image, setImages] = useState(null);
-
+  const [provinces, setProvinces] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [wards, setWards] = useState([]);
+  const [address, setAddress] = useState(""); // Trạng thái để lưu địa chỉ
   const methods = useForm({
     resolver: yupResolver(YupBranch),
   });
@@ -28,16 +24,38 @@ export default function CreateBranch() {
   const {
     handleSubmit,
     register,
+    watch,
+    setValue,
     formState: { errors },
   } = methods;
-  console.log("====================================");
-  console.log(image);
-  console.log("====================================");
 
   // Hàm submit form
   const onSubmit = (data) => {
     // Kiểm tra nếu chưa chọn hình ảnh
-    postData(`/branches`, { ...data, isDeliverySupport: true })
+    console.log(data);
+    console.log(provinces);
+    const province = provinces.find(
+      (item) =>
+        item.value.toString().toLowerCase() === data.province.toLowerCase()
+    );
+    const district = districts.find(
+      (item) =>
+        item.value.toString().toLowerCase() === data.district.toLowerCase()
+    );
+    const ward = wards.find(
+      (item) => item.value.toString().toLowerCase() === data.ward.toLowerCase()
+    );
+    console.log(12321321, province);
+    console.log(12321321, district);
+    console.log(12321321, ward);
+
+    postData(`/branches`, {
+      ...data,
+      province: province.label,
+      district: district.label,
+      ward: ward.label,
+      isDeliverySupport: true,
+    })
       .then((response) => {
         console.log("Tạo thành công:", response);
         setDisabled(false);
@@ -55,14 +73,49 @@ export default function CreateBranch() {
   };
 
   useEffect(() => {
-    
-    return () => {
-      
-    };
+    getData("locations/provinces")
+      .then((e) => {
+        console.log(e.data);
+        const dataForSelect = e?.data?.map((item) => ({
+          value: item.provinceID,
+          label: item.provinceName,
+          data: item,
+        }));
+        setProvinces(dataForSelect);
+      })
+      .catch(() => {});
   }, []);
+  useEffect(() => {
+    setValue("district", null);
+    getData(`locations/${watch("province")}/districts`)
+      .then((e) => {
+        console.log(e.data);
+        const dataForSelect = e?.data?.map((item) => ({
+          value: item.districtID,
+          label: item.districtName,
+          data: item,
+        }));
+        setDistricts(dataForSelect);
+      })
+      .catch(() => {});
+  }, [watch("province")]);
+  console.log(1111, watch("province"));
+  console.log("districts", watch("district"));
 
-
-
+  useEffect(() => {
+    setValue("ward", null);
+    getData(`locations/${watch("district")}/wards`)
+      .then((e) => {
+        console.log(e.data);
+        const dataForSelect = e?.data?.map((item) => ({
+          value: item.wardCode,
+          label: item.wardName,
+          data: item,
+        }));
+        setWards(dataForSelect);
+      })
+      .catch(() => {});
+  }, [watch("district")]);
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
@@ -83,19 +136,70 @@ export default function CreateBranch() {
                     {...register("name")}
                   />
                 </div>
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
+                {/* <div className="mt-2.5 sm:col-span-2">
+                  <ComSelect
                     type="text"
-                    label={"Địa chỉ"}
-                    placeholder={"Địa chỉ"}
+                    label={"Thành phố"}
+                    placeholder={"Thành phố"}
                     required
-                    {...register("address")}
+                    size={"large"}
+                    style={{
+                      width: "100%",
+                    }}
+                    options={provinces}
+                    {...register("city")}
+                  />
+                </div> */}
+                <div className="mt-2.5 sm:col-span-2">
+                  <ComSelect
+                    type="text"
+                    label={"Tỉnh"}
+                    value={watch("province")}
+                    options={provinces}
+                    placeholder={"Tỉnh"}
+                    size={"large"}
+                    onChangeValue={(e, value) => {
+                      setValue(e, value, { shouldValidate: true });
+                      console.log(55555, value);
+                    }}
+                    style={{
+                      width: "100%",
+                    }}
+                    required
+                    {...register("province")}
                   />
                 </div>
                 <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
+                  <ComSelect
                     type="text"
                     label={"Phường"}
+                    options={districts}
+                    value={watch("district")}
+                    size={"large"}
+                    style={{
+                      width: "100%",
+                    }}
+                    onChangeValue={(e, value) => {
+                      setValue(e, value);
+                    }}
+                    placeholder={"Phường"}
+                    required
+                    {...register("district")}
+                  />
+                </div>
+                <div className="mt-2.5 sm:col-span-2">
+                  <ComSelect
+                    type="text"
+                    value={watch("ward")}
+                    label={"Phường"}
+                    options={wards}
+                    size={"large"}
+                    style={{
+                      width: "100%",
+                    }}
+                    onChangeValue={(e, value) => {
+                      setValue(e, value);
+                    }}
                     placeholder={"Phường"}
                     required
                     {...register("ward")}
@@ -104,19 +208,10 @@ export default function CreateBranch() {
                 <div className="mt-2.5 sm:col-span-2">
                   <ComInput
                     type="text"
-                    label={"Tỉnh"}
-                    placeholder={"Tỉnh"}
+                    label={"Địa chỉ"}
+                    placeholder={"Địa chỉ"}
                     required
-                    {...register("province")}
-                  />
-                </div>
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
-                    type="text"
-                    label={"Thành phố"}
-                    placeholder={"Thành phố"}
-                    required
-                    {...register("city")}
+                    {...register("address")}
                   />
                 </div>
               </div>
