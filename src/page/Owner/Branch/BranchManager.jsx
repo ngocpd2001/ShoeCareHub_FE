@@ -6,11 +6,13 @@ import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 import ComModal from "../../../Components/ComModal/ComModal";
 import CreateBranch from "./CreateBranch";
+import { useStorage } from "../../../hooks/useLocalStorage";
 
 export default function BranchManager() {
   const modal = useModalState();
   const tableRef = useRef(null);
   const navigate = useNavigate();
+
   return (
     <>
       <div className="flex justify-between items-end pb-2 px-4 ">

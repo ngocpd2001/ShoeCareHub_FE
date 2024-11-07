@@ -27,6 +27,8 @@ import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
 import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from './utils/jwt';
+import AddressesUser from "./page/AddressesUser/AddressesUser";
+import ResetPassword from "./page/ResetPassword/ResetPassword";
 
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
@@ -90,6 +92,14 @@ export const routers = createBrowserRouter([
           {
             path: "/user/order-history",
             element: <OrderHistory />,
+          },
+          {
+            path: "/user/addresses",
+            element: <AddressesUser />,
+          },
+          {
+            path: "/user/reset-password",
+            element: <ResetPassword />,
           },
           {
             path: "/user/profile",

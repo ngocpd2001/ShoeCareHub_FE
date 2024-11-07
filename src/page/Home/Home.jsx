@@ -63,7 +63,7 @@ const Carousels = ({ title, items, type }) => {
               style={{ width: `${CARD_WIDTH}px`, height: `${CARD_HEIGHT}px` }}
             >
               <div
-                className="bg-white rounded-lg shadow-md pt-8 px-6 transition-transform transform hover:scale-105 border border-[#a4a4a4]"
+                className="bg-white rounded-lg shadow-md pt-4 px-6 transition-transform transform hover:scale-105 border border-[#a4a4a4]"
                 style={{ width: "260px", height: "350px" }}
               >
                 {type === "service" ? (
@@ -88,10 +88,10 @@ const Carousels = ({ title, items, type }) => {
 
 const ServiceCard = ({ item, navigate }) => (
   <div className="cursor-pointer">
-    <div className="mb-2 h-35 relative bg-gray-200 rounded-md flex items-center justify-center">
+    <div className="mb-2 h-35 relative bg-gray-200  rounded-md flex items-center justify-center">
       <img
-        src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
-        className="text-gray-400 h-40 w-full object-cover"
+        src={item?.assetUrls && item?.assetUrls[0]?.url}
+        className="text-gray-400 h-35 w-full object-cover"
         alt={item.name}
       />
     </div>
