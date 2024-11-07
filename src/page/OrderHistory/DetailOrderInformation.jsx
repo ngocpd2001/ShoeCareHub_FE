@@ -42,7 +42,7 @@ const items = [
     children: <ListOrder />,
   },
 ];
-const TabsOrderHistory = () => (
+const DetailOrderInformation = () => (
   <Tabs defaultActiveKey="1" items={items} onChange={onChange} />
 );
-export default TabsOrderHistory;
+export default DetailOrderInformation;
