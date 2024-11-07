@@ -134,19 +134,55 @@ export const deleteCartItem = async (itemId) => {
   }
 };
 
-export const checkout = async (cartItemIds, accountId, addressId, note) => {
+export const checkout = async (items, cartItemIds, accountId, addressId, note) => {
   try {
-    const response = await axiosInstances.login.post('/carts/cart/checkout', {
-      cartItemIds,
+    // Chọn một trong hai: items hoặc cartItemIds
+    const checkoutData = {
       accountId,
       addressId,
       isAutoReject: false,
       note,
-      isShip: true,
+      isShip: false,
+    };
+
+    if (items && items.length > 0) {
+      checkoutData.items = items;
+    } else if (cartItemIds && cartItemIds.length > 0) {
+      checkoutData.cartItemIds = cartItemIds;
+    } else {
+      throw new Error("Vui lòng chỉ chọn một trong hai: cartItemIds hoặc items.");
+    }
+
+    console.log("Dữ liệu gửi đi:", checkoutData);
+
+    const response = await fetch("https://shoecarehub.site/api/carts/cart/checkout", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(checkoutData),
     });
-    return response.data;
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Lỗi khi thực hiện checkout:", errorData);
+      throw new Error(errorData.message || "Lỗi không xác định");
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Lỗi khi thực hiện checkout:', error);
+    throw error;
+  }
+};
+
+// Lấy thông tin một mục trong giỏ hàng theo ID
+export const getCartItemById = async (id) => {
+  try {
+    const response = await axiosInstances.login.get(`/cartitems/${id}`);
+    return response.data.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy thông tin mục trong giỏ hàng:', error);
     throw error;
   }
 };

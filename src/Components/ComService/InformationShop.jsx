@@ -7,19 +7,18 @@ import { FaStar } from "react-icons/fa";
 import { getBusinessById } from "../../api/businesses";
 import { getBranchByBusinessId } from "../../api/branch";
 
-const InformationShop = () => {
+const InformationShop = ({ businessId }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [business, setBusiness] = useState(null);
   const [branches, setBranches] = useState([]);
   const location = useLocation();
-  const { id } = useParams();
   const navigate = useNavigate();
 
   const toggleDropdown = async () => {
     setDropdownOpen(!isDropdownOpen);
     if (!isDropdownOpen && branches.length === 0) {
       try {
-        const branchData = await getBranchByBusinessId(id);
+        const branchData = await getBranchByBusinessId(businessId);
         console.log("Branch Data:", branchData);
         setBranches(Array.isArray(branchData.data) ? branchData.data : []);
       } catch (error) {
@@ -32,18 +31,18 @@ const InformationShop = () => {
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        if (!id) {
+        if (!businessId) {
           console.error("ID không hợp lệ: ID không được tìm thấy trong URL");
           return;
         }
-        const businessData = await getBusinessById(id);
+        const businessData = await getBusinessById(businessId);
         setBusiness(businessData);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin doanh nghiệp:", error.errors || error);
       }
     };
     fetchBusiness();
-  }, [id]);
+  }, [businessId]);
 
   if (!business) {
     return <div>Đang tải thông tin doanh nghiệp...</div>;
@@ -104,7 +103,7 @@ const InformationShop = () => {
               </div>
             ) : (
               <button
-                onClick={() => navigate(`/provider-landingpage/${business.id}`)}
+                onClick={() => navigate(`/service-detail/${business.id}`, { state: { businessId: business.id } })}
                 className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3"
               >
                 Xem Shop

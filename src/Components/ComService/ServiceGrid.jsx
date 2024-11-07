@@ -8,26 +8,26 @@ import { getServiceByBusinessId } from "../../api/service"; // Cập nhật impo
 import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 
-const ServiceGrid = () => {
+const ServiceGrid = ({ businessId }) => {
   const navigate = useNavigate(); // Sử dụng useNavigate
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 8;
+  const pageSize = 12;
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const businessId = 1; // Thay đổi giá trị BusinessId theo nhu cầu
-        const response = await getServiceByBusinessId(businessId, currentPage, pageSize);
-        setServices(response);
+        const response = await getServiceByBusinessId(businessId); // Gọi API với BusinessId
+        console.log(response); // Kiểm tra response từ API
+        setServices(response); // Cập nhật danh sách dịch vụ từ response
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
       }
     };
 
-    fetchServices();
-  }, [currentPage]); // Chạy lại khi currentPage thay đổi
+    fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
+  }, [businessId]); // Chỉ chạy một lần khi component được mount
 
   const handleFocus = () => {
     setSelected(true);

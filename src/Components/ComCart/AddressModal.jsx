@@ -68,7 +68,6 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
                 <div>
                   <p className="font-semibold">{address.address}</p>
                   <p>{`${address.ward}, ${address.province}, ${address.city}`}</p>
-                  {/* <p>{`Trạng thái: ${address.status}`}</p> */}
                 </div>
               </div>
             </div>

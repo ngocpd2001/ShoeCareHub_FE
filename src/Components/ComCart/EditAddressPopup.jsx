@@ -12,19 +12,33 @@ const EditAddressPopup = ({ onClose }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const addressData = {
-      address,
-      ward,
-      province,
-      city,
-      isDefault,
-    };
-    try {
-      const response = await createAddress(addressData);
-      console.log("Địa chỉ đã được tạo:", response);
-      onClose();
-    } catch (error) {
-      console.error("Lỗi khi tạo địa chỉ:", error);
+
+    // Lấy dữ liệu người dùng từ localStorage
+    const userData = localStorage.getItem('user');
+
+    if (userData) {
+      const user = JSON.parse(userData);
+      const userId = user.id;
+
+      // Tạo dữ liệu địa chỉ với accountId
+      const addressData = {
+        accountId: userId, // Thêm accountId
+        address,
+        ward,
+        province,
+        city,
+        isDefault,
+      };
+
+      try {
+        const response = await createAddress(addressData);
+        console.log("Địa chỉ đã được tạo:", response);
+        onClose();
+      } catch (error) {
+        console.error("Lỗi khi tạo địa chỉ:", error);
+      }
+    } else {
+      console.log('Không tìm thấy dữ liệu người dùng trong localStorage');
     }
   };
 
@@ -47,7 +61,7 @@ const EditAddressPopup = ({ onClose }) => {
             <textarea
               placeholder=""
               className="mt-1 block w-full border-2 border-gray-400 rounded-md shadow-sm"
-              value={ward}
+              value={address}
               onChange={(e) => setAddress(e.target.value)}
             />
           </div>

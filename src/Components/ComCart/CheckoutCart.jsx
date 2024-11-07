@@ -8,27 +8,30 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getAddressByAccountId } from "../../api/user";
 import { getBranchByBranchId } from "../../api/branch";
-import AddressModal from './AddressModal';
+import AddressModal from "./AddressModal";
 
-const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
+const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange }) => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
-  const [address, setAddress] = useState(null);
+  const [addresses, setAddresses] = useState({});
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user ? user.id : null;
-  const [note, setNote] = useState("");
   // console.log("cart", cartItems);
   const [branchDataList, setBranchDataList] = useState({});
   const location = useLocation();
   const { selectedItems } = location.state || { selectedItems: [] };
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [deliveryOptions, setDeliveryOptions] = useState({});
+  const [currentBranchId, setCurrentBranchId] = useState(null);
 
   useEffect(() => {
     const fetchAddress = async () => {
       if (accountId) {
         try {
           const addressData = await getAddressByAccountId(accountId);
-          const availableAddress = addressData.find(addr => addr.status === "AVAILABLE");
-          setAddress(availableAddress);
+          const availableAddress = addressData.find(
+            (addr) => addr.status === "AVAILABLE"
+          );
+          setAddresses({ [accountId]: availableAddress });
         } catch (error) {
           console.error("Lỗi khi lấy địa chỉ:", error);
         }
@@ -54,10 +57,13 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
       });
 
       const branchDataResults = await Promise.all(branchDataPromises);
-      const branchDataMap = branchDataResults.reduce((acc, { branchId, data }) => {
-        acc[branchId] = data;
-        return acc;
-      }, {});
+      const branchDataMap = branchDataResults.reduce(
+        (acc, { branchId, data }) => {
+          acc[branchId] = data;
+          return acc;
+        },
+        {}
+      );
 
       setBranchDataList(branchDataMap);
     };
@@ -65,17 +71,17 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
     fetchBranchData();
   }, [cartItems]);
 
-  const handleNoteChange = (e) => {
-    setNote(e.target.value);
-    onNoteChange(e.target.value);
+  const handleDeliveryOptionChange = (event, branchId) => {
+    const newDeliveryOptions = {
+      ...deliveryOptions,
+      [branchId]: event.target.value,
+    };
+    setDeliveryOptions(newDeliveryOptions);
+    onDeliveryOptionChange(newDeliveryOptions);
   };
 
-  const handleDeliveryOptionChange = (event) => {
-    setDeliveryOption(event.target.value);
-    onDeliveryOptionChange(event.target.value);
-  };
-
-  const handleAddressModalOpen = () => {
+  const handleAddressModalOpen = (branchId) => {
+    setCurrentBranchId(branchId);
     setIsAddressModalOpen(true);
   };
 
@@ -83,8 +89,23 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
     setIsAddressModalOpen(false);
   };
 
-  const handleSelectAddress = (selectedAddress) => {
-    setAddress(selectedAddress);
+  const handleSelectAddress = (selectedAddress, branchId) => {
+    setAddresses((prevAddresses) => ({
+      ...prevAddresses,
+      [branchId]: selectedAddress,
+    }));
+  };
+
+  useEffect(() => {
+    console.log("Selected items:", selectedItems);
+  }, [selectedItems]);
+
+  useEffect(() => {
+    console.log("Selected items in CheckoutCart:", selectedItems);
+  }, [selectedItems]);
+
+  const handleNoteChange = (event) => {
+    onNoteChange(event.target.value);
   };
 
   return (
@@ -93,24 +114,20 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
         <div className="grid grid-cols-4 items-center justify-center p-4 h-15">
           <div className="font-semibold text-xl text-center">Dịch vụ</div>
           <div className="font-semibold text-xl text-center">Đơn giá</div>
-          <div className="font-semibold text-xl text-center">Số lượng (đôi giày)</div>
+          <div className="font-semibold text-xl text-center">
+            Số lượng (đôi giày)
+          </div>
           <div className="font-semibold text-xl text-center">Thành tiền</div>
         </div>
 
         {selectedItems.map((shop) => {
-          let shopName, shopAddress;
+          const branch = shop.branchId ? branchDataList[shop.branchId] : null;
+          const shopName = branch ? branch.name : "Tên cửa hàng không có";
+          const shopAddress = branch ? branch.address : "Địa chỉ không có";
 
-          if (shop.branchId) {
-            // Dữ liệu từ trang Cart
-            const branchData = branchDataList[shop.branchId];
-            shopName = branchData ? branchData.name : "Tên cửa hàng không có";
-            shopAddress = branchData ? branchData.address : "Địa chỉ không có";
-          } else {
-            // Dữ liệu từ trang ServiceDetail
-            const branch = shop.services?.[0]?.branchServices?.[0]?.branch;
-            shopName = branch ? branch.name : "Tên cửa hàng không có";
-            shopAddress = branch ? branch.address : "Địa chỉ không có";
-          }
+          // Kiểm tra nếu có thông tin serviceName và serviceStatus
+          const serviceName = shop.serviceName || null;
+          const serviceStatus = shop.serviceStatus || null;
 
           const shopTotal = (shop.services || []).reduce(
             (shopTotal, service) => {
@@ -126,7 +143,7 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
 
           return (
             <div
-              key={shop.branchId}
+              key={shop.branchId || shop.services?.[0]?.id}
               className="bg-white p-4 border border-[#002278] rounded-lg mb-8"
             >
               <div className="grid grid-cols-2 py-3 border-b bg-[#F9F1E7] px-4">
@@ -154,6 +171,13 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                   </h2>
                 </div>
               </div>
+
+              {serviceName && serviceStatus && (
+                <div className="mt-2">
+                  <p>Tên dịch vụ: {serviceName}</p>
+                  <p>Trạng thái dịch vụ: {serviceStatus}</p>
+                </div>
+              )}
 
               {(shop.services || []).map((service) => {
                 if (!service) return null;
@@ -214,7 +238,6 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                   <textarea
                     className="w-full p-2 border border-gray-300 rounded h-34"
                     placeholder="Lưu ý cho cửa hàng..."
-                    value={note}
                     onChange={handleNoteChange}
                   />
                 </div>
@@ -224,7 +247,7 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                   <div className="flex flex-col ">
                     <div
                       className={`mb-4 p-4 h-15 rounded-md ${
-                        deliveryOption === "delivery"
+                        deliveryOptions[shop.branchId] === "delivery"
                           ? "bg-[#002278] text-white"
                           : "bg-white text-black"
                       } flex items-center justify-between h-29`}
@@ -234,35 +257,46 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                           <input
                             type="radio"
                             value="delivery"
-                            checked={deliveryOption === "delivery"}
-                            onChange={handleDeliveryOptionChange}
+                            checked={
+                              deliveryOptions[shop.branchId] === "delivery"
+                            }
+                            onChange={(e) =>
+                              handleDeliveryOptionChange(e, shop.branchId)
+                            }
                             className="mr-2"
                           />
                           Giao hàng
                         </label>
                         <p
                           className={`ml-4 ${
-                            deliveryOption === "delivery"
+                            deliveryOptions[shop.branchId] === "delivery"
                               ? "text-white"
                               : "text-black"
                           } break-words`}
                         >
-                          {address ? (
+                          {addresses[accountId] ? (
                             <>
-                              {address.address}, {address.ward},<br />
-                              {address.province}, {address.city}
+                              {addresses[accountId].address},{" "}
+                              {addresses[accountId].ward},<br />
+                              {addresses[accountId].province},{" "}
+                              {addresses[accountId].city}
                             </>
                           ) : (
                             "Đang tải địa chỉ..."
                           )}
                         </p>
                       </div>
-                      <button className="font-medium" onClick={handleAddressModalOpen}>Thay đổi</button>
+                      <button
+                        className="font-medium"
+                        onClick={() => handleAddressModalOpen(shop.branchId)}
+                      >
+                        Thay đổi
+                      </button>
                     </div>
 
                     <div
                       className={`p-4 h-15 rounded-md ${
-                        deliveryOption === "pickup"
+                        deliveryOptions[shop.branchId] === "pickup"
                           ? "bg-[#002278] text-white"
                           : "bg-white text-black"
                       } flex items-center justify-between`}
@@ -272,15 +306,19 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                           <input
                             type="radio"
                             value="pickup"
-                            checked={deliveryOption === "pickup"}
-                            onChange={handleDeliveryOptionChange}
+                            checked={
+                              deliveryOptions[shop.branchId] === "pickup"
+                            }
+                            onChange={(e) =>
+                              handleDeliveryOptionChange(e, shop.branchId)
+                            }
                             className="mr-2"
                           />
                           Lấy tại cửa hàng
                         </label>
                         <p
                           className={`ml-4 ${
-                            deliveryOption === "pickup"
+                            deliveryOptions[shop.branchId] === "pickup"
                               ? "text-white"
                               : "text-black"
                           }`}
@@ -301,7 +339,9 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
         isOpen={isAddressModalOpen}
         onClose={handleAddressModalClose}
         accountId={accountId}
-        onSelectAddress={handleSelectAddress}
+        onSelectAddress={(selectedAddress) =>
+          handleSelectAddress(selectedAddress, currentBranchId)
+        }
       />
     </div>
   );

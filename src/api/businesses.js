@@ -3,7 +3,13 @@ import { axiosInstances } from '../utils/axios';
 export const getBusinessById = async (businessId) => {  
   try {  
     const response = await axiosInstances.login.get(`/businesses/${businessId}`);  
-    return response.data.data;  
+    
+    if (response.data.status === "success" && response.data.statusCode === 200) {
+      return response.data.data;
+    } else {
+      console.error('Lỗi: Không thể lấy dữ liệu doanh nghiệp');
+      return null;
+    }
   } catch (error) {  
     console.error('Lỗi khi lấy thông tin doanh nghiệp:', error);  
     throw error;  

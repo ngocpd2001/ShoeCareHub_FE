@@ -4,17 +4,17 @@ import CheckoutCart from "../../Components/ComCart/CheckoutCart";
 import { getServiceById } from "../../api/service";
 import { checkout } from "../../api/cart";
 import { getAddressByAccountId } from "../../api/user";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 
 const Checkout = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedItems: initialCartItems = [] } = location.state || {};
   const [cartItems, setCartItems] = useState(initialCartItems);
-  const [note, setNote] = useState("");
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
+  const [note, setNote] = useState("");
 
   const fetchServiceDetails = async () => {
     try {
@@ -84,12 +84,12 @@ const Checkout = () => {
     return count;
   }, 0);
 
-  const handleNoteChange = (newNote) => {
-    setNote(newNote);
-  };
-
   const handleDeliveryOptionChange = (option) => {
     setDeliveryOption(option);
+  };
+
+  const handleNoteChange = (newNote) => {
+    setNote(newNote || "");
   };
 
   const handleCheckout = async () => {
@@ -132,15 +132,27 @@ const Checkout = () => {
 
       const isShip = deliveryOption === "delivery";
 
-      console.log("CartItemsId:", cartItemIds);
-      console.log("AccountId:", accountId);
-      console.log("AddressId:", addressId);
-      console.log("Note:", note);
-      console.log("IsShip:", isShip);
+      const isAutoReject = false;
 
-      const result = await checkout(cartItemIds, accountId, addressId, note);
+      const requestData = {
+        cartItemIds,
+        accountId,
+        addressId,
+        isAutoReject,
+        note: note || "",
+        isShip,
+      };
+      console.log("Dữ liệu gửi đi:", requestData);
+
+      const result = await checkout(
+        cartItemIds,
+        accountId,
+        addressId,
+        note,
+        isShip
+      );
       console.log("Đặt dịch vụ đã được thực hiện", result);
-      setIsOrderSuccess(true); // Hiển thị popup khi đặt hàng thành công
+      setIsOrderSuccess(true);
     } catch (error) {
       console.error("Lỗi khi thực hiện checkout:", error);
     }
@@ -210,10 +222,13 @@ const Checkout = () => {
       {isOrderSuccess && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-            <FontAwesomeIcon icon={faCheckCircle} className="text-6xl text-[#002278] mb-4" />
+            <FontAwesomeIcon
+              icon={faCheckCircle}
+              className="text-6xl text-[#002278] mb-4"
+            />
             <h2 className="text-2xl font-bold mb-2">Cảm ơn bạn đã đặt hàng!</h2>
             <p className="text-gray-600 mb-4">
-            Đơn hàng của bạn đã được đặt thành công.
+              Đơn hàng của bạn đã được đặt thành công.
             </p>
             <div className="flex justify-center space-x-4">
               <button

@@ -75,14 +75,14 @@ const OrderDetail = () => {
       <div className="flex justify-between items-center pb-4 px-4">
         <div>
           <h2 className="text-xl font-semibold text-blue-800">
-            Chi tiết đơn hàng 
+            Cập nhật đơn hàng 
           </h2>
           <Breadcrumb
             separator=">"
             items={[
               { title: "Cửa hàng" },
               { title: <Link to="/owner/order">Đơn hàng</Link> },
-              { title: `Chi tiết đơn hàng` },
+              { title: `Cập nhật đơn hàng` },
             ]}
           />
         </div>

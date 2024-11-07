@@ -40,10 +40,10 @@ export const getOrderDetailById = async (id) => {
   }
 };
 
-export const getOrderDetailsByOrderId = async (orderId) => {
+export const getOrderDetailsByOrderId = async (id) => {
   try {
-    const response = await axiosInstances.login.get(`/order/${orderId}/orderdetails`);
-    return response.data.data;
+    const response = await axiosInstances.login.get(`/order/${id}/orderdetails`);
+    return response.data;
   } catch (error) {
     console.error("Lỗi khi gọi API chi tiết đơn hàng theo mã đơn hàng", error);
     throw error;
