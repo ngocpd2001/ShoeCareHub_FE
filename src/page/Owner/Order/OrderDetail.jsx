@@ -13,7 +13,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHouseUser, faStore, faFile, faCopy, faTruck, faInfoCircle, faShoppingCart, faUser, faEnvelope, faPhone, faCalendar } from '@fortawesome/free-solid-svg-icons';
 import { getOrderDetailsByOrderId } from "../../../api/order";
-import { getAddressByAccountId } from "../../../api/user";
+import { getAddressByAccountId } from "../../../api/address";
 
 const OrderDetail = () => {
   const navigate = useNavigate();
@@ -312,7 +312,7 @@ const OrderDetail = () => {
             <p className="text-gray-600">
               {orderData.address 
                 ? `${orderData.address}, ${orderData.ward}, ${orderData.district}, ${orderData.province}`
-                : "Không có thông tin địa chỉ"}
+                : "Lấy tại cửa hàng"}
             </p>
             <p className="text-black mt-2 text-lg">
               <FontAwesomeIcon icon={faStore} className="mr-2" />
@@ -321,7 +321,6 @@ const OrderDetail = () => {
             <p className="text-gray-600">
               {orderData.branchName || "Không có thông tin chi nhánh"}
             </p>
-            {/* Thêm thông tin bổ sung nếu cần */}
           </div>
         </div>
         
@@ -333,7 +332,7 @@ const OrderDetail = () => {
             <div className="flex justify-between items-center text-black mt-3 text-lg">
               <div>
                 <FontAwesomeIcon icon={faFile} className="mr-2" />
-                Mã vận chuyểm:
+                Mã vận chuyển:
               </div>
               <FontAwesomeIcon 
                 icon={faCopy} 
@@ -351,7 +350,6 @@ const OrderDetail = () => {
             <p className="text-gray-600">
               {orderData.shippingUnit}
             </p>
-            {/* Thêm thông tin bổ sung nếu cần */}
           </div>
         </div>
       </div>

@@ -18,6 +18,7 @@ import DetailService from "./page/Owner/Service/DetailService";
 import CreateSevice from "./page/Owner/Service/CreateService";
 import OrderManager from "./page/Owner/Order/OrderManager";
 import OrderDetail from "./page/Owner/Order/OrderDetail";
+import UpdateOrder from "./page/Owner/Order/UpdateOrder";
 import Dashboard from "./page/Owner/Dashboard";
 import EmployeeManager from "./page/Owner/Employee/EmployeeManager";
 import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
@@ -144,16 +145,20 @@ export const routers = createBrowserRouter([
         element: <OrderManager />,
       },
       {
+        path: "/owner/order/:id",
+        element: <OrderDetail />,
+      },
+      {
+        path: "/owner/order/update/:id",
+        element: <UpdateOrder />,
+      },
+      {
         path: "/owner/branch",
         element: <BranchManager />,
       },
       {
         path: "/owner/branch/create",
         element: <CreateBranch />,
-      },
-      {
-        path: "/owner/order/:id",
-        element: <OrderDetail />,
       },
       {
         path: "/owner/dashboard",

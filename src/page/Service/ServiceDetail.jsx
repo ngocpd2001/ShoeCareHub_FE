@@ -34,7 +34,7 @@ const ServiceDetail = () => {
   const location = useLocation();
   const [businessId, setBusinessId] = useState(null);
 
-  console.log("Business ID:", businessId);
+  // console.log("Business ID:", businessId);
 
   const dataImages = [];
 
@@ -161,63 +161,19 @@ const ServiceDetail = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user ? user.id : null;
-
-      if (!userId) {
-        console.error("User not logged in");
-        return;
-      }
-
-      // Thêm mục vào giỏ hàng
-      const itemData = {
-        serviceId: service.id,
-        branchId: service.branchServices[0]?.branch.id,
+  const handleCheckout = () => {
+    if (service) {
+      const checkoutService = {
+        ...service,
         quantity: quantity || 1,
+        shopName: service.branchServices[0]?.branch.name,
+        shopAddress: service.branchServices[0]?.branch.address,
       };
-
-      await addItemToCart(userId, itemData);
-
-      // Lấy giỏ hàng của người dùng
-      const cartResponse = await getUserCart(userId);
-      console.log("Cart response:", cartResponse);
-
-      if (!cartResponse || !Array.isArray(cartResponse) || cartResponse.length === 0) {
-        console.error("Failed to retrieve cart items");
-        return;
-      }
-
-      // Tìm mục vừa được thêm vào giỏ hàng
-      const addedItem = cartResponse.flatMap(branch => branch.items).find(item => item.serviceId === service.id);
-
-      if (!addedItem) {
-        console.error("Failed to find the added item in the cart");
-        return;
-      }
-
-      // Lấy thông tin chi tiết cho mục vừa thêm
-      const detailedCartItem = await getCartItemById(addedItem.id);
-      console.log("Detailed cart item:", detailedCartItem);
-
-      // Điều hướng đến trang thanh toán với thông tin chi tiết
       navigate("/checkout", {
-        state: { selectedItems: [detailedCartItem] },
+        state: { selectedItems: [{ services: [checkoutService] }] },
       });
-
-    } catch (error) {
-      if (error.response) {
-        console.error("Server error:", error.response.data);
-      } else if (error.request) {
-        console.error("Network error:", error.request);
-      } else {
-        console.error("Error:", error.message);
-      }
     }
   };
-
-  
 
   const formatCurrency = (value) => {
     return value ? value.toLocaleString("vi-VN") + "đ" : "N/A";
@@ -226,33 +182,6 @@ const ServiceDetail = () => {
   const formatRating = (rating) => {
     return rating !== undefined ? rating.toFixed(1) : "N/A";
   };
-
-  // const handleQuantityChange = async (id, change) => {
-  //   const itemToUpdate = cartItems.find(item => item.id === id);
-
-  //   if (!itemToUpdate) {
-  //     console.error("Item not found in cart");
-  //     return;
-  //   }
-
-  //   const newQuantity = itemToUpdate.quantity + change;
-
-  //   if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
-
-  //   try {
-  //     // Gọi API để cập nhật số lượng
-  //     await updateCartItem(id, newQuantity);
-
-  //     // Cập nhật trạng thái giỏ hàng
-  //     setCartItems(prevItems =>
-  //       prevItems.map(item =>
-  //         item.id === id ? { ...item, quantity: newQuantity } : item
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.error("Lỗi khi cập nhật số lượng:", error);
-  //   }
-  // };
 
   return (
     <div className="bg-gray-100 min-h-screen">

@@ -134,20 +134,19 @@ export const deleteCartItem = async (itemId) => {
   }
 };
 
-export const checkout = async (items, cartItemIds, accountId, addressId, note) => {
+export const checkout = async (items, cartItemIds, accountId, addressId, note, isShip) => {
   try {
-    // Chọn một trong hai: items hoặc cartItemIds
     const checkoutData = {
       accountId,
       addressId,
       isAutoReject: false,
       note,
-      isShip: false,
+      isShip,
     };
 
-    if (items && items.length > 0) {
+    if (items && items.length > 0 && (!cartItemIds || cartItemIds.length === 0)) {
       checkoutData.items = items;
-    } else if (cartItemIds && cartItemIds.length > 0) {
+    } else if (cartItemIds && cartItemIds.length > 0 && (!items || items.length === 0)) {
       checkoutData.cartItemIds = cartItemIds;
     } else {
       throw new Error("Vui lòng chỉ chọn một trong hai: cartItemIds hoặc items.");
@@ -163,15 +162,21 @@ export const checkout = async (items, cartItemIds, accountId, addressId, note) =
       body: JSON.stringify(checkoutData),
     });
 
+    const responseText = await response.text();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Lỗi khi thực hiện checkout:", errorData);
-      throw new Error(errorData.message || "Lỗi không xác định");
+      console.error("Lỗi khi thực hiện checkout:", responseText);
+      throw new Error(`Lỗi không xác định: ${response.status} - ${response.statusText}`);
     }
 
-    return await response.json();
+    try {
+      return JSON.parse(responseText);
+    } catch (jsonError) {
+      console.log("Phản hồi không phải là JSON, xử lý như văn bản:", responseText);
+      return { message: responseText };
+    }
   } catch (error) {
-    console.error('Lỗi khi thực hiện checkout:', error);
+    console.error('Lỗi khi thực hiện checkout:', error.message);
     throw error;
   }
 };

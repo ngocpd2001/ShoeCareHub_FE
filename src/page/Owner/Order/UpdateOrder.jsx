@@ -11,16 +11,31 @@ import ComButton from "../../../Components/ComButton/ComButton";
 import { Breadcrumb } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHouseUser, faStore, faFile, faCopy, faTruck, faInfoCircle, faShoppingCart, faUser, faEnvelope, faPhone, faCalendar } from '@fortawesome/free-solid-svg-icons';
-import { getOrderDetailsByOrderId } from "../../../api/order";
-import { getAddressByAccountId } from "../../../api/user";
+import { faHouseUser, faStore, faFile, faCopy, faTruck, faInfoCircle, faShoppingCart, faUser, faEnvelope, faPhone, faCalendar, faPlus } from '@fortawesome/free-solid-svg-icons';
+import { getOrderDetailsByOrderId, updateOrder } from "../../../api/order";
+import { getAddressByAccountId } from "../../../api/address";
+import { format } from 'date-fns';
+import CreateOrderDetailPopup from './ServiceModal';
 
 const OrderDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  // console.log("Order ID:", id);
   const [orderData, setOrderData] = useState({});
-  const [serviceCount, setServiceCount] = useState(0);
+  const [shippingCode, setShippingCode] = useState("");
+  const [formData, setFormData] = useState({
+    deliveredFee: 0,
+    shippingCode: "",
+    shippingUnit: "",
+  });
+  const [isPopupVisible, setIsPopupVisible] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
 
   useEffect(() => {
     const fetchOrderData = async () => {
@@ -36,6 +51,8 @@ const OrderDetail = () => {
           data: orderDetailsResponse.data,
           branchName: branchName,
         });
+
+        setShippingCode(orderData.shippingCode);
 
         const addressId = orderData.addressId;
 
@@ -59,15 +76,55 @@ const OrderDetail = () => {
     fetchOrderData();
   }, [id]);
 
-
   const handleCopy = (text) => {
     navigator.clipboard.writeText(text).catch(err => {
       console.error('Lỗi khi sao chép: ', err);
     });
   };
 
+  const handleUpdateOrder = async () => {
+    try {
+      const updatedOrderData = {
+        ...orderData,
+        shippingCode,
+      };
+
+      const response = await updateOrder(id, updatedOrderData);
+      console.log("Order updated successfully:", response);
+      // Thực hiện các hành động khác sau khi cập nhật thành công, ví dụ: điều hướng
+    } catch (error) {
+      console.error("Lỗi khi cập nhật đơn hàng:", error);
+    }
+  };
+
   // Giả sử bạn có một mảng các bước trạng thái trong orderData
   const timelineSteps = orderData.statusHistory || []; // Sử dụng statusHistory hoặc một trường tương tự từ orderData
+
+  const statusOptions = [
+    "Đang xử lý",
+    "Đang chờ",
+    "Hoàn thành",
+    "Đã hủy",
+    "Lưu trữ",
+    "Đang giao hàng",
+    "Quá hạn nhận hàng",
+    "Đã xác nhận",
+  ];
+
+  const handleStatusChange = (e) => {
+    setFormData((prevData) => ({
+      ...prevData,
+      status: e.target.value,
+    }));
+  };
+
+  const handleButtonClick = () => {
+    setIsPopupVisible(true);
+  };
+
+  const handleCancel = () => {
+    setIsPopupVisible(false);
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 bg-gray-50">
@@ -85,6 +142,14 @@ const OrderDetail = () => {
               { title: `Cập nhật đơn hàng` },
             ]}
           />
+        </div>
+        <div className="flex justify-end">
+          <button 
+            onClick={handleUpdateOrder} 
+            className="bg-[#002278] text-white px-4 py-2 rounded"
+          >
+            Cập nhật
+          </button>
         </div>
       </div>
 
@@ -123,6 +188,12 @@ const OrderDetail = () => {
               >
                 {orderData.status || "Không có thông tin trạng thái"}
               </span>
+              <button 
+                className="bg-[#002278] text-white w-10 h-10 flex items-center justify-center rounded-full"
+                onClick={handleButtonClick}
+              >
+                <FontAwesomeIcon icon={faPlus} />
+              </button>
             </div>
           </div>
 
@@ -172,8 +243,14 @@ const OrderDetail = () => {
               </span>
             </div>
             <div className="flex justify-between mb-2">
-              <span className="text-gray-600">Phí giao hàng</span>
-              <span>{orderData.deliveredFee?.toLocaleString()}đ</span>
+              <span className="text-gray-600 justify-center">Phí giao hàng</span>
+              <input
+                type="number"
+                name="deliveredFee"
+                value={formData.deliveredFee}
+                onChange={handleInputChange}
+                className="w-[80%] p-2 border rounded-md text-gray-600"
+              />
             </div>
             {/* <div className="flex justify-between mb-2">
               <span className="text-gray-600">VAT</span>
@@ -201,32 +278,17 @@ const OrderDetail = () => {
                   <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
                   Trạng thái đơn hàng
                 </p>
-                {/* <p className="font-medium w-full p-2 border rounded-md">
-                  {orderData.status || "Không có thông tin trạng thái"}
-                </p> */}
-                                <span
-                  className={`font-medium text-gray-900 w-full p-2 border rounded-md ${
-                    orderData.status === "Đang xử lý"
-                      ? "bg-orange-100 text-orange-600"
-                      : orderData.status === "Đang chờ"
-                      ? "bg-blue-100 text-blue-600"
-                      : orderData.status === "Hoàn thành"
-                      ? "bg-green-100 text-green-600"
-                      : orderData.status === "Đã hủy"
-                      ? "bg-red-100 text-red-600"
-                      : orderData.status === "Lưu trữ"
-                      ? "bg-gray-100 text-gray-600"
-                      : orderData.status === "Đang giao hàng"
-                      ? "bg-yellow-100 text-yellow-600"
-                      : orderData.status === "Quá hạn nhận hàng"
-                      ? "bg-purple-100 text-purple-600"
-                      : orderData.status === "Đã xác nhận"
-                      ? "bg-teal-100 text-teal-600"
-                      : ""
-                  }`}
+                <select
+                  value={formData.status || orderData.status || ""}
+                  onChange={handleStatusChange}
+                  className="font-medium text-gray-900 w-full p-2 border rounded-md"
                 >
-                  {orderData.status || "Không có thông tin trạng thái"}
-                </span>
+                  {statusOptions.map((status) => (
+                    <option key={status} value={status}>
+                      {status}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div>
                 <p className="text-gray-500 text-lg mb-2">
@@ -333,28 +395,41 @@ const OrderDetail = () => {
             <div className="flex justify-between items-center text-black mt-3 text-lg">
               <div>
                 <FontAwesomeIcon icon={faFile} className="mr-2" />
-                Mã vận chuyểm:
+                Mã vận chuyển:
               </div>
               <FontAwesomeIcon 
                 icon={faCopy} 
                 className="cursor-pointer" 
-                onClick={() => handleCopy(orderData.shippingCode)} 
+                onClick={() => handleCopy(formData.shippingCode)} 
               />
             </div>
-            <p className="text-gray-600">
-              {orderData.shippingCode}
-            </p>
+            <input
+              type="text"
+              name="shippingCode"
+              value={formData.shippingCode}
+              onChange={handleInputChange}
+              className="w-full p-2 border rounded-md text-gray-600"
+            />
             <p className="text-black mt-2 text-lg">
               <FontAwesomeIcon icon={faTruck} className="mr-2" />
               Đơn vị vận chuyển:
             </p>
-            <p className="text-gray-600">
-              {orderData.shippingUnit}
-            </p>
-            {/* Thêm thông tin bổ sung nếu cần */}
+            <input
+              type="text"
+              name="shippingUnit"
+              value={formData.shippingUnit}
+              onChange={handleInputChange}
+              className="w-full p-2 border rounded-md text-gray-600"
+            />
           </div>
         </div>
       </div>
+
+      {/* Popup */}
+      <CreateOrderDetailPopup
+        visible={isPopupVisible}
+        onCancel={handleCancel}
+      />
     </div>
   );
 };

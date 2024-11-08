@@ -148,8 +148,8 @@ export const TableOrder = forwardRef((props, ref) => {
               navigate(`/owner/order/${orderId}`);
             }}
             showModalEdit={() => {
-              modalEdit.handleOpen();
-              setSelectedData(record);
+              const orderId = record.id;
+              navigate(`/owner/order/update/${orderId}`);
             }}
             excludeDefaultItems={["delete"]} //Ẩn mục delete
           />

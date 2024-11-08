@@ -49,3 +49,23 @@ export const getOrderDetailsByOrderId = async (id) => {
     throw error;
   }
 };
+
+export const updateOrder = async (id, orderData) => {
+  try {
+    const response = await axiosInstances.login.patch(`/orders/${id}`, orderData);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật đơn hàng", error);
+    throw error;
+  }
+};
+
+export const createOrderDetail = async (orderDetailData) => {
+  try {
+    const response = await axiosInstances.login.post('/orderdetails', orderDetailData);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi tạo chi tiết đơn hàng", error);
+    throw error;
+  }
+};
