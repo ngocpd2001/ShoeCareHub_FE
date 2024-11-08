@@ -5,7 +5,7 @@ import { getServiceByBranchId } from "../../../api/branch";
 
 const { Option } = Select;
 
-const CreateOrderDetailPopup = ({ visible, onCancel }) => {
+const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServiceAdded }) => {
   const [form] = Form.useForm();
   const [services, setServices] = useState([]);
 
@@ -19,18 +19,25 @@ const CreateOrderDetailPopup = ({ visible, onCancel }) => {
   };
 
   useEffect(() => {
-    const branchId = form.getFieldValue("branchId");
+    console.log("Order ID:", orderId);
+    form.setFieldsValue({ orderId, branchId });
+  }, [orderId, branchId, form]);
+
+  useEffect(() => {
     if (branchId) {
       fetchServices(branchId);
     }
-  }, [form]);
+  }, [branchId]);
 
   const onCreate = async (values) => {
     try {
-      const response = await createOrderDetail(values);
+      const payload = { ...values, orderId, branchId };
+      console.log("Payload gửi đi:", payload);
+      const response = await createOrderDetail(payload);
       console.log("Chi tiết đơn hàng đã được tạo:", response);
       form.resetFields();
       onCancel();
+      onServiceAdded();
     } catch (error) {
       console.error("Lỗi khi tạo chi tiết đơn hàng:", error);
     }
@@ -56,20 +63,6 @@ const CreateOrderDetailPopup = ({ visible, onCancel }) => {
     >
       <Form form={form} layout="vertical" name="form_in_modal">
         <Form.Item
-          name="orderId"
-          label="Mã đơn hàng"
-          rules={[{ required: true, message: "Vui lòng nhập mã đơn hàng!" }]}
-        >
-          <Input />
-        </Form.Item>
-        <Form.Item
-          name="branchId"
-          label="Chi nhánh"
-          rules={[{ required: true, message: "Vui lòng nhập chi nhánh!" }]}
-        >
-          <Input onChange={(e) => fetchServices(e.target.value)} />
-        </Form.Item>
-        <Form.Item
           name="serviceId"
           label="Dịch vụ"
           rules={[{ required: true, message: "Vui lòng chọn dịch vụ!" }]}
@@ -82,16 +75,6 @@ const CreateOrderDetailPopup = ({ visible, onCancel }) => {
             ))}
           </Select>
         </Form.Item>
-        {/* <Form.Item
-          name="materialId"
-          label="Material ID"
-          rules={[{ required: true, message: 'Vui lòng chọn Material ID!' }]}
-        >
-          <Select placeholder="Chọn Material ID">
-            <Option value="1">Material 1</Option>
-            <Option value="2">Material 2</Option>
-          </Select>
-        </Form.Item> */}
         <Form.Item
           name="quantity"
           label="Quantity"

@@ -38,3 +38,13 @@ export const getAddressByAccountId = async (accountId) => {
       throw error;
     }
   };
+
+  export const getAddressById = async (id) => {
+    try {
+        const response = await axiosInstances.login.get(`/addresses/${id}`);
+        return response.data.data;
+    } catch (error) {
+        console.error('Lỗi khi lấy địa chỉ theo ID:', error);
+        throw error;
+    }
+};
