@@ -15,8 +15,8 @@ import FeedbackService from "../../Components/ComService/FeedbackService";
 import InformationShop from "../../Components/ComService/InformationShop";
 import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
-import { useParams, useNavigate } from "react-router-dom";
-import { addItemToCart, getCartItems } from "../../api/cart";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { addItemToCart, getUserCart, getCartItemById } from "../../api/cart";
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -30,15 +30,28 @@ const ServiceDetail = () => {
   const navigate = useNavigate();
   const serviceId = id;
   const [cartItems, setCartItems] = useState([]);
+  const [message, setMessage] = useState("");
+  const location = useLocation();
+  const [businessId, setBusinessId] = useState(null);
+
+  // console.log("Business ID:", businessId);
 
   const dataImages = [];
 
   useEffect(() => {
+    if (!serviceId) return;
+
     const fetchServiceData = async () => {
-      if (!serviceId) return;
       try {
         const fetchedService = await getServiceById(serviceId);
+        console.log("Fetched service:", fetchedService);
         setService(fetchedService);
+
+        // Lấy businessId từ dữ liệu dịch vụ
+        const fetchedBusinessId = fetchedService.branchServices[0]?.branch.businessId;
+        if (fetchedBusinessId) {
+          setBusinessId(fetchedBusinessId);
+        }
       } catch (error) {
         console.error("Lỗi khi tải thông tin dịch vụ:", error);
         setError("Cannot fetch service data!");
@@ -52,10 +65,7 @@ const ServiceDetail = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
         setCurrentImageIndex(-1);
       }
     };
@@ -66,23 +76,7 @@ const ServiceDetail = () => {
     };
   }, []);
 
-  // useEffect(() => {
-  //   const fetchCartItems = async () => {
-  //     try {
-  //       const items = await getCartItems();
-  //       if (!items || items.length === 0) {
-  //         console.error("Cart is empty or data is not structured as expected");
-  //       }
-  //       setCartItems(items);
-  //     } catch (error) {
-  //       console.error("Lỗi khi tải giỏ hàng:", error.message || error);
-  //     }
-  //   };
-
-  //   fetchCartItems();
-  // }, []);
-
-  if (loading) return <div>Loading service details...</div>;
+  if (loading) return <div>Đang tải thông tin dịch vụ...</div>;
   if (error) return <div>{error}</div>;
 
   const combinedData =
@@ -188,33 +182,6 @@ const ServiceDetail = () => {
   const formatRating = (rating) => {
     return rating !== undefined ? rating.toFixed(1) : "N/A";
   };
-
-  // const handleQuantityChange = async (id, change) => {
-  //   const itemToUpdate = cartItems.find(item => item.id === id);
-
-  //   if (!itemToUpdate) {
-  //     console.error("Item not found in cart");
-  //     return;
-  //   }
-
-  //   const newQuantity = itemToUpdate.quantity + change;
-
-  //   if (newQuantity < 1) return; // Không cho phép số lượng nhỏ hơn 1
-
-  //   try {
-  //     // Gọi API để cập nhật số lượng
-  //     await updateCartItem(id, newQuantity);
-
-  //     // Cập nhật trạng thái giỏ hàng
-  //     setCartItems(prevItems =>
-  //       prevItems.map(item =>
-  //         item.id === id ? { ...item, quantity: newQuantity } : item
-  //       )
-  //     );
-  //   } catch (error) {
-  //     console.error("Lỗi khi cập nhật số lượng:", error);
-  //   }
-  // };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -442,7 +409,7 @@ const ServiceDetail = () => {
 
         {/* Shop information */}
         <div className=" mt-10 shadow-md">
-          <InformationShop />
+          <InformationShop businessId={businessId} />
         </div>
 
         {/* FeedbackService */}
@@ -453,7 +420,7 @@ const ServiceDetail = () => {
             Các dịch vụ khác của cửa hàng
           </h2>
           {/* Related Services */}
-          <ServiceCard />
+          <ServiceCard businessId={businessId} />
           <div className="text-center mt-5">
             <button className="bg-white border-2 border-[#3A4980] text-[#3A4980] font-semibold py-2 px-4 rounded-xl flex items-center justify-center mx-auto transition-colors hover:bg-[#3A4980] hover:text-white">
               Xem thêm
@@ -461,6 +428,7 @@ const ServiceDetail = () => {
           </div>
         </div>
       </div>
+      {message && <div className="alert alert-success">{message}</div>}
     </div>
   );
 };

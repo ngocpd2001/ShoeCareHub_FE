@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingCart } from "@fortawesome/free-solid-svg-icons";
 import InformationShop from "../../Components/ComService/InformationShop";
@@ -7,6 +8,8 @@ import ServiceGrid from "../../Components/ComService/ServiceGrid";
 import ImageSlider from "../../Components/ComService/ImageSlider";
 
 const ProviderLandingPage = () => {
+  const { id } = useParams();
+
   const featuredServices = [
     {
       name: "Web Design",
@@ -75,8 +78,7 @@ const ProviderLandingPage = () => {
     <div className="bg-gray-100 min-h-screen">
       <div className="bg-white w-full">
         <div className="max-w-7xl mx-auto p-6">
-          {/* Shop information */}
-          <InformationShop />
+          <InformationShop businessId={id} />
         </div>
       </div>
 
@@ -91,14 +93,12 @@ const ProviderLandingPage = () => {
                 Xem tất cả
               </button>
             </div>
-            {/* Related Services */}
-            <ServiceCard />
+            <ServiceCard businessId={id} />
           </section>
 
           <ImageSlider images={images} />
 
           <div className="grid grid-cols-5 gap-4 mx-auto py-8">
-            {/* Phần banner cùng với tiêu đề chiếm 3 cột */}
             <div className="col-span-3 relative h-[450px] flex items-center justify-center">
               <img
                 src={banner2[0]}
@@ -114,7 +114,6 @@ const ProviderLandingPage = () => {
               </div>
             </div>
 
-            {/* Phần dịch vụ chiếm 2 cột với gap 2 */}
             <div className="col-span-2 grid grid-cols-2 gap-2 h-[450px] overflow-hidden">
               {banner2.slice(1).map((image, index) => (
                 <div key={index} className="relative h-full">
@@ -136,7 +135,6 @@ const ProviderLandingPage = () => {
               EXPLORE NEW AND POPULAR STYLES
             </h1>
             <div className="grid grid-cols-3">
-              {/* Hình ảnh đầu tiên */}
               <div className="h-[70%] flex justify-center items-center">
                 <img
                   src={banner2[0]}
@@ -145,7 +143,6 @@ const ProviderLandingPage = () => {
                 />
               </div>
 
-              {/* Khuyến mãi */}
               <div className="flex flex-col items-center mx-5 justify-center">
                 <h1 className="text-4xl font-bold text-black mt-4 text-center">
                   Get 50% Off
@@ -159,20 +156,15 @@ const ProviderLandingPage = () => {
                 </button>
               </div>
 
-              {/* Phần hình ảnh bổ sung */}
               <div className="grid grid-cols-1 gap-y-4">
                 <div className="h-48">
-                  {" "}
-                  {/* Điều chỉnh chiều cao tại đây */}
                   <img
-                    src={banner2[0]} // Có thể sử dụng một ảnh khác nếu có
+                    src={banner2[0]}
                     alt="Shoe Cleaning"
                     className="rounded-lg w-full h-full object-cover"
                   />
                 </div>
                 <div className="h-48">
-                  {" "}
-                  {/* Điều chỉnh chiều cao tại đây */}
                   <img
                     src={banner2[1]}
                     alt="Shoe Display"
@@ -183,8 +175,7 @@ const ProviderLandingPage = () => {
             </div>
           </div>
 
-          {/* ServiceGrid */}
-          <ServiceGrid />
+          <ServiceGrid businessId={id} />
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useModalState } from "../../../hooks/useModalState";
 import ComButton from "../../../Components/ComButton/ComButton";
-import TableEmployee from "./TableEmployee";
+import TableEmployee from './TableEmployee';
 import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 

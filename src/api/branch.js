@@ -19,3 +19,18 @@ export const getBranchByBusinessId = async (businessId) => {
       throw error;
     }
   };
+
+  export const getServiceByBranchId = async (branchId, pageIndex = 1, pageSize = 10) => {
+    try {
+      const response = await axiosInstances.login.get(`/services/branches/${branchId}`, {
+        params: {
+          PageIndex: pageIndex,
+          PageSize: pageSize
+        }
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Lỗi khi gọi API dịch vụ theo chi nhánh", error);
+      throw error;
+    }
+  };

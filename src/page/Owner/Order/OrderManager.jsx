@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { useModalState } from "../../../hooks/useModalState";
 import ComButton from "../../../Components/ComButton/ComButton";
-import TableOrder from "./TableOrder";
+import { TableOrder } from './TableOrder';
 import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 
@@ -25,11 +25,11 @@ export default function OrderManager() {
             ]}
           />
         </div>
-        <div>
+        {/* <div>
           <ComButton onClick={() => navigate("/owner/order/create")}>
             + Thêm đơn hàng
           </ComButton>
-        </div>
+        </div> */}
       </div>
       <TableOrder ref={tableRef} />
       {/* <ComModal

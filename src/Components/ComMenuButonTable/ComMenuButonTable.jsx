@@ -1,6 +1,8 @@
 import React from "react";
 import { Menu, Dropdown, Button, Typography } from "antd";
 import { EllipsisOutlined } from "@ant-design/icons";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
 
 
 const ComMenuButonTable = ({
@@ -15,22 +17,45 @@ const ComMenuButonTable = ({
   const defaultMenuItems = [
     {
       key: "details",
-      label: "Chi tiết",
+      label: (
+        <>
+          <FontAwesomeIcon
+            icon={faEye}
+            className="text-xl text-[#002278] mr-2"
+          />
+          Chi tiết
+        </>
+      ),
       onClick: () => showModalDetails(record),
       visible: !excludeDefaultItems.includes("details"),
     },
     {
       key: "edit",
-      label: "Cập nhật thông tin",
+      label: (
+        <>
+          <FontAwesomeIcon
+            icon={faPenToSquare}
+            className="text-xl text-green-500 mr-2"
+          />
+          Cập nhật
+        </>
+      ),
       onClick: () => showModalEdit(record),
       visible: !excludeDefaultItems.includes("edit"),
     },
     {
       key: "delete",
-      label: "Xóa",
+      label: (
+        <>
+          <FontAwesomeIcon
+            icon={faTrash}
+            className="text-xl text-red-500 mr-2"
+          />
+          Xóa
+        </>
+      ),
       onClick: () => showModalDelete(record),
       visible: !excludeDefaultItems.includes("delete"),
-      style: { color: "red" },
     },
   ];
 

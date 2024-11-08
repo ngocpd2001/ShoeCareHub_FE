@@ -4,7 +4,7 @@ import { getServiceByBusinessId } from "../../api/service";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate thay vì useHistory
 
-const ServiceCard = () => {
+const ServiceCard = ({ businessId }) => {
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [favorites, setFavorites] = useState([]); // State để quản lý yêu thích
   const navigate = useNavigate(); // Sử dụng useNavigate để điều hướng
@@ -12,7 +12,6 @@ const ServiceCard = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const businessId = 1; // Thay đổi giá trị BusinessId theo nhu cầu
         const response = await getServiceByBusinessId(businessId); // Gọi API với BusinessId
         console.log(response); // Kiểm tra response từ API
         setServices(response); // Cập nhật danh sách dịch vụ từ response
@@ -22,15 +21,15 @@ const ServiceCard = () => {
     };
 
     fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
-  }, []); // Chỉ chạy một lần khi component được mount
+  }, [businessId]); // Chỉ chạy một lần khi component được mount
 
   const handleCardClick = (serviceId) => {
-    navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
+    navigate(`/servicedetail/${serviceId}`, { state: { businessId } }); // Điều hướng đến trang chi tiết dịch vụ
   };
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-7">
-      {services.map((service) => (
+      {services.slice(0, 5).map((service) => (
         <div
           key={service.id}
           className="bg-white p-4 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[300px] relative"
