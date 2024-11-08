@@ -4,8 +4,12 @@ import CheckoutCart from "../../Components/ComCart/CheckoutCart";
 import { getServiceById } from "../../api/service";
 import { checkout } from "../../api/cart";
 import { getAddressByAccountId } from "../../api/address";
+import { getAccountById } from "../../api/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCheckCircle,
+  faMapMarkerAlt,
+} from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
 
 const Checkout = () => {
@@ -21,9 +25,36 @@ const Checkout = () => {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addresses, setAddresses] = useState({});
   const [defaultAddress, setDefaultAddress] = useState(null);
+  const [userInfo, setUserInfo] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
+
+  // Sử dụng dữ liệu từ localStorage nếu API không hoạt động
+  useEffect(() => {
+    if (user) {
+      setUserInfo({
+        fullname: user.fullName,
+        phone: user.phone,
+      });
+    }
+  }, [user]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const userData = await getAccountById(accountId);
+      console.log("User data:", userData);
+      setUserInfo(userData);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (accountId) {
+      fetchUserInfo();
+    }
+  }, [accountId]);
 
   const fetchServiceDetails = async () => {
     try {
@@ -58,7 +89,7 @@ const Checkout = () => {
       if (accountId) {
         try {
           const addressData = await getAddressByAccountId(accountId);
-          const defaultAddr = addressData.find(addr => addr.isDefault);
+          const defaultAddr = addressData.find((addr) => addr.isDefault);
           setDefaultAddress(defaultAddr);
         } catch (error) {
           console.error("Lỗi khi lấy địa chỉ:", error);
@@ -173,7 +204,7 @@ const Checkout = () => {
 
       // Kết hợp các note cho từng branchId
       const combinedNotes = Object.values(notes)
-        .filter(note => note)
+        .filter((note) => note)
         .join("; ");
 
       // Xác định dữ liệu cần truyền dựa trên nguồn gốc thanh toán
@@ -227,7 +258,6 @@ const Checkout = () => {
     navigate("/");
   };
 
-  
   const handleAddressModalOpen = () => {
     setIsAddressModalOpen(true);
   };
@@ -243,47 +273,54 @@ const Checkout = () => {
 
   return (
     <>
+      <h1 className="text-3xl text-[#002278] font-bold bg-white w-full text-center py-4">
+        Hoàn Tất Đơn Hàng
+      </h1>
       <div className="p-4 bg-gray-100 min-h-screen">
-        <div className="max-w-7xl mx-auto p-6 rounded-lg bg-white">
-          <h1 className="text-3xl text-[#002278] font-bold mb-2">
-            Hoàn Tất Đơn Hàng
-          </h1>
-          <div className="mb-4 mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#002278] focus:border-[#002278] sm:text-sm">
-            <label className="block text-lg font-medium text-gray-700">
+        <div className="max-w-7xl mx-auto p-6 rounded-lg">
+          <div className="mb-4 mt-1 block w-full px-3 py-2 border-t-2 border-[#002278] rounded-md shadow-sm focus:outline-none focus:ring-[#002278] focus:border-[#002278] sm:text-sm bg-white">
+            <label className="text-lg font-medium flex items-center">
+              <span className="text-[#002278] p-1 rounded-full mr-2">
+                <FontAwesomeIcon icon={faMapMarkerAlt} />
+              </span>
               Địa chỉ nhận hàng:
             </label>
-            <div className="mt-2 text-gray-600 text-lg flex items-center justify-between">
-              <div>
-                {defaultAddress ? (
-                  <>
-                    {defaultAddress.address},{" "}
-                    {defaultAddress.ward},{" "}
-                    {defaultAddress.district},{" "}
-                    {defaultAddress.province}
-                    {defaultAddress.isDefault && (
-                      <span className="ml-2 px-1 py-0.5 border border-red-500 text-red-500 text-sm rounded">
-                        Mặc Định
-                      </span>
-                    )}
-                  </>
-                ) : (
-                  "Đang tải địa chỉ..."
-                )}
+            <div className="mt-2 text-lg flex items-center justify-between flex-wrap">
+              <div className="flex items-center justify-between">
+                <div className="flex-1 mr-6 font-medium">
+                  {userInfo?.fullname || "Tên không có"} (
+                  {userInfo?.phone || "Số điện thoại không có"})
+                </div>
+                <div className="flex-1 text-right whitespace-nowrap mr-6">
+                  {defaultAddress ? (
+                    <>
+                      {defaultAddress.address}, {defaultAddress.ward},{" "}
+                      {defaultAddress.district}, {defaultAddress.province}
+                      {defaultAddress.isDefault && (
+                        <span className="ml-2 px-1 py-0.5 border border-red-500 text-red-500 text-sm rounded">
+                          Mặc Định
+                        </span>
+                      )}
+                    </>
+                  ) : (
+                    "Đang tải địa chỉ..."
+                  )}
+                </div>
+                <button
+                  onClick={handleAddressModalOpen}
+                  className="text-white bg-[#002278] text-lg ml-6 px-4 py-1 rounded-lg"
+                >
+                  Thay Đổi
+                </button>
               </div>
-              <button
-                onClick={handleAddressModalOpen}
-                className="text-white bg-[#002278] text-lg ml-2 px-4 py-2 rounded-lg"
-              >
-                Thay Đổi
-              </button>
             </div>
           </div>
           <CheckoutCart
-          cartItems={cartItems}
-          onNoteChange={handleNotesChange}
-          onDeliveryOptionChange={handleDeliveryOptionChange}
-        />
-          <div className="border-t border-gray-300 p-4 mx-2">
+            cartItems={cartItems}
+            onNoteChange={handleNotesChange}
+            onDeliveryOptionChange={handleDeliveryOptionChange}
+          />
+          <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">
               <div className="flex justify-between w-full max-w-md">
                 <div>
@@ -332,7 +369,9 @@ const Checkout = () => {
                 icon={faCheckCircle}
                 className="text-6xl text-[#002278] mb-4"
               />
-              <h2 className="text-2xl font-bold mb-2">Cảm ơn bạn đã đặt hàng!</h2>
+              <h2 className="text-2xl font-bold mb-2">
+                Cảm ơn bạn đã đặt hàng!
+              </h2>
               <p className="text-gray-600 mb-4">
                 Đơn hàng của bạn đã được đặt thành công.
               </p>

@@ -68,8 +68,7 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
 
 
   return (
-    <div className="px-4 pt-4 bg-white">
-      <div>
+    <div className="px-4 py-4 bg-white mb-4">
         <div className="grid grid-cols-4 items-center justify-center p-4 h-15">
           <div className="font-semibold text-xl text-center">Dịch vụ</div>
           <div className="font-semibold text-xl text-center">Đơn giá</div>
@@ -109,7 +108,7 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
           return (
             <div
               key={shop.branchId}
-              className="bg-white p-4 border border-[#002278] rounded-lg mb-8"
+              className="bg-white p-4 border border-[#002278] rounded-lg mb-4"
             >
               <div className="grid grid-cols-2 py-3 border-b bg-[#F9F1E7] px-4">
                 <div className="flex items-center">
@@ -205,13 +204,13 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
 
                 <div>
                   <h2 className="text-lg font-bold mb-2">Tùy chọn giao hàng</h2>
-                  <div className="flex flex-col ">
+                  <div className="flex flex-col">
                     <div
-                      className={`mb-4 p-4 h-15 rounded-md ${
+                      className={`mb-4 p-4 rounded-md ${
                         deliveryOptions[shop.branchId] === "delivery"
                           ? "bg-[#002278] text-white"
                           : "bg-white text-black"
-                      } flex items-center justify-between h-29`}
+                      } flex items-center justify-between`}
                     >
                       <div className="flex flex-col">
                         <label className="flex items-center font-semibold text-xl">
@@ -231,35 +230,21 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
                           />
                           Giao hàng
                         </label>
-                        {/* <p
+                        <p
                           className={`ml-4 ${
                             deliveryOptions[shop.branchId] === "delivery"
                               ? "text-white"
                               : "text-black"
-                          } break-words`}
+                          }`}
                         >
-                          {addresses[shop.branchId] || defaultAddress ? (
-                            <>
-                              {(addresses[shop.branchId] || defaultAddress).address},{" "}
-                              {(addresses[shop.branchId] || defaultAddress).ward},<br />
-                              {(addresses[shop.branchId] || defaultAddress).district},{" "}
-                              {(addresses[shop.branchId] || defaultAddress).province}
-                            </>
-                          ) : (
-                            "Đang tải địa chỉ..."
-                          )}
-                        </p> */}
+                          Đơn hàng sẽ giao tại địa chỉ của bạn
+                        </p>
                       </div>
-                      {/* <button
-                        className="font-medium"
-                        onClick={() => handleAddressModalOpen(shop.branchId)}
-                      >
-                        Thay đổi
-                      </button> */}
+                      <button className="font-medium">Cập nhật sau</button>
                     </div>
 
                     <div
-                      className={`p-4 h-15 rounded-md ${
+                      className={`p-4 rounded-md ${
                         deliveryOptions[shop.branchId] === "pickup"
                           ? "bg-[#002278] text-white"
                           : "bg-white text-black"
@@ -301,7 +286,6 @@ const CheckoutCart = ({ cartItems, onNoteChange, onDeliveryOptionChange }) => {
             </div>
           );
         })}
-      </div>
     </div>
   );
 };

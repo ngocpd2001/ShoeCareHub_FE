@@ -248,96 +248,98 @@ const UserCart = () => {
   };
 
   return (
-    <div className="auto px-4 bg-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto p-6">
-        <h1 className="text-3xl text-[#002278] font-bold mb-4">Giỏ hàng</h1>
-        {cartItems.length === 0 ? (
-          <div className="text-center">
-            <FontAwesomeIcon
-              icon={faCartShopping}
-              className="text-[#002278] text-6xl h-20 w-20 mb-3"
-            />
-            <h2 className="text-[#002278] text-3xl font-bold mb-2">
-              0 Dịch vụ
-            </h2>
-            <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
-          </div>
-        ) : (
-          <div>
-            <div className="grid grid-cols-4 h-15 p-4 bg-white border border-[#002278]">
-              <div className="font-semibold text-xl text-left flex items-center w-full">
-                <input
-                  type="checkbox"
-                  checked={cartItems.every((shop) =>
-                    shop.services.every((service) => service.selected)
-                  )}
-                  onChange={handleSelectAllShops}
-                  className="mr-2"
-                />
-                <h2 className="text-left">Dịch vụ</h2>
-              </div>
-              <div className="font-semibold text-xl text-center">Đơn giá</div>
-              <div className="font-semibold text-xl text-center">
-                Số lượng (đôi giày)
-              </div>
-              <div className="flex flex-row items-center">
-                <div className="font-semibold text-xl text-center w-[70%] pr-6">
-                  Thành tiền
+    <div>
+      <h1 className="text-3xl text-[#002278] font-bold bg-white w-full text-center py-4">Giỏ hàng</h1>
+      <div className="auto px-4 bg-gray-100 min-h-screen">
+        <div className="max-w-7xl mx-auto p-6">
+          {cartItems.length === 0 ? (
+            <div className="text-center">
+              <FontAwesomeIcon
+                icon={faCartShopping}
+                className="text-[#002278] text-6xl h-20 w-20 mb-3"
+              />
+              <h2 className="text-[#002278] text-3xl font-bold mb-2">
+                0 Dịch vụ
+              </h2>
+              <p className="text-gray-500 text-xl">Giỏ hàng của bạn trống</p>
+            </div>
+          ) : (
+            <div>
+              <div className="grid grid-cols-4 h-15 p-4 bg-white border border-[#002278]">
+                <div className="font-semibold text-xl text-left flex items-center w-full">
+                  <input
+                    type="checkbox"
+                    checked={cartItems.every((shop) =>
+                      shop.services.every((service) => service.selected)
+                    )}
+                    onChange={handleSelectAllShops}
+                    className="mr-2"
+                  />
+                  <h2 className="text-left">Dịch vụ</h2>
+                </div>
+                <div className="font-semibold text-xl text-center">Đơn giá</div>
+                <div className="font-semibold text-xl text-center">
+                  Số lượng (đôi giày)
+                </div>
+                <div className="flex flex-row items-center">
+                  <div className="font-semibold text-xl text-center w-[70%] pr-6">
+                    Thành tiền
+                  </div>
                 </div>
               </div>
+              {cartItems &&
+                cartItems.map((item) => (
+                  <ShopCart
+                    key={item.branchId}
+                    shop={item}
+                    userId={userId}
+                    setCartItems={setCartItems}
+                    setTotalAmount={setTotalAmount}
+                    onQuantityChange={handleQuantityChange}
+                    onRemove={handleRemove}
+                    onSelectAll={handleSelectAll}
+                    onSelect={handleSelect}
+                  />
+                ))}
             </div>
-            {cartItems &&
-              cartItems.map((item) => (
-                <ShopCart
-                  key={item.branchId}
-                  shop={item}
-                  userId={userId}
-                  setCartItems={setCartItems}
-                  setTotalAmount={setTotalAmount}
-                  onQuantityChange={handleQuantityChange}
-                  onRemove={handleRemove}
-                  onSelectAll={handleSelectAll}
-                  onSelect={handleSelect}
-                />
-              ))}
-          </div>
-        )}
-        {branches.length > 0 && (
-          <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
-            <div className="flex items-center text-xl">
-                 <input
-                  type="checkbox"
-                  checked={cartItems.every((shop) =>
-                    shop.services.every((service) => service.selected)
-                  )}
-                  onChange={handleSelectAllShops}
-                  className="mr-4"
-                />
-              <span className="font-bold">Chọn tất cả</span>
-              <button onClick={handleRemoveSelectedItems} className="ml-4 text-gray-500">
-                Xóa
-              </button>
+          )}
+          {branches.length > 0 && (
+            <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
+              <div className="flex items-center text-xl">
+                   <input
+                    type="checkbox"
+                    checked={cartItems.every((shop) =>
+                      shop.services.every((service) => service.selected)
+                    )}
+                    onChange={handleSelectAllShops}
+                    className="mr-4"
+                  />
+                <span className="font-bold">Chọn tất cả</span>
+                <button onClick={handleRemoveSelectedItems} className="ml-4 text-gray-500">
+                  Xóa
+                </button>
 
+              </div>
+              <div className="text-right">
+                <div className="text-xl">
+                  <span>Tổng tiền dịch vụ: {totalAmount.toLocaleString()} đ</span>
+                </div>
+                <div className="text-lg">
+                  <span>({selectedServiceCount} dịch vụ)</span>
+                </div>
+                <div className="text-lg">
+                  <span>Tiết kiệm: {savingsAmount.toLocaleString()} đ</span>
+                </div>
+              </div>
+              <button
+                onClick={handleCheckout}
+                className="bg-[#002278] text-white px-4 py-2 rounded text-xl"
+              >
+                Đặt dịch vụ
+              </button>
             </div>
-            <div className="text-right">
-              <div className="text-xl">
-                <span>Tổng tiền dịch vụ: {totalAmount.toLocaleString()} đ</span>
-              </div>
-              <div className="text-lg">
-                <span>({selectedServiceCount} dịch vụ)</span>
-              </div>
-              <div className="text-lg">
-                <span>Tiết kiệm: {savingsAmount.toLocaleString()} đ</span>
-              </div>
-            </div>
-            <button
-              onClick={handleCheckout}
-              className="bg-[#002278] text-white px-4 py-2 rounded text-xl"
-            >
-              Đặt dịch vụ
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {showPopup && (
