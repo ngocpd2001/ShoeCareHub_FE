@@ -10,7 +10,7 @@ import { YupBranch } from "./../../../yup/YupBranch";
 import ComSelect from "../../../Components/ComInput/ComSelect";
 // Thiết lập icon cho Marker (khắc phục vấn đề với icon mặc định của Leaflet)
 
-export default function CreateBranch() {
+export default function CreateBranch({ onClose, tableRef }) {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
   const [provinces, setProvinces] = useState([]);
@@ -34,26 +34,28 @@ export default function CreateBranch() {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-    const province = provinces.find(
-      (item) =>
-        item.value.toString().toLowerCase() === data.province.toLowerCase()
-    );
-    const district = districts.find(
-      (item) =>
-        item.value.toString().toLowerCase() === data.district.toLowerCase()
-    );
-    const ward = wards.find(
-      (item) => item.value.toString().toLowerCase() === data.ward.toLowerCase()
-    );
-    console.log(12321321, province);
-    console.log(12321321, district);
-    console.log(12321321, ward);
-
+    // const province = provinces.find(
+    //   (item) =>
+    //     item.value.toString().toLowerCase() === data.province.toLowerCase()
+    // );
+    // const district = districts.find(
+    //   (item) =>
+    //     item.value.toString().toLowerCase() === data.district.toLowerCase()
+    // );
+    // const ward = wards.find(
+    //   (item) => item.value.toString().toLowerCase() === data.ward.toLowerCase()
+    // );
+    // console.log(12321321, province);
+    // console.log(12321321, district);
+    // console.log(12321321, ward);
+    console.log("====================================");
+    // console.log(province);
+    console.log("====================================");
     postData(`/branches`, {
       ...data,
-      province: province.label,
-      district: district.label,
-      ward: ward.label,
+      // province: province.label,
+      // district: district.label,
+      // ward: ward.label,
       isDeliverySupport: true,
     })
       .then((response) => {
@@ -64,6 +66,13 @@ export default function CreateBranch() {
           "Thành công",
           "Chi nhánh đã được tạo thành công."
         );
+        setTimeout(() => {
+          if (tableRef.current) {
+            // Kiểm tra xem ref đã được gắn chưa
+            tableRef.current.reloadData();
+          }
+        }, 100);
+        onClose();
       })
       .catch((error) => {
         setDisabled(false);
@@ -83,11 +92,13 @@ export default function CreateBranch() {
         }));
         setProvinces(dataForSelect);
       })
-      .catch(() => {});
+      .catch(() => {
+        setProvinces([]);
+      });
   }, []);
   useEffect(() => {
-    setValue("district", null);
-    getData(`locations/${watch("province")}/districts`)
+    setValue("districtId", null);
+    getData(`locations/${watch("provinceId")}/districts`)
       .then((e) => {
         console.log(e.data);
         const dataForSelect = e?.data?.map((item) => ({
@@ -97,14 +108,16 @@ export default function CreateBranch() {
         }));
         setDistricts(dataForSelect);
       })
-      .catch(() => {});
-  }, [watch("province")]);
+      .catch(() => {
+        setDistricts([]);
+      });
+  }, [watch("provinceId")]);
   console.log(1111, watch("province"));
-  console.log("districts", watch("district"));
+  console.log("districts", watch("districtId"));
 
   useEffect(() => {
-    setValue("ward", null);
-    getData(`locations/${watch("district")}/wards`)
+    setValue("wardCode", null);
+    getData(`locations/${watch("districtId")}/wards`)
       .then((e) => {
         console.log(e.data);
         const dataForSelect = e?.data?.map((item) => ({
@@ -114,8 +127,10 @@ export default function CreateBranch() {
         }));
         setWards(dataForSelect);
       })
-      .catch(() => {});
-  }, [watch("district")]);
+      .catch(() => {
+        setWards([]);
+      });
+  }, [watch("districtId")]);
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
@@ -143,6 +158,7 @@ export default function CreateBranch() {
                     placeholder={"Thành phố"}
                     required
                     size={"large"}
+                    showSearch
                     style={{
                       width: "100%",
                     }}
@@ -154,10 +170,12 @@ export default function CreateBranch() {
                   <ComSelect
                     type="text"
                     label={"Tỉnh"}
-                    value={watch("province")}
+                    value={watch("provinceId")}
                     options={provinces}
                     placeholder={"Tỉnh"}
+                    showSearch
                     size={"large"}
+                    
                     onChangeValue={(e, value) => {
                       setValue(e, value, { shouldValidate: true });
                       console.log(55555, value);
@@ -166,7 +184,7 @@ export default function CreateBranch() {
                       width: "100%",
                     }}
                     required
-                    {...register("province")}
+                    {...register("provinceId")}
                   />
                 </div>
                 <div className="mt-2.5 sm:col-span-2">
@@ -174,8 +192,9 @@ export default function CreateBranch() {
                     type="text"
                     label={"Phường"}
                     options={districts}
-                    value={watch("district")}
+                    value={watch("districtId")}
                     size={"large"}
+                    showSearch
                     style={{
                       width: "100%",
                     }}
@@ -184,16 +203,17 @@ export default function CreateBranch() {
                     }}
                     placeholder={"Phường"}
                     required
-                    {...register("district")}
+                    {...register("districtId")}
                   />
                 </div>
                 <div className="mt-2.5 sm:col-span-2">
                   <ComSelect
                     type="text"
-                    value={watch("ward")}
+                    value={watch("wardCode")}
                     label={"Phường"}
                     options={wards}
                     size={"large"}
+                    showSearch
                     style={{
                       width: "100%",
                     }}
@@ -202,7 +222,7 @@ export default function CreateBranch() {
                     }}
                     placeholder={"Phường"}
                     required
-                    {...register("ward")}
+                    {...register("wardCode")}
                   />
                 </div>
                 <div className="mt-2.5 sm:col-span-2">

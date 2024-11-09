@@ -30,6 +30,10 @@ import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from './utils/jwt';
 import AddressesUser from "./page/AddressesUser/AddressesUser";
 import ResetPassword from "./page/ResetPassword/ResetPassword";
+import RegisterPage from "./page/Register/RegisterPage";
+import RegisterOwner from "./page/Register/RegisterOwner";
+import ServiceDiscounted from "./page/ServiceDiscounted/ServiceDiscounted";
+import ServiceAll from "./page/ServiceDiscounted/ServiceAll";
 
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
@@ -67,8 +71,28 @@ export const routers = createBrowserRouter([
         element: <Home />,
       },
       {
+        path: "/service-discounted",
+        element: <ServiceDiscounted />,
+      },
+      {
+        path: "/typical-provider",
+        element: <Home />,
+      },
+      {
+        path: "/service",
+        element: <ServiceAll />,
+      },
+      {
         path: "/login",
         element: <LoginPage />,
+      },
+      {
+        path: "/register",
+        element: <RegisterPage />,
+      },
+      {
+        path: "/register-owner",
+        element: <RegisterOwner />,
       },
       {
         path: "/servicedetail/:id",
@@ -166,10 +190,10 @@ export const routers = createBrowserRouter([
         path: "/owner/branch",
         element: <BranchManager />,
       },
-      {
-        path: "/owner/branch/create",
-        element: <CreateBranch />,
-      },
+      // {
+      //   path: "/owner/branch/create",
+      //   element: <CreateBranch />,
+      // },
       {
         path: "/owner/dashboard",
         element: <Dashboard />,

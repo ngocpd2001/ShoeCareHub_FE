@@ -3,14 +3,14 @@ import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNotification } from "../../Notification/Notification";
 import { YupBranch } from "../../yup/YupBranch";
-import { getData, postData } from "../../api/api";
+import { getData, postData, putData } from "../../api/api";
 import ComInput from "../../Components/ComInput/ComInput";
 import ComSelect from "../../Components/ComInput/ComSelect";
 import ComButton from "../../Components/ComButton/ComButton";
-import { useStorage } from './../../hooks/useLocalStorage';
-import { YupAddresses } from './../../yup/YupAddresses';
+import { useStorage } from "./../../hooks/useLocalStorage";
+import { YupAddresses } from "./../../yup/YupAddresses";
 
-export default function CreateAddressesUser({ onClose, tableRef }) {
+export default function EditAddressesUser({ onClose, tableRef, selectedData }) {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
   const [provinces, setProvinces] = useState([]);
@@ -20,6 +20,7 @@ export default function CreateAddressesUser({ onClose, tableRef }) {
 
   const methods = useForm({
     resolver: yupResolver(YupAddresses),
+    values: selectedData,
   });
 
   const {
@@ -35,31 +36,24 @@ export default function CreateAddressesUser({ onClose, tableRef }) {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-     setDisabled(true);
+    setDisabled(true);
 
-    postData(`/addresses`, {
-      ...data,
-      accountId: user.id,
-      // province: province.label,
-      // district: district.label,
-      // ward: ward.label,
-      isDefault: false,
-    })
+    putData(`/addresses`, user.id, data)
       .then((response) => {
         console.log("Tạo thành công:", response);
         setDisabled(false);
         notificationApi(
           "success",
           "Thành công",
-          "Địa chỉ đã được tạo thành công."
+          "Cập nhật địa chỉ thành công."
         );
-        tableRef()
-        onClose()
+        tableRef();
+        onClose();
       })
       .catch((error) => {
         setDisabled(false);
         console.error("Lỗi:", error);
-        notificationApi("error", "Lỗi", `${error.data.message}`);
+        notificationApi("error", "Lỗi", `${error?.data?.message}`);
       });
   };
 
@@ -107,6 +101,24 @@ export default function CreateAddressesUser({ onClose, tableRef }) {
       })
       .catch(() => {});
   }, [watch("districtId")]);
+
+  useEffect(() => {
+    setValue("districtId", selectedData.districtId);
+    setValue("wardCode", selectedData.wardCode);
+    getData(`locations/${selectedData.districtId}/wards`)
+      .then((e) => {
+        console.log(e.data);
+        const dataForSelect = e?.data?.map((item) => ({
+          value: item.wardCode,
+          label: item.wardName,
+          data: item,
+        }));
+        setWards(dataForSelect);
+      })
+      .catch(() => {
+        setWards([]);
+      });
+  }, [selectedData]);
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">

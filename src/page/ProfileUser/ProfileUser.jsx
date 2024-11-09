@@ -65,6 +65,10 @@ const ProfileForm = () => {
             notificationApi("success", "Cập nhật thành công ", "Đã cập nhật");
             setUser(dataPut);
             setDisabled(false);
+            setTimeout(() => {
+              
+              window.location.reload();
+            }, 1000);
           })
           .catch((e) => {
             console.log(e);
@@ -200,9 +204,14 @@ const ProfileForm = () => {
               <div className="flex justify-center">
                 <button
                   type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+                  disabled={disabled}
+                  className={`px-6 py-3 rounded font-semibold text-white transition-colors duration-200 ${
+                    disabled
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-blue-600 hover:bg-blue-700"
+                  }`}
                 >
-                  Cập nhật
+                  {disabled ? "Đang cập nhật..." : "Cập nhật"}
                 </button>
               </div>
             </form>

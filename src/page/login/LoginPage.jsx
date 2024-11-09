@@ -154,8 +154,11 @@ export default function LoginPage(props) {
                         Đăng nhập
                       </ComButton>
 
+                      <Link to="/register" className=" text-sky-600">
+                        Đăng ký
+                      </Link>
                       <Link to="#" className=" text-sky-600">
-                        Trang chủ
+                        Trở thành nhà cung cấp
                       </Link>
                     </div>
                   </form>
