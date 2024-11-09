@@ -51,7 +51,7 @@ export default function ResetPassword() {
   return (
     <div className="pb-4 mb-4 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-1   sm:pt-1 sm:pb-6 sm:px-6 ">
       <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
-        Thêm chi nhánh
+        Đổi mật khẩu
       </h2>
 
       <div className="">
