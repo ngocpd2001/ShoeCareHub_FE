@@ -1,14 +1,25 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
+import { getAccountById } from "../../../api/user";
 
 const EmployeeDetail = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { employee } = location.state || {};
+  const { id } = useParams();
+  const [employeeDetails, setEmployeeDetails] = useState(null);
 
-  if (!employee) {
+  console.log("Employee ID:", id);
+
+  useEffect(() => {
+    if (id) {
+      getAccountById(id)
+        .then(data => setEmployeeDetails(data))
+        .catch(error => console.error("Lỗi khi lấy chi tiết nhân viên:", error));
+    }
+  }, [id]);
+
+  if (!employeeDetails) {
     return <div>Loading...</div>;
   }
 
@@ -18,7 +29,7 @@ const EmployeeDetail = () => {
         <div>
           <h2 className="text-2xl font-semibold text-[#002278] mb-4">Chi tiết nhân viên</h2>
           <nav className="mb-4 text-base text-gray-500">
-          <span className="cursor-pointer" onClick={() => navigate("/")}>Cửa hàng</span> &gt; 
+            <span className="cursor-pointer" onClick={() => navigate("/")}>Cửa hàng</span> &gt; 
             <span className="mx-1"></span>
             <span className="cursor-pointer" onClick={() => navigate("/owner/employee")}> Nhân viên</span> &gt; 
             <span className="mx-1"></span>
@@ -27,7 +38,7 @@ const EmployeeDetail = () => {
         </div>
         
         <button
-          onClick={() => navigate(`/edit-employee/${employee.id}`)}
+          onClick={() => navigate(`/edit-employee/${employeeDetails.id}`)}
           className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 flex items-center gap-2 justify-center"
         >
           <FontAwesomeIcon icon={faPen} />
@@ -41,7 +52,7 @@ const EmployeeDetail = () => {
           <h3 className="text-lg font-medium mb-3 text-center">Ảnh nhân viên</h3>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <img
-              src={employee.avatar}
+              src={employeeDetails.avatar}
               alt="Ảnh nhân viên"
               className="w-full h-auto rounded-lg"
               onError={(e) => {
@@ -57,27 +68,27 @@ const EmployeeDetail = () => {
           <div className="space-y-4">
             <div className="flex items-center">
               <span className="font-medium text-lg">Họ và tên: </span>
-              <span className="ml-2">{employee.name}</span>
+              <span className="ml-2">{employeeDetails.name}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Ngày sinh: </span>
-              <span className="ml-2">{employee.dob || "N/A"}</span>
+              <span className="ml-2">{employeeDetails.dob || "N/A"}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Chức vụ: </span>
-              <span className="ml-2">{employee.position}</span>
+              <span className="ml-2">{employeeDetails.position}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Chi nhánh: </span>
-              <span className="ml-2">{employee.branch}</span>
+              <span className="ml-2">{employeeDetails.branch}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Gmail: </span>
-              <span className="ml-2">{employee.email}</span>
+              <span className="ml-2">{employeeDetails.email}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Số điện thoại: </span>
-              <span className="ml-2">{employee.phone}</span>
+              <span className="ml-2">{employeeDetails.phone}</span>
             </div>
           </div>
         </div>

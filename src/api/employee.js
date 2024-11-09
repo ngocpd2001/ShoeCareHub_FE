@@ -1,6 +1,5 @@
 import { axiosInstances } from "../utils/axios";
 
-
 export const getEmployeeByBusinessId = async (businessId, isDescending = false, pageSize = 10, pageNum = 1) => {
   try {
     const response = await axiosInstances.login.get('/accounts', {
@@ -17,3 +16,4 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
     throw error;
   }
 };
+

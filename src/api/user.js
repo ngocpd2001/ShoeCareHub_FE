@@ -16,6 +16,21 @@ export const getAllAccount = async (isDescending = false, pageSize = 10, pageNum
   }  
 };  
 
+// export const getAccountById = async (id) => {
+//   const token = localStorage.getItem('token'); 
+//   try {
+//     const response = await axiosInstances.login.get(`/accounts/${id}`, {
+//       headers: {
+//         'Authorization': `Bearer ${token}`, 
+//       },
+//     });
+//     return response.data;
+//   } catch (error) {
+//     console.error('Lỗi khi lấy tài khoản theo ID:', error);
+//     throw error;
+//   }
+// };
+
 export const getAccountById = async (id) => {
   try {
     const response = await axiosInstances.login.get(`/accounts/${id}`);

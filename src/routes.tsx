@@ -28,6 +28,7 @@ import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
 import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from './utils/jwt';
+import CheckoutService from "./page/Cart&Checkout/CheckoutService";
 
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
@@ -114,6 +115,14 @@ export const routers = createBrowserRouter([
           </RequireAuth>
         ),
       },
+      {
+        path: "/checkout-service",
+        element: (
+          <RequireAuth>
+            <CheckoutService />
+          </RequireAuth>
+        ),
+      },
     ],
   },
   {
@@ -179,10 +188,6 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/employee/create",
         element: <CreateEmployee />,
-      },
-      {
-        path: "/owner/employee/update/:id",
-        element: <UpdateEmployee />,
       },
     ],
   },

@@ -15,7 +15,7 @@ import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButo
 import ComTable from "../../../Components/ComTable/ComTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
 import { getOrderByBusiness } from "../../../api/order";
-import './TableOrder.css';
+
 
 function formatCurrency(number) {
   // Sử dụng hàm toLocaleString() để định dạng số thành chuỗi với ngăn cách hàng nghìn và mặc định là USD.

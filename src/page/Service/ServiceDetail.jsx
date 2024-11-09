@@ -87,6 +87,10 @@ const ServiceDetail = () => {
             img,
             type: "image",
           })),
+          ...service.assetUrls.map((img) => ({
+            img,
+            type: "image",
+          })),
         ]
       : [];
 
@@ -163,14 +167,21 @@ const ServiceDetail = () => {
 
   const handleCheckout = () => {
     if (service) {
+      const branchId = service.branchServices[0]?.branch.id;
       const checkoutService = {
         ...service,
         quantity: quantity || 1,
+        branchId: branchId,
         shopName: service.branchServices[0]?.branch.name,
         shopAddress: service.branchServices[0]?.branch.address,
       };
-      navigate("/checkout", {
-        state: { selectedItems: [{ services: [checkoutService] }] },
+      navigate("/checkout-service", {
+        state: { 
+          selectedItems: [{
+            branchId: branchId,
+            services: [checkoutService] 
+          }] 
+        },
       });
     }
   };
@@ -212,7 +223,7 @@ const ServiceDetail = () => {
                 {/* Thumbnails cho hình ảnh/video */}
                 {combinedData.map((item, index) => (
                   <div key={index} className="relative">
-                    {item.type === "video" ? (
+                     {/* {item.type === "video" ? (
                       <video
                         src={item.img}
                         className={`w-32 h-32 object-cover cursor-pointer rounded ${
@@ -237,12 +248,18 @@ const ServiceDetail = () => {
                     )}
                     {item.type === "video" && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        {/* <FontAwesomeIcon
-                          icon={faPlay}
-                          className="text-white text-2xl"
-                        /> */}
                       </div>
-                    )}
+                    )} */}
+                    <img
+                      src={item.img}
+                      alt={`Thumbnail ${index + 1}`}
+                      className={`w-32 h-32 object-cover cursor-pointer rounded ${
+                        index === currentImageIndex
+                          ? "border-2 border-[#3A4980]"
+                          : ""
+                      }`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
                   </div>
                 ))}
 

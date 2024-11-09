@@ -17,6 +17,18 @@ const UserCart = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user ? user.id : null;
 
+  const calculateTotalAmount = (items) => {
+    return items.reduce((total, shop) => {
+      return total + shop.services.reduce((serviceTotal, service) => {
+        if (service.selected) {
+          const price = service.promotion?.newPrice || service.price;
+          return serviceTotal + (price * service.quantity);
+        }
+        return serviceTotal;
+      }, 0);
+    }, 0);
+  };
+
   const fetchCartItems = async () => {
     try {
       const data = await getUserCart(userId);
@@ -59,9 +71,12 @@ const UserCart = () => {
       }, []);
 
       setCartItems(groupedItems);
+      const newTotal = calculateTotalAmount(groupedItems);
+      setTotalAmount(newTotal);
     } catch (error) {
       console.error("Lỗi khi lấy giỏ hàng:", error);
       setCartItems([]);
+      setTotalAmount(0);
     }
   };
 

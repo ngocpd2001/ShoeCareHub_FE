@@ -1,8 +1,0 @@
-/* src/page/Owner/Order/TableOrder.css */
-.ant-table-thead > tr > th {
-  background-color: #E0E2E7;
-}
-
-.ant-table-thead > tr > th:nth-child(2) {
-  background-color: #002278;
-}

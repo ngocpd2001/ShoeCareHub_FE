@@ -13,7 +13,6 @@ import ComTable from "../../../Components/ComTable/ComTable";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
 import { getEmployeeByBusinessId } from "../../../api/employee";
-import './TableEmployee.css';
 
 export const TableEmployee = forwardRef((props, ref) => {
   const [data, setData] = useState([]);
@@ -69,12 +68,28 @@ export const TableEmployee = forwardRef((props, ref) => {
       ...getColumnSearchProps("branch", "Chi nhánh"),
     },
     {
-      title: "Chức vụ",
-      dataIndex: "position",
-      key: "position",
+      title: "Ngày sinh/Giới tính",
+      dataIndex: "dob",
+      key: "dob",
       width: 150,
-      sorter: (a, b) => a.position.localeCompare(b.position),
-      ...getColumnSearchProps("position", "Chức vụ"),
+      sorter: (a, b) => new Date(a.dob) - new Date(b.dob),
+      ...getColumnSearchProps("dob", "Ngày sinh/Giới tính"),
+      render: (text, record) => (
+        <div>
+          <div>{new Date(record.dob).toLocaleDateString("vi-VN")}</div>
+          <div className="text-gray-500">
+            {record.gender === "MALE" ? "Nam" : "Nữ"}
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      width: 150,
+      sorter: (a, b) => a.status.localeCompare(b.status),
+      ...getColumnSearchProps("status", "Trạng thái"),
     },
     {
       title: "Action",
@@ -87,13 +102,14 @@ export const TableEmployee = forwardRef((props, ref) => {
             record={record}
             showModalDetails={() => {
               const employeeId = record.id;
+              // console.log("Navigating to employee details with ID:", employeeId);
               navigate(`/owner/employee/${employeeId}`);
             }}
             showModalEdit={() => {
               const employeeId = record.id;
               navigate(`/owner/employee/update/${employeeId}`);
             }}
-            excludeDefaultItems={["delete"]} //Ẩn mục delete
+            excludeDefaultItems={["delete"]} 
           />
         </div>
       ),

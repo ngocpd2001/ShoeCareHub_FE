@@ -25,9 +25,10 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
       try {
         await updateCartItemQuantity(service.id, updatedQuantity);
-        onQuantityChange(service.id, updatedQuantity - service.quantity); 
+        const quantityDiff = updatedQuantity - service.quantity;
         setInputValue(updatedQuantity);
         service.quantity = updatedQuantity;
+        onQuantityChange(service.id, quantityDiff);
       } catch (error) {
         console.error('Có lỗi xảy ra khi cập nhật số lượng:', error);
       }
@@ -46,6 +47,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
       await updateCartItemQuantity(service.id, inputValue + 1);  
       setInputValue(inputValue + 1);
       service.quantity = inputValue + 1;
+      onQuantityChange(service.id, 1);
     } catch (error) {  
       console.error('Có lỗi xảy ra:', error);  
     }  
@@ -63,6 +65,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
         await updateCartItemQuantity(service.id, newQuantity);
         setInputValue(newQuantity);
         service.quantity = newQuantity;
+        onQuantityChange(service.id, -1);
       } catch (error) {
         console.error('Có lỗi xảy ra:', error);
       }
@@ -75,14 +78,6 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
 
   // Kiểm tra giá trị userId
   // console.log("User ID trong CartItem:", userId);
-
-  const handleQuantityIncrease = () => {
-    onQuantityChange(service.id, 1); // Tăng quantity
-  };
-
-  const handleQuantityDecrease = () => {
-    onQuantityChange(service.id, -1); // Giảm quantity
-  };
 
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">

@@ -12,24 +12,104 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
 
-const Checkout = () => {
+const CheckoutService = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedItems: initialCartItems = [] } = location.state || {};
   const [cartItems, setCartItems] = useState(initialCartItems);
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
+  const [note, setNote] = useState("");
+  const [notes, setNotes] = useState({});
   const [address, setAddress] = useState(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addresses, setAddresses] = useState({});
   const [defaultAddress, setDefaultAddress] = useState(null);
   const [userInfo, setUserInfo] = useState({});
-  const [note, setNote] = useState("");
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
 
-  // 1. Chỉ lấy dữ liệu từ localStorage một lần khi component mount
+  // Sử dụng dữ liệu từ localStorage nếu API không hoạt động
+  useEffect(() => {
+    if (user) {
+      setUserInfo({
+        fullname: user.fullName,
+        phone: user.phone,
+      });
+    }
+  }, [user]);
+
+  const fetchUserInfo = async () => {
+    try {
+      const userData = await getAccountById(accountId);
+      console.log("User data:", userData);
+      setUserInfo(userData);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin người dùng:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (accountId) {
+      fetchUserInfo();
+    }
+  }, [accountId]);
+
+  const fetchServiceDetails = async () => {
+    try {
+      const updatedCartItems = await Promise.all(
+        cartItems.map(async (shop) => {
+          if (shop.services && Array.isArray(shop.services)) {
+            const updatedServices = await Promise.all(
+              shop.services.map(async (service) => {
+                if (service?.id) {
+                  const response = await getServiceById(service.id);
+                  const serviceData = response.data?.items?.find(
+                    (item) => item.id === service.id
+                  );
+                  return { ...service, ...serviceData };
+                }
+                return service;
+              })
+            );
+            return { ...shop, services: updatedServices };
+          }
+          return shop;
+        })
+      );
+      setCartItems(updatedCartItems);
+    } catch (error) {
+      console.error("Lỗi khi lấy thông tin dịch vụ", error);
+    }
+  };
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      if (accountId) {
+        try {
+          const addressData = await getAddressByAccountId(accountId);
+          const defaultAddr = addressData.find((addr) => addr.isDefault);
+          setDefaultAddress(defaultAddr);
+        } catch (error) {
+          console.error("Lỗi khi lấy địa chỉ:", error);
+        }
+      }
+    };
+
+    fetchAddress();
+  }, [accountId]);
+
+  useEffect(() => {
+    if (initialCartItems.length > 0) {
+      fetchServiceDetails();
+    }
+  }, [initialCartItems]);
+
+  useEffect(() => {
+    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+  }, [cartItems]);
+
   useEffect(() => {
     if (cartItems.length === 0) {
       const storedCartItems = localStorage.getItem("cartItems");
@@ -37,101 +117,7 @@ const Checkout = () => {
         setCartItems(JSON.parse(storedCartItems));
       }
     }
-  }, []); // Empty dependency array
-
-  // 2. Tách riêng việc fetch service details
-  useEffect(() => {
-    const fetchServiceDetails = async () => {
-      if (!initialCartItems.length) return;
-      
-      try {
-        const updatedCartItems = await Promise.all(
-          initialCartItems.map(async (shop) => {
-            if (shop.services && Array.isArray(shop.services)) {
-              const updatedServices = await Promise.all(
-                shop.services.map(async (service) => {
-                  if (service?.id) {
-                    const response = await getServiceById(service.id);
-                    const serviceData = response.data?.items?.find(
-                      (item) => item.id === service.id
-                    );
-                    return { ...service, ...serviceData };
-                  }
-                  return service;
-                })
-              );
-              return { ...shop, services: updatedServices };
-            }
-            return shop;
-          })
-        );
-        setCartItems(updatedCartItems);
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin dịch vụ", error);
-      }
-    };
-
-    fetchServiceDetails();
-  }, [initialCartItems]); // Chỉ phụ thuộc vào initialCartItems
-
-  // 3. Tách riêng việc lưu vào localStorage
-  useEffect(() => {
-    const saveToLocalStorage = () => {
-      if (cartItems.length > 0) {
-        localStorage.setItem("cartItems", JSON.stringify(cartItems));
-      }
-    };
-
-    saveToLocalStorage();
-  }, [cartItems]);
-
-  // 4. Tách riêng việc fetch user info
-  useEffect(() => {
-    if (!user) return;
-
-    // Set thông tin cơ bản từ localStorage trước
-    setUserInfo({
-      fullname: user.fullName,
-      phone: user.phone,
-    });
-
-    // Chỉ gọi API một lần khi component mount và có accountId
-    const fetchUserData = async () => {
-      if (!accountId) return;
-      
-      try {
-        const userData = await getAccountById(accountId);
-        if (userData) {
-          setUserInfo(prev => ({
-            ...prev,
-            ...userData
-          }));
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy thông tin người dùng:", error);
-        // Giữ nguyên thông tin từ localStorage nếu API lỗi
-      }
-    };
-
-    fetchUserData();
-  }, []); // Chỉ chạy một lần khi component mount
-
-  // 5. Tách riêng việc fetch address
-  useEffect(() => {
-    const fetchAddress = async () => {
-      if (!accountId) return;
-      
-      try {
-        const addressData = await getAddressByAccountId(accountId);
-        const defaultAddr = addressData.find((addr) => addr.isDefault);
-        setDefaultAddress(defaultAddr);
-      } catch (error) {
-        console.error("Lỗi khi lấy địa chỉ:", error);
-      }
-    };
-
-    fetchAddress();
-  }, [accountId]);
+  }, []);
 
   // Tính tng tiền
   const totalAmount = cartItems.reduce((total, shop) => {
@@ -154,11 +140,20 @@ const Checkout = () => {
     return count;
   }, 0);
 
-  const handleDeliveryOptionChange = (option, shopNote) => {
+  const handleDeliveryOptionChange = (option) => {
     setDeliveryOption(option);
-    setNote(shopNote);
   };
 
+  const handleNoteChange = (newNote) => {
+    setNote(newNote || "");
+  };
+
+  const handleNotesChange = (branchId, note) => {
+    setNotes((prevNotes) => ({
+      ...prevNotes,
+      [branchId]: note,
+    }));
+  };
 
   
   const handleViewOrder = () => {
@@ -182,42 +177,53 @@ const Checkout = () => {
     setIsAddressModalOpen(false);
   };
 
-  const handleNoteChange = (value) => {
-    setNote(value);
-  };
-
   const handleCheckout = async () => {
+    if (!defaultAddress) {
+      alert("Vui lòng chọn địa chỉ giao hàng");
+      return;
+    }
+
     try {
-      if (!defaultAddress) {
-        alert("Vui lòng chọn địa chỉ giao hàng");
+      const checkoutItems = cartItems.flatMap(shop => 
+        shop.services.map(service => ({
+          serviceId: service.id,
+          materialId: service.materialId || 0,
+          branchId: service.branchId,
+          quantity: service.quantity || 1
+        }))
+      );
+
+      const missingBranchId = checkoutItems.some(item => !item.branchId);
+      if (missingBranchId) {
+        console.error("Có dịch vụ không có branchId");
+        alert("Có lỗi với thông tin chi nhánh. Vui lòng thử lại.");
         return;
       }
 
-      const cartItemIds = cartItems.flatMap(shop => 
-        shop.services.map(service => service.id)
-      );
-
       const checkoutData = {
-        cartItemIds: cartItemIds,
+        items: checkoutItems,
         accountId: accountId,
         addressId: defaultAddress.id,
         isAutoReject: false,
-        note: note,
-        isShip: deliveryOption === 'delivery'
+        note: notes[cartItems[0]?.branchId] || "",
+        isShip: deliveryOption === "delivery"
       };
 
-      console.log("Dữ liệu checkout từ giỏ hàng:", checkoutData);
-      const response = await checkoutCart(checkoutData);
-      
+    //   console.log("Cart Items:", cartItems);
+    //   console.log("Checkout Items:", checkoutItems);
+      console.log("Full Checkout Data:", checkoutData);
+
+      const response = await checkoutService(checkoutData);
+      console.log("Response from API:", response);
+
       if (response) {
         setIsOrderSuccess(true);
-        // Xóa giỏ hàng sau khi đặt hàng thành công
         setCartItems([]);
-        localStorage.removeItem('cartItems');
+        localStorage.removeItem("cartItems");
       }
     } catch (error) {
       console.error("Lỗi khi thanh toán:", error);
-      alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!");
+      alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
     }
   };
 
@@ -267,8 +273,8 @@ const Checkout = () => {
           </div>
           <CheckoutCart
             cartItems={cartItems}
+            onNoteChange={handleNotesChange}
             onDeliveryOptionChange={handleDeliveryOptionChange}
-            onNoteChange={handleNoteChange}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">
@@ -354,4 +360,4 @@ const Checkout = () => {
   );
 };
 
-export default Checkout;
+export default CheckoutService;
