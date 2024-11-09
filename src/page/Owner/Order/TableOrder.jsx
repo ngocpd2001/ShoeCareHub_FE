@@ -14,7 +14,7 @@ import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import ComTable from "../../../Components/ComTable/ComTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
-import { getOrderByBusiness } from "../../../api/order";
+import { getOrderByBusiness, updateOrderStatus } from "../../../api/order";
 
 
 function formatCurrency(number) {
@@ -144,14 +144,34 @@ export const TableOrder = forwardRef((props, ref) => {
             record={record}
             showModalDetails={() => {
               const orderId = record.id;
-              // console.log("Navigating to Order ID:", orderId);
               navigate(`/owner/order/${orderId}`);
             }}
             showModalEdit={() => {
               const orderId = record.id;
               navigate(`/owner/order/update/${orderId}`);
             }}
-            excludeDefaultItems={["delete"]} //Ẩn mục delete
+            showModalAccept={async () => {
+              try {
+                await updateOrderStatus(record.id, "APPROVED");
+                notificationApi("success", "Thành công", "Đã chấp nhận đơn hàng");
+                reloadData();
+              } catch (error) {
+                notificationApi("error", "Lỗi", "Không thể chấp nhận đơn hàng");
+              }
+            }}
+            showModalReject={async () => {
+              try {
+                await updateOrderStatus(record.id, "CANCELED");
+                notificationApi("success", "Thành công", "Đã từ chối đơn hàng");
+                reloadData();
+              } catch (error) {
+                notificationApi("error", "Lỗi", "Không thể từ chối đơn hàng");
+              }
+            }}
+            excludeDefaultItems={[
+              "delete",
+              ...(record.status !== "Đang chờ" ? ["accept", "reject"] : [])
+            ]} 
           />
         </div>
       ),

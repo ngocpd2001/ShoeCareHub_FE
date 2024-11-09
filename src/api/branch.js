@@ -1,6 +1,10 @@
 import { axiosInstances } from "../utils/axios";
 
 export const getBranchByBusinessId = async (businessId) => {
+    if (!businessId) {
+      throw new Error('BusinessId là bắt buộc');
+    }
+    
     try {
       const response = await axiosInstances.login.get(`/branches/business/${businessId}`);
       return response.data;

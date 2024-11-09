@@ -153,17 +153,19 @@ export const checkoutCart = async ({
   addressId,
   isAutoReject = false,
   note = '',
-  isShip = true
+  isShip
 }) => {
   try {
     const requestBody = {
-      cartItemIds: cartItemIds,
-      accountId: accountId,
-      addressId: addressId,
-      isAutoReject: isAutoReject,
-      note: note,
-      isShip: isShip
+      cartItemIds,
+      accountId,
+      addressId,
+      isAutoReject,
+      note,
+      isShip: Boolean(isShip)
     };
+
+    console.log('Request body before API call:', requestBody);
 
     const response = await axiosInstances.login.post('/carts/cart/checkout', requestBody);
     return response.data;
@@ -195,6 +197,33 @@ export const checkoutService = async (checkoutData) => {
       throw new Error('Network error: No response received');
     } else {
       console.error('Lỗi khi thiết lập yêu cầu thanh toán dịch vụ:', error.message);
+      throw new Error(`Error: ${error.message}`);
+    }
+  }
+};
+
+// Tính phí ship dựa trên địa chỉ và số lượng
+export const calculateShippingFee = async ({ addressId, branchId, quantity }) => {
+  try {
+    const requestBody = {
+      addressId,
+      branchId,
+      quantity
+    };
+
+    const response = await axiosInstances.login.get('/carts/cart/checkout/feeship', { 
+      params: requestBody 
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi từ server khi tính phí ship:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.error('Lỗi mạng khi tính phí ship:', error.request);
+      throw new Error('Network error: No response received');
+    } else {
+      console.error('Lỗi khi thiết lập yêu cầu tính phí ship:', error.message);
       throw new Error(`Error: ${error.message}`);
     }
   }

@@ -20,65 +20,78 @@ const CheckoutService = () => {
   const [deliveryOption, setDeliveryOption] = useState("delivery");
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
   const [note, setNote] = useState("");
-  const [notes, setNotes] = useState({});
   const [address, setAddress] = useState(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addresses, setAddresses] = useState({});
   const [defaultAddress, setDefaultAddress] = useState(null);
-  const [userInfo, setUserInfo] = useState({});
+  const [userInfo, setUserInfo] = useState(null);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
 
-  // Sử dụng dữ liệu từ localStorage nếu API không hoạt động
+  // Gộp logic xử lý user info vào một useEffect duy nhất
   useEffect(() => {
-    if (user) {
-      setUserInfo({
-        fullname: user.fullName,
-        phone: user.phone,
-      });
-    }
-  }, [user]);
+    const initializeUserInfo = async () => {
+      if (!accountId) return;
 
-  const fetchUserInfo = async () => {
-    try {
-      const userData = await getAccountById(accountId);
-      console.log("User data:", userData);
-      setUserInfo(userData);
-    } catch (error) {
-      console.error("Lỗi khi lấy thông tin người dùng:", error);
-    }
-  };
+      try {
+        // Đầu tiên set thông tin cơ bản từ localStorage
+        setUserInfo({
+          fullname: user.fullName || '',
+          phone: user.phone || '',
+        });
 
-  useEffect(() => {
-    if (accountId) {
-      fetchUserInfo();
-    }
-  }, [accountId]);
+        // Sau đó fetch thông tin chi tiết từ API
+        const userData = await getAccountById(accountId);
+        if (userData) {
+          setUserInfo(prevInfo => ({
+            ...prevInfo,
+            ...userData
+          }));
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy thông tin người dùng:", error);
+      }
+    };
+
+    initializeUserInfo();
+  }, [accountId]); // Chỉ chạy lại khi accountId thay đổi
 
   const fetchServiceDetails = async () => {
     try {
       const updatedCartItems = await Promise.all(
         cartItems.map(async (shop) => {
-          if (shop.services && Array.isArray(shop.services)) {
-            const updatedServices = await Promise.all(
-              shop.services.map(async (service) => {
-                if (service?.id) {
-                  const response = await getServiceById(service.id);
-                  const serviceData = response.data?.items?.find(
-                    (item) => item.id === service.id
-                  );
-                  return { ...service, ...serviceData };
-                }
-                return service;
-              })
-            );
-            return { ...shop, services: updatedServices };
+          if (!shop.services || !Array.isArray(shop.services)) {
+            return shop;
           }
-          return shop;
+          
+          const updatedServices = await Promise.all(
+            shop.services.map(async (service) => {
+              if (!service?.id) {
+                return service;
+              }
+              
+              try {
+                const response = await getServiceById(service.id);
+                const serviceData = response.data?.items?.find(
+                  (item) => item.id === service.id
+                );
+                return serviceData ? { ...service, ...serviceData } : service;
+              } catch (error) {
+                console.error(`Lỗi khi lấy thông tin dịch vụ ${service.id}:`, error);
+                return service;
+              }
+            })
+          );
+          
+          return { ...shop, services: updatedServices };
         })
       );
-      setCartItems(updatedCartItems);
+      
+      // Chỉ cập nhật state nếu có sự thay đổi
+      if (JSON.stringify(updatedCartItems) !== JSON.stringify(cartItems)) {
+        setCartItems(updatedCartItems);
+      }
     } catch (error) {
       console.error("Lỗi khi lấy thông tin dịch vụ", error);
     }
@@ -107,15 +120,15 @@ const CheckoutService = () => {
   }, [initialCartItems]);
 
   useEffect(() => {
-    localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    if (cartItems.length > 0) {
+      localStorage.setItem("cartItems", JSON.stringify(cartItems));
+    }
   }, [cartItems]);
 
   useEffect(() => {
-    if (cartItems.length === 0) {
-      const storedCartItems = localStorage.getItem("cartItems");
-      if (storedCartItems) {
-        setCartItems(JSON.parse(storedCartItems));
-      }
+    const storedCartItems = localStorage.getItem("cartItems");
+    if (cartItems.length === 0 && storedCartItems) {
+      setCartItems(JSON.parse(storedCartItems));
     }
   }, []);
 
@@ -144,18 +157,10 @@ const CheckoutService = () => {
     setDeliveryOption(option);
   };
 
-  const handleNoteChange = (newNote) => {
-    setNote(newNote || "");
+  const handleNoteChange = (value) => {
+    setNote(value);
   };
 
-  const handleNotesChange = (branchId, note) => {
-    setNotes((prevNotes) => ({
-      ...prevNotes,
-      [branchId]: note,
-    }));
-  };
-
-  
   const handleViewOrder = () => {
     navigate("/user/order-history");
   };
@@ -205,12 +210,12 @@ const CheckoutService = () => {
         accountId: accountId,
         addressId: defaultAddress.id,
         isAutoReject: false,
-        note: notes[cartItems[0]?.branchId] || "",
+        note: note,
         isShip: deliveryOption === "delivery"
       };
 
-    //   console.log("Cart Items:", cartItems);
-    //   console.log("Checkout Items:", checkoutItems);
+      console.log("Cart Items:", cartItems);
+      console.log("Checkout Items:", checkoutItems);
       console.log("Full Checkout Data:", checkoutData);
 
       const response = await checkoutService(checkoutData);
@@ -273,8 +278,9 @@ const CheckoutService = () => {
           </div>
           <CheckoutCart
             cartItems={cartItems}
-            onNoteChange={handleNotesChange}
+            onNoteChange={handleNoteChange}
             onDeliveryOptionChange={handleDeliveryOptionChange}
+            defaultAddress={defaultAddress}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">

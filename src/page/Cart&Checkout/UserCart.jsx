@@ -32,11 +32,11 @@ const UserCart = () => {
   const fetchCartItems = async () => {
     try {
       const data = await getUserCart(userId);
-      setBranches(data || []);
-      // console.log("data:", data);
+      const dataArray = Array.isArray(data) ? data : [];
+      setBranches(dataArray);
 
       const detailedItems = await Promise.all(
-        (data || []).flatMap((branch) =>
+        dataArray.flatMap((branch) =>
           (branch.items || []).map(async (item) => {
             const serviceDetails = await getServiceById(item.serviceId);
             return {

@@ -7,8 +7,9 @@ import {
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { getBranchByBranchId } from "../../api/branch";
+import { calculateShippingFee } from "../../api/cart";
 
-const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
+const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, defaultAddress, onShippingFeesChange = () => {} }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   // console.log("cart", cartItems);
   const [branchDataList, setBranchDataList] = useState({});
@@ -16,15 +17,17 @@ const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
   const { selectedItems } = location.state || { selectedItems: [] };
   const [deliveryOptions, setDeliveryOptions] = useState({});
   const [notes, setNotes] = useState({});
+  const [shippingFees, setShippingFees] = useState({});
+  const [loadingShippingFees, setLoadingShippingFees] = useState({});
 
   useEffect(() => {
     const fetchBranchData = async () => {
-      if (!cartItem || !Array.isArray(cartItem)) {
-        console.log("Không có dữ liệu giỏ hàng");
+      if (!cartItems || !Array.isArray(cartItems)) {
+        // console.log("Không có dữ liệu giỏ hàng");
         return;
       }
 
-      const branchDataPromises = cartItem.map(async (shop) => {
+      const branchDataPromises = cartItems.map(async (shop) => {
         if (shop?.branchId) {
           try {
             const data = await getBranchByBranchId(shop.branchId);
@@ -52,23 +55,75 @@ const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
     };
 
     fetchBranchData();
-  }, [cartItem]);
+  }, [cartItems]);
 
+  useEffect(() => {
+    if (cartItems && Array.isArray(cartItems)) {
+      cartItems.forEach(shop => {
+        if (deliveryOptions[shop.branchId] === "delivery" && defaultAddress?.id) {
+          const service = shop.services[0];
+          const quantity = service?.quantity || 0;
+          calculateShippingFeeForBranch(shop.branchId, quantity);
+        }
+      });
+    }
+  }, [defaultAddress, deliveryOptions, cartItems]);
+
+  useEffect(() => {
+    if (onShippingFeesChange) {
+      onShippingFeesChange(shippingFees);
+    }
+  }, [shippingFees, onShippingFeesChange]);
 
   const handleDeliveryOptionChange = (branchId, value) => {
     setDeliveryOptions((prevOptions) => ({
       ...prevOptions,
       [branchId]: value,
     }));
-    onDeliveryOptionChange(branchId, value);
+
+    if (value === "delivery" && defaultAddress?.id) {
+      const shop = cartItems.find(item => item.branchId === branchId);
+      if (shop) {
+        const service = shop.services[0];
+        const quantity = service?.quantity || 0;
+        calculateShippingFeeForBranch(branchId, quantity);
+      }
+    } else {
+      setShippingFees(prev => ({...prev, [branchId]: 0}));
+    }
+
+    onDeliveryOptionChange(value);
   };
 
-  const handleNoteChange = (branchId, value) => {
-    setNotes(prev => ({
-      ...prev,
-      [branchId]: value
-    }));
-    onNoteChange(value);
+  const handleNoteChange = (e) => {
+    onNoteChange(e.target.value);
+  };
+
+  const calculateShippingFeeForBranch = async (branchId, quantity) => {
+    if (!defaultAddress?.id) {
+      console.log("Không có địa chỉ!");
+      return;
+    }
+    
+    setLoadingShippingFees(prev => ({...prev, [branchId]: true}));
+    try {
+      const fee = await calculateShippingFee({
+        addressId: defaultAddress.id,
+        branchId,
+        quantity
+      });
+      console.log("Kết quả tính phí ship:", {
+        branchId,
+        fee,
+        quantity,
+        addressId: defaultAddress.id
+      });
+      setShippingFees(prev => ({...prev, [branchId]: fee}));
+    } catch (error) {
+      console.error("Lỗi khi tính phí ship:", error);
+    } finally {
+      setLoadingShippingFees(prev => ({...prev, [branchId]: false}));
+    }
   };
 
   return (
@@ -82,7 +137,7 @@ const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
         <div className="font-semibold text-xl text-center">Thành tiền</div>
       </div>
 
-      {selectedItems.map((shop) => {
+      {cartItems.map((shop) => {
         let shopName, shopAddress;
 
         if (shop.branchId) {
@@ -193,8 +248,7 @@ const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
                 <textarea
                   className="w-full p-2 border border-gray-300 rounded h-34"
                   placeholder="Lưu ý cho cửa hàng..."
-                  value={notes[shop.branchId] || ''}
-                  onChange={(e) => handleNoteChange(shop.branchId, e.target.value)}
+                  onChange={handleNoteChange}
                 />
               </div>
 
@@ -236,7 +290,23 @@ const CheckoutCart = ({ cartItem, onDeliveryOptionChange, onNoteChange }) => {
                         Đơn hàng sẽ giao tại địa chỉ của bạn
                       </p>
                     </div>
-                    <button className="font-medium">Cập nhật sau</button>
+                    {deliveryOptions[shop.branchId] === "delivery" && (
+                      <div className="text-right">
+                        {loadingShippingFees[shop.branchId] ? (
+                          <span className="font-medium"></span>
+                        ) : (
+                          <>
+                            {/* {console.log("Hiển thị phí ship:", {
+                              branchId: shop.branchId,
+                              fee: shippingFees[shop.branchId]
+                            })} */}
+                            <span className="font-medium">
+                              {shippingFees[shop.branchId]?.toLocaleString() || "0"} đ
+                            </span>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   <div

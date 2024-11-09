@@ -23,8 +23,6 @@ import Dashboard from "./page/Owner/Dashboard";
 import EmployeeManager from "./page/Owner/Employee/EmployeeManager";
 import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
-import UpdateEmployee from "./page/Owner/Employee/UpdateEmployee";
-import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
 import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from './utils/jwt';
@@ -33,9 +31,9 @@ import CheckoutService from "./page/Cart&Checkout/CheckoutService";
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
   const token = localStorage.getItem('token');
-  console.log('Token:', token);
+  // console.log('Token:', token);
   const isValid = isValidToken(token);
-  console.log('Is Valid Token:', isValid);
+  // console.log('Is Valid Token:', isValid);
   return isValid;
 };
 

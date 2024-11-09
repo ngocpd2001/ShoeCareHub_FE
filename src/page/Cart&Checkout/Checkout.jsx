@@ -25,6 +25,7 @@ const Checkout = () => {
   const [defaultAddress, setDefaultAddress] = useState(null);
   const [userInfo, setUserInfo] = useState({});
   const [note, setNote] = useState("");
+  const [shippingFees, setShippingFees] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -154,13 +155,14 @@ const Checkout = () => {
     return count;
   }, 0);
 
-  const handleDeliveryOptionChange = (option, shopNote) => {
+  const handleDeliveryOptionChange = (option) => {
     setDeliveryOption(option);
-    setNote(shopNote);
   };
 
+  const handleNoteChange = (value) => {
+    setNote(value);
+  };
 
-  
   const handleViewOrder = () => {
     navigate("/user/order-history");
   };
@@ -180,10 +182,6 @@ const Checkout = () => {
   const handleSelectAddress = (selectedAddress) => {
     setDefaultAddress(selectedAddress);
     setIsAddressModalOpen(false);
-  };
-
-  const handleNoteChange = (value) => {
-    setNote(value);
   };
 
   const handleCheckout = async () => {
@@ -211,7 +209,6 @@ const Checkout = () => {
       
       if (response) {
         setIsOrderSuccess(true);
-        // Xóa giỏ hàng sau khi đặt hàng thành công
         setCartItems([]);
         localStorage.removeItem('cartItems');
       }
@@ -220,6 +217,15 @@ const Checkout = () => {
       alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!");
     }
   };
+
+  const handleShippingFeesChange = (fees) => {
+    setShippingFees(fees);
+    console.log("Shipping fees updated:", fees); // Debug
+  };
+
+  const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
+
+  const finalTotalAmount = totalAmount + totalShippingFee;
 
   return (
     <>
@@ -269,6 +275,8 @@ const Checkout = () => {
             cartItems={cartItems}
             onDeliveryOptionChange={handleDeliveryOptionChange}
             onNoteChange={handleNoteChange}
+            defaultAddress={defaultAddress}
+            onShippingFeesChange={handleShippingFeesChange}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">
@@ -288,7 +296,9 @@ const Checkout = () => {
             <div className="flex justify-end mb-2">
               <div className="flex justify-between w-full max-w-md">
                 <h2 className="text-lg">Tiền giao hàng:</h2>
-                <span className="text-lg text-[#002278] text-right">0 đ</span>
+                <span className="text-lg text-[#002278] text-right">
+                  {totalShippingFee.toLocaleString()} đ
+                </span>
               </div>
             </div>
 
@@ -296,7 +306,7 @@ const Checkout = () => {
               <div className="flex justify-between w-full max-w-md">
                 <h2 className="text-xl">Tổng tiền tạm tính:</h2>
                 <span className="text-xl text-[#002278] text-right">
-                  {totalAmount.toLocaleString()} đ
+                  {finalTotalAmount.toLocaleString()} đ
                 </span>
               </div>
             </div>

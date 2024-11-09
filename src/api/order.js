@@ -96,3 +96,17 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
     throw error;
   }
 };
+
+export const updateOrderStatus = async (id, status) => {
+  try {
+    const response = await axiosInstances.login.put(`/orders/${id}/status`, null, {
+      params: {
+        status: status
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error);
+    throw error;
+  }
+};

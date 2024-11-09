@@ -38,7 +38,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
   };
 
   const handleIncrease = async () => {  
-    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue + 1);  
+    // console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue + 1);  
     if (!userId) {  
       console.error('User ID is undefined for service:', service);  
       return;  

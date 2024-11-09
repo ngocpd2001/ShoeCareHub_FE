@@ -8,6 +8,8 @@ import { useTableState } from "../../../hooks/useTableState";
 import { useModalState } from "../../../hooks/useModalState";
 import { useNotification } from "../../../Notification/Notification";
 import { useNavigate } from "react-router-dom";
+import { deleteEmployee } from '../../../api/employee';
+import { message } from 'antd';
 
 import ComTable from "../../../Components/ComTable/ComTable";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
@@ -61,11 +63,32 @@ export const TableEmployee = forwardRef((props, ref) => {
     },
     {
       title: "Chi nhánh",
-      dataIndex: "branch",
+      dataIndex: ["branch", "name"],
       key: "branch",
       width: 150,
-      sorter: (a, b) => a.branch.localeCompare(b.branch),
-      ...getColumnSearchProps("branch", "Chi nhánh"),
+      sorter: (a, b) => {
+        if (!a.branch || !b.branch) return 0;
+        return a.branch.name.localeCompare(b.branch.name);
+      },
+      ...getColumnSearchProps(["branch", "name"], "Chi nhánh"),
+      render: (text, record) => {
+        if (!record.branch) {
+          return <div>Chưa có chi nhánh</div>;
+        }
+        
+        return (
+          <div>
+            <div>{record.branch.name}</div>
+            <div className={`${
+              record.branch.status === "ACTIVE" 
+                ? "text-green-500" 
+                : "text-red-500"
+            }`}>
+              {record.branch.status === "ACTIVE" ? "Hoạt động" : "Ngưng hoạt động"}
+            </div>
+          </div>
+        );
+      },
     },
     {
       title: "Ngày sinh/Giới tính",
@@ -102,14 +125,10 @@ export const TableEmployee = forwardRef((props, ref) => {
             record={record}
             showModalDetails={() => {
               const employeeId = record.id;
-              // console.log("Navigating to employee details with ID:", employeeId);
               navigate(`/owner/employee/${employeeId}`);
             }}
-            showModalEdit={() => {
-              const employeeId = record.id;
-              navigate(`/owner/employee/update/${employeeId}`);
-            }}
-            excludeDefaultItems={["delete"]} 
+            showModalDelete={() => handleDelete(record)}
+            excludeDefaultItems={["reject", "accept", "edit"]} 
           />
         </div>
       ),
@@ -129,18 +148,29 @@ export const TableEmployee = forwardRef((props, ref) => {
     const temporaryBusinessId = 1;
     getEmployeeByBusinessId(temporaryBusinessId)
       .then((response) => {
-        setData(response);
+        setData(response.employees);
         table.handleCloseLoading();
       })
       .catch((error) => {
         console.error("Lỗi khi lấy dữ liệu nhân viên:", error);
         table.handleCloseLoading();
+        setData([]);
       });
   };
 
   useEffect(() => {
     reloadData();
   }, []);
+
+  const handleDelete = async (record) => {
+    try {
+      await deleteEmployee(record.id);
+      message.success("Xóa nhân viên thành công!");
+      reloadData();
+    } catch (error) {
+      message.error("Có lỗi xảy ra khi xóa nhân viên!");
+    }
+  };
 
   return (
     <div>

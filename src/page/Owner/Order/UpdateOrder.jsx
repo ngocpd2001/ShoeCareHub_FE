@@ -27,9 +27,23 @@ import {
   faTimesCircle,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { getOrderById, updateOrder } from "../../../api/order";
+import { getOrderById, updateOrder, updateOrderStatus } from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
+import { useNotification } from "../../../Notification/Notification";
+
+const STATUS_MAPPING = {
+  "Đã hủy": "CANCELED",
+  "Đang chờ": "PENDING",
+  "Đã xác nhận": "APPROVED",
+  "Đã nhận": "RECIEVED",
+  "Đang xử lý": "PROCESSING",
+  "Lưu trữ": "STORAGE",
+  "Đang giao hàng": "SHIPPING",
+  "Đã giao": "DELIVERIED",
+  "Hoàn thành": "FINISHED",
+  "Quá hạn nhận hàng": "ABANDONED"
+};
 
 const UpdateOrder = () => {
   const navigate = useNavigate();
@@ -44,6 +58,7 @@ const UpdateOrder = () => {
   });
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [orderStatus, setOrderStatus] = useState(orderData?.status || "");
+  const { notificationApi } = useNotification();
 
   const fetchOrderData = async () => {
     try {
@@ -123,14 +138,16 @@ const UpdateOrder = () => {
       .sort((a, b) => new Date(a.time) - new Date(b.time));
   };
 
-  const handleStatusChange = (event) => {
-    setOrderStatus(event.target.value);
-    // Cập nhật trạng thái đơn hàng trong orderData
-    setOrderData((prevData) => ({
-      ...prevData,
-      status: event.target.value,
-    }));
-    // Gọi API hoặc thực hiện hành động cần thiết để cập nhật trạng thái trên server
+  const handleStatusChange = async (e) => {
+    try {
+      const newStatus = STATUS_MAPPING[e.target.value];
+      await updateOrderStatus(id, newStatus);
+      setOrderStatus(e.target.value);
+      notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
+      await fetchOrderData();
+    } catch (error) {
+      notificationApi("error", "Lỗi", "Không thể cập nhật trạng thái đơn hàng");
+    }
   };
 
   if (!orderData) {
@@ -262,31 +279,37 @@ const UpdateOrder = () => {
                 <select
                   value={orderStatus}
                   onChange={handleStatusChange}
-                  className="font-medium text-gray-900 w-full p-2 border rounded-md"
+                  className="font-medium text-gray-900 w-full p-2 border rounded-md bg-white"
                 >
-                  <option value="Đang xử lý" className="bg-orange-100 text-orange-600">
+                  <option value="Đang xử lý" className="bg-orange-50 text-orange-700">
                     Đang xử lý
                   </option>
-                  <option value="Đang chờ" className="bg-blue-100 text-blue-600">
+                  <option value="Đang chờ" className="bg-blue-50 text-blue-700">
                     Đang chờ
                   </option>
-                  <option value="Hoàn thành" className="bg-green-100 text-green-600">
-                    Hoàn thành
+                  <option value="Đã xác nhận" className="bg-teal-50 text-teal-700">
+                    Đã xác nhận
                   </option>
-                  <option value="Đã hủy" className="bg-red-100 text-red-600">
-                    Đã hủy
+                  <option value="Đã nhận" className="bg-green-50 text-green-700">
+                    Đã nhận
                   </option>
-                  <option value="Lưu trữ" className="bg-gray-100 text-gray-600">
-                    Lưu trữ
-                  </option>
-                  <option value="Đang giao hàng" className="bg-yellow-100 text-yellow-600">
+                  <option value="Đang giao hàng" className="bg-yellow-50 text-yellow-700">
                     Đang giao hàng
                   </option>
-                  <option value="Quá hạn nhận hàng" className="bg-purple-100 text-purple-600">
-                    Quá hạn nhận hàng
+                  <option value="Đã giao" className="bg-green-50 text-green-700">
+                    Đã giao
                   </option>
-                  <option value="Đã xác nhận" className="bg-teal-100 text-teal-600">
-                    Đã xác nhận
+                  <option value="Hoàn thành" className="bg-green-50 text-green-700">
+                    Hoàn thành
+                  </option>
+                  <option value="Đã hủy" className="bg-red-50 text-red-700">
+                    Đã hủy
+                  </option>
+                  <option value="Lưu trữ" className="bg-gray-50 text-gray-700">
+                    Lưu trữ
+                  </option>
+                  <option value="Quá hạn nhận hàng" className="bg-purple-50 text-purple-700">
+                    Quá hạn nhận hàng
                   </option>
                 </select>
               </div>
