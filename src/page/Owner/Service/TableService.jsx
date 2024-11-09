@@ -111,7 +111,11 @@ export const TableService = forwardRef((props, ref) => {
       ...getColumnPriceRangeProps("promotion.newPrice", "giá"),
       render: (e, record) => (
         <div>
-          <h1>{formatCurrency(record?.promotion?.newPrice)}</h1>
+          <h1>
+            {record?.promotion?.newPrice
+              ? formatCurrency(record?.promotion?.newPrice)
+              : formatCurrency(record.price)}
+          </h1>
         </div>
       ),
     },
@@ -203,7 +207,7 @@ export const TableService = forwardRef((props, ref) => {
   return (
     <div>
       <ComTable
-        y={"50vh"}
+        y={"60vh"}
         x={1020}
         columns={columns}
         dataSource={data}

@@ -7,11 +7,14 @@ import { useStorage } from "../../hooks/useLocalStorage";
 import { deleteData, getData, putData } from "../../api/api";
 import confirm from "antd/es/modal/confirm";
 import { Modal } from "antd";
+import EditAddressesUser from "./EditAddressesUser";
 
 export default function AddressesUser() {
   const modal = useModalState();
+  const modalEdit = useModalState();
   const [user, setUser] = useStorage("user", null);
   const [data, setData] = useState([]);
+  const [selectedData, setSelectedData] = useState({});
 
   const setDefaultAddress = (id) => {
     // Hiển thị modal xác nhận của Ant Design
@@ -37,30 +40,30 @@ export default function AddressesUser() {
     });
   };
 
-      const setDeleteAddress = (id) => {
-        // Hiển thị modal xác nhận của Ant Design
-        Modal.confirm({
-          title: "Xác nhận xóa",
-          content: "Bạn có chắc chắn muốn xóa địa chỉ này không?",
-          okText: "Xác nhận",
-          okType: "danger",
-          cancelText: "Hủy",
-          onOk() {
-            // Nếu người dùng xác nhận
-            deleteData(`/addresses`, `${id}`)
-              .then((data) => {
-                console.log(data);
-                getdataaddresses(); // Gọi hàm getData để làm mới dữ liệu sau khi đổi
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          },
-          onCancel() {
-            console.log("Hủy thao tác đổi địa chỉ mặc định."); // Nếu người dùng hủy
-          },
-        });
-      };
+  const setDeleteAddress = (id) => {
+    // Hiển thị modal xác nhận của Ant Design
+    Modal.confirm({
+      title: "Xác nhận xóa",
+      content: "Bạn có chắc chắn muốn xóa địa chỉ này không?",
+      okText: "Xác nhận",
+      okType: "danger",
+      cancelText: "Hủy",
+      onOk() {
+        // Nếu người dùng xác nhận
+        deleteData(`/addresses`, `${id}`)
+          .then((data) => {
+            console.log(data);
+            getdataaddresses(); // Gọi hàm getData để làm mới dữ liệu sau khi đổi
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      },
+      onCancel() {
+        console.log("Hủy thao tác đổi địa chỉ mặc định."); // Nếu người dùng hủy
+      },
+    });
+  };
   const getdataaddresses = () => {
     getData(`/addresses/account/${user.id}`)
       .then((data) => {
@@ -75,7 +78,6 @@ export default function AddressesUser() {
   useEffect(() => {
     getdataaddresses();
   }, []);
-
 
   return (
     <div className="pb-4 mb-4 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-1   sm:pt-1 sm:pb-6 sm:px-6 ">
@@ -99,7 +101,23 @@ export default function AddressesUser() {
         >
           <CreateAddressesUser
             onClose={modal?.handleClose}
-            tableRef={() => {}}
+            tableRef={() => {
+              getdataaddresses();
+            }}
+          />
+        </ComModal>
+
+        <ComModal
+          width={800}
+          isOpen={modalEdit?.isModalOpen}
+          onClose={modalEdit?.handleClose}
+        >
+          <EditAddressesUser
+            onClose={modalEdit?.handleClose}
+            selectedData={selectedData}
+            tableRef={() => {
+              getdataaddresses();
+            }}
           />
         </ComModal>
         <div className="space-y-4">
@@ -117,7 +135,13 @@ export default function AddressesUser() {
                   )}
                 </div>
                 <div className="flex items-center gap-4">
-                  <button className="text-blue-500 hover:text-blue-700 text-sm">
+                  <button
+                    onClick={() => {
+                      setSelectedData(address);
+                      modalEdit.handleOpen();
+                    }}
+                    className="text-blue-500 hover:text-blue-700 text-sm"
+                  >
                     Cập nhật
                   </button>
                   {!address.isDefault && (

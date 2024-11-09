@@ -8,14 +8,14 @@ import ShoeSlide3 from "../../assets/images/sonGiay.webp";
 import ShoeSlide4 from "../../assets/images/giatgiay.webp";
 import ShoeSlide5 from "../../assets/images/vaGiay.webp";
 import { getData } from "../../api/api";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getAllBusiness } from "../../api/businesses";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_HEIGHT = 360;
 const CARD_GAP = 16; // Gap between cards
 
-const Carousels = ({ title, items, type }) => {
+const Carousels = ({ title, items, type, goto }) => {
   const [scrollPosition, setScrollPosition] = useState(0);
   const containerRef = React.useRef(null);
   const navigate = useNavigate();
@@ -39,9 +39,9 @@ const Carousels = ({ title, items, type }) => {
     <div className="mb-8 rounded-md shadow-lg p-8 border-[#D9D9D9] border bg-white">
       <div className="flex justify-between items-center ">
         <h2 className="text-2xl font-bold mb-6">{title}</h2>
-        <a href="#" className="text-blue-600 hover:underline">
+        <Link to={`/${goto}`} className="text-blue-600 hover:underline">
           Xem tất cả
-        </a>
+        </Link>
       </div>
       <div className="relative">
         <button
@@ -140,7 +140,7 @@ const SupplierCard = ({ item, navigate }) => (
         alt={item.name}
       />
     </div>
-    <h3 className="font-semibold mb-1">{item.name}</h3>
+    <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
     <div className="flex items-center mb-1">
       <span className="text-yellow-400 mr-1">{item.rating}</span>
       <Star className="w-4 h-4 fill-current text-yellow-400" />
@@ -231,11 +231,13 @@ export default function CarouselsSection() {
           title="Dịch vụ đang được giảm giá"
           items={services}
           type="service"
+          goto="service-discounted"
         />
         <Carousels
           title="Nhà cung cấp tiêu biểu"
           items={business}
           type="supplier"
+          goto="typical-provider"
         />
         <ServiceGrid />
       </div>

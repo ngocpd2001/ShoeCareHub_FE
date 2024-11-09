@@ -32,7 +32,7 @@ import {
   DisclosurePanel,
 } from "@headlessui/react";
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Affix } from "antd";
 import { PackageIcon, UserCircleIcon } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
@@ -86,8 +86,8 @@ const navigation = [
 ];
 
 const userNavigation = [
-  { name: "Your profile", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Hồ sơ của tôi", href: "/owner/profile" },
+  { name: "Đăng xuất", href: "/login" },
 ];
 
 function classNames(...classes) {
@@ -100,6 +100,8 @@ export default function OwnerLayout({ children }) {
   const currentPath = location.pathname;
   const [activeCategory, setActiveCategory] = useState(null);
   const [user, setUser, loadUser] = useStorage("user", null);
+  const navigate = useNavigate();
+  const [token, setToken, loadToken] = useStorage("token", "");
 
   useEffect(() => {
     setActiveCategory(currentPath);
@@ -404,12 +406,26 @@ export default function OwnerLayout({ children }) {
                     >
                       {userNavigation.map((item) => (
                         <MenuItem key={item.name}>
-                          <a
-                            href={item.href}
-                            className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
-                          >
-                            {item.name}
-                          </a>
+                          {item.name === "Đăng xuất" ? (
+                            <button
+                              onClick={() => {
+                                setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
+                                setTimeout(() => {
+                                  navigate("/login");
+                                }, 300);
+                              }}
+                              className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                            >
+                              {item.name}
+                            </button>
+                          ) : (
+                            <Link
+                              to={item.href}
+                              className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                            >
+                              {item.name}
+                            </Link>
+                          )}
                         </MenuItem>
                       ))}
                     </MenuItems>

@@ -123,21 +123,23 @@ export const TableBranch = forwardRef((props, ref) => {
             }}
             showModalDelete={() => {
               ComConfirmDeleteModal(
-                `/blog`,
+                `/branches`,
                 record.id,
                 `Bạn có chắc chắn muốn xóa?`,
                 reloadData,
                 notificationSuccess,
-                notificationError
+                notificationError,
+                "put"
               );
             }}
-            // extraMenuItems={extraMenuItems}
-            excludeDefaultItems={["details"]}
+        
+            excludeDefaultItems={["details","delete"]}
           />
         </div>
       ),
     },
   ];
+
   const notificationSuccess = () => {
     notificationApi("success", "Thành công", "Đã xóa blog");
   };
@@ -180,7 +182,7 @@ export const TableBranch = forwardRef((props, ref) => {
         onClose={modalDetail?.handleClose}
         width={800}
       >
-        <DetailBranch selectedUpgrede={selectedData} />
+        <DetailBranch selectedData={selectedData} />
       </ComModal>
       <ComModal
         isOpen={modalEdit?.isModalOpen}
@@ -188,7 +190,7 @@ export const TableBranch = forwardRef((props, ref) => {
         width={800}
       >
         <EditBranch
-          selectedUpgrede={selectedData}
+          selectedData={selectedData}
           tableRef={reloadData}
           onClose={modalEdit?.handleClose}
         />

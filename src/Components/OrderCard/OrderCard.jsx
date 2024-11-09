@@ -49,10 +49,8 @@ export default function OrderCard({ order }) {
     },
   ];
 
-  const total = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  console.log(order);
+  
 
   return (
     <div className=" mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-[#7F7F7F]">
@@ -125,7 +123,7 @@ export default function OrderCard({ order }) {
         onClose={modalFeedback?.handleClose}
         width={700}
       >
-        <ServiceReviewForm />
+        <ServiceReviewForm data={order} onClose={modalFeedback?.handleClose} />
       </ComModal>
     </div>
   );

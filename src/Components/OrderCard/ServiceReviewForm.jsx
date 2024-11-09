@@ -1,64 +1,153 @@
 import React, { useState } from "react";
-import { Star, Camera } from "lucide-react";
+import { Star } from "lucide-react";
 import ComUpImg from "./../ComUpImg/ComUpImg";
+import { firebaseImgs } from "../../upImgFirebase/firebaseImgs";
+import { postData } from "../../api/api";
 
-const ServiceReviewForm = () => {
-  const [rating, setRating] = useState(4);
-  const [review, setReview] = useState("");
+const ServiceReviewForm = ({ data, onClose }) => {
+  const [reviews, setReviews] = useState(
+    data?.orderDetails?.map((item) => ({
+      id: item?.id,
+      rating: 5,
+      review: "",
+      images: [],
+    })) || []
+  );
 
-  const handleRatingChange = (newRating) => {
-    setRating(newRating);
+  // Hàm thay đổi rating cho từng dịch vụ
+  const handleRatingChange = (id, newRating) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((item) =>
+        item.id === id ? { ...item, rating: newRating } : item
+      )
+    );
   };
 
-  const handleReviewChange = (event) => {
-    setReview(event.target.value);
+  // Hàm thay đổi review cho từng dịch vụ
+  const handleReviewChange = (id, newReview) => {
+    setReviews((prevReviews) =>
+      prevReviews.map((item) =>
+        item.id === id ? { ...item, review: newReview } : item
+      )
+    );
   };
 
+  // Hàm xử lý khi nhấn nút Đánh giá
   const handleSubmit = (event) => {
     event.preventDefault();
-    // Here you would typically send the review data to a server
-    alert("Đánh giá đã được gửi!");
-  };
+    console.log("Dữ liệu đánh giá:", reviews);
+    reviews.forEach((e, index) => {
+      firebaseImgs(e.images)
+        .then((uploadedUrls) => {
+          const assetUrls = uploadedUrls.map((url) => {
+            const isImage = url.includes("mp4"); // Điều kiện giả định để kiểm tra xem có phải là hình ảnh
+            return {
+              url: url,
+              isImage: !isImage,
+              type: isImage ? "video" : "image",
+            };
+          });
 
+          postData(`/feedbacks`, {
+            orderItemId: e.id,
+            rating: e.rating,
+            content: e.review,
+            status: "string",
+            assetUrls: assetUrls,
+          })
+            .then((response) => {
+              console.log("data :", response);
+          
+              
+              if (reviews.length === index+1) {
+                alert("Đánh giá đã được gửi thành công!");
+                onClose(); // Đóng modal
+              }
+            })
+            .catch((error) => {
+              console.error("Lỗi :", error);
+            });
+          console.log(1111, {
+            orderItemId: e.id,
+            rating: e.rating,
+            content: e.review,
+            status: "string",
+            assetUrls: assetUrls,
+          });
+        })
+        .catch((error) => {
+          console.error("Lỗi :", error);
+        });
+    });
+  };
+  console.log(data);
+  //  const onChange1 = (data) => {
+  //    const selectedImages = data;
+  //    const newImages = selectedImages.map((file) => file.originFileObj);
+  //    setImages1(newImages);
+  //  };
+  const handleImageChange = (id, data) => {
+    const selectedImages = data;
+    const newImages = selectedImages.map((file) => file.originFileObj);
+
+    // Cập nhật mảng hình ảnh cho từng dịch vụ
+    setReviews((prevReviews) =>
+      prevReviews.map((item) =>
+        item.id === id ? { ...item, images: newImages } : item
+      )
+    );
+  };
   return (
-    <div className="max-w-2xl mx-auto ">
+    <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Đánh Giá Dịch Vụ</h1>
-      <div className="flex items-center mb-4">
-        <img
-          src="https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717"
-          alt="Dịch vụ vệ sinh giày"
-          className="w-24 h-24 object-cover mr-4"
-        />
-        <p>Dịch vụ vệ sinh giày 3 in 1 siêu sạch</p>
-      </div>
-      <div className="mb-4">
-        <p className="mb-2">Chất lượng dịch vụ</p>
-        <div className="flex">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <Star
-              key={star}
-              size={24}
-              onClick={() => handleRatingChange(star)}
-              className={`cursor-pointer ${
-                star <= rating
-                  ? "text-yellow-400 fill-current"
-                  : "text-gray-300"
-              }`}
-            />
-          ))}
-        </div>
-      </div>
-      <textarea
-        className="w-full p-2 border rounded mb-4"
-        rows="4"
-        placeholder="Để lại chi tiết đánh giá dịch vụ"
-        value={review}
-        onChange={handleReviewChange}
-      ></textarea>
-      <p className="text-paragraph font-bold">Hình ảnh</p>
-      <div className="flex flex-wrap gap-2 mb-4">
-        <ComUpImg onChange={() => {}} numberImg={5} />
-      </div>
+      {data?.orderDetails &&
+        data?.orderDetails.map((value) => (
+          <div key={value?.id} className="mb-10 border-b">
+            <div className="flex items-center mb-4">
+              <img
+                src={value?.service?.assetUrls?.url}
+                alt={value?.service?.name}
+                className="w-24 h-24 object-cover mr-4 border"
+              />
+              <p className="font-semibold">{value?.service?.name}</p>
+            </div>
+            <div className="mb-4">
+              <p className="mb-2">Chất lượng dịch vụ</p>
+              <div className="flex">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    size={24}
+                    onClick={() => handleRatingChange(value?.id, star)}
+                    className={`cursor-pointer ${
+                      star <=
+                      reviews.find((item) => item.id === value?.id)?.rating
+                        ? "text-yellow-400 fill-current"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            <textarea
+              className="w-full p-2 border rounded mb-4"
+              rows="4"
+              placeholder="Để lại chi tiết đánh giá dịch vụ"
+              value={
+                reviews.find((item) => item.id === value?.id)?.review || ""
+              }
+              onChange={(e) => handleReviewChange(value?.id, e.target.value)}
+            ></textarea>
+            <p className="text-paragraph font-bold">Hình ảnh</p>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <ComUpImg
+                onChange={(data) => handleImageChange(value?.id, data)}
+                numberImg={5}
+              />
+            </div>
+          </div>
+        ))}
+
       <div className="flex justify-end">
         <button
           className="bg-[#002278] text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
