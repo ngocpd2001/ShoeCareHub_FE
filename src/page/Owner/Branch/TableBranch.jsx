@@ -89,25 +89,36 @@ export const TableBranch = forwardRef((props, ref) => {
       width: 50,
       ...getColumnSearchProps("status", "Trạng thái"),
       render: (_, record) => (
-        <>
-          <div className="">
-            {record.status === "ACTIVE" ? (
-              <div className="  bg-green-200 rounded-full text-lg text-center text-green-600">
-                Hoạt động
-              </div>
-            ) : (
-              <div className="  bg-slate-400 rounded-full text-lg text-center text-black">
-                Tạm ngưng
-              </div>
-            )}
-          </div>
-        </>
+        // <>
+        //   <div className="">
+        //     {record.status === "ACTIVE" ? (
+        //       <div className="  bg-green-200 rounded-full text-lg text-center text-green-600">
+        //         Hoạt động
+        //       </div>
+        //     ) : (
+        //       <div className="  bg-slate-400 rounded-full text-lg text-center text-black">
+        //         Tạm ngưng
+        //       </div>
+        //     )}
+        //   </div>
+        // </>
+
+        <span
+          className={`px-3 py-1 rounded-full text-sm ${
+            record.status === "ACTIVE"
+              ? "bg-green-100 text-green-600 text-lg text-center"
+              : "bg-gray-100 text-gray-600 text-lg text-center"
+          }`}
+        >
+          {record.status === "ACTIVE" ? "Hoạt động" : "Tạm ngưng"}
+        </span>
       ),
     },
     {
       title: "Action",
       key: "operation",
       fixed: "right",
+      align: "center",
       width: 30,
       render: (_, record) => (
         <div className="flex items-center flex-col">
@@ -132,8 +143,7 @@ export const TableBranch = forwardRef((props, ref) => {
                 "put"
               );
             }}
-        
-            excludeDefaultItems={["details","delete"]}
+            excludeDefaultItems={["details", "delete", "reject", "accept"]}
           />
         </div>
       ),
@@ -141,7 +151,7 @@ export const TableBranch = forwardRef((props, ref) => {
   ];
 
   const notificationSuccess = () => {
-    notificationApi("success", "Thành công", "Đã xóa blog");
+    notificationApi("success", "Thành công", "Đã xóa ");
   };
   const notificationError = () => {
     notificationApi("error", "Lỗi", "Lỗi");

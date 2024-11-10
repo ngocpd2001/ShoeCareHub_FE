@@ -1,9 +1,14 @@
 import React from "react";
 import { Menu, Dropdown, Button, Typography } from "antd";
 import { EllipsisOutlined } from "@ant-design/icons";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPenToSquare, faTrash, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faEye,
+  faPenToSquare,
+  faTrash,
+  faCheck,
+  faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 
 const ComMenuButonTable = ({
   record,
@@ -96,9 +101,9 @@ const ComMenuButonTable = ({
       onClick: () => item.onClick(record),
       visible: true,
       order:
-      order.indexOf(item.label) !== -1
-      ? order.indexOf(item.label)
-      : defaultMenuItems.length + index,
+        order.indexOf(item.label) !== -1
+          ? order.indexOf(item.label)
+          : defaultMenuItems.length + index,
     })),
     ...defaultMenuItems,
   ].filter((item) => item.visible);

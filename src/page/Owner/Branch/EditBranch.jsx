@@ -37,7 +37,7 @@ export default function EditBranch({ onClose, tableRef, selectedData }) {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-    putData(`/branches`,selectedData.id, {
+    putData(`/branches`, selectedData.id, {
       ...data,
     })
       .then((response) => {
@@ -111,23 +111,23 @@ export default function EditBranch({ onClose, tableRef, selectedData }) {
       });
   }, [watch("districtId")]);
 
-    useEffect(() => {
-      setValue("districtId", selectedData.districtId);
-      setValue("wardCode", selectedData.wardCode);
-          getData(`locations/${selectedData.districtId}/wards`)
-            .then((e) => {
-              console.log(e.data);
-              const dataForSelect = e?.data?.map((item) => ({
-                value: item.wardCode,
-                label: item.wardName,
-                data: item,
-              }));
-              setWards(dataForSelect);
-            })
-            .catch(() => {
-              setWards([]);
-            });
-    }, [selectedData]);
+  useEffect(() => {
+    setValue("districtId", selectedData.districtId);
+    setValue("wardCode", selectedData.wardCode);
+    getData(`locations/${selectedData.districtId}/wards`)
+      .then((e) => {
+        console.log(e.data);
+        const dataForSelect = e?.data?.map((item) => ({
+          value: item.wardCode,
+          label: item.wardName,
+          data: item,
+        }));
+        setWards(dataForSelect);
+      })
+      .catch(() => {
+        setWards([]);
+      });
+  }, [selectedData]);
   return (
     <div>
       <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
@@ -246,13 +246,13 @@ export default function EditBranch({ onClose, tableRef, selectedData }) {
               </div>
 
               <div className="mt-10 flex justify-end gap-6">
-                <div>
+                {/* <div>
                   <ComButton
                     className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
                   >
                     <div className="text-black"> Hủy bỏ</div>
                   </ComButton>
-                </div>
+                </div> */}
                 <div>
                   <ComButton
                     htmlType="submit"
@@ -261,7 +261,7 @@ export default function EditBranch({ onClose, tableRef, selectedData }) {
                       disabled ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {disabled ? "Đang tạo..." : "Tạo mới"}
+                    {disabled ? "Đang cập nhật..." : "Cập nhật"}
                   </ComButton>
                 </div>
               </div>
