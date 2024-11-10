@@ -50,6 +50,8 @@ const UserCart = () => {
               promotion: serviceDetails.promotion,
               quantity: item.quantity,
               selected: false,
+              status: serviceDetails.status,
+              isAvailable: serviceDetails.status !== 'UNAVAILABLE'
             };
           })
         )
@@ -197,7 +199,7 @@ const UserCart = () => {
               ...shop,
               services: shop.services.map((service) => ({
                 ...service,
-                selected: !shop.services.every((s) => s.selected),
+                selected: service.isAvailable ? !shop.services.every((s) => s.selected) : false
               })),
             }
           : shop
@@ -211,7 +213,10 @@ const UserCart = () => {
         ...shop,
         services: shop.services.map((service) =>
           service.id === serviceId
-            ? { ...service, selected: !service.selected }
+            ? {
+                ...service,
+                selected: service.isAvailable ? !service.selected : false
+              }
             : service
         ),
       }))
@@ -220,14 +225,17 @@ const UserCart = () => {
 
   const handleSelectAllShops = () => {
     const allSelected = cartItems.every((shop) =>
-      shop.services.every((service) => service.selected)
+      shop.services.every((service) => 
+        service.isAvailable ? service.selected : true
+      )
     );
+    
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
         services: shop.services.map((service) => ({
           ...service,
-          selected: !allSelected,
+          selected: service.isAvailable ? !allSelected : false
         })),
       }))
     );

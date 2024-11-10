@@ -25,6 +25,7 @@ const CheckoutService = () => {
   const [addresses, setAddresses] = useState({});
   const [defaultAddress, setDefaultAddress] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
+  const [shippingFees, setShippingFees] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -232,6 +233,15 @@ const CheckoutService = () => {
     }
   };
 
+  const handleShippingFeesChange = (fees) => {
+    setShippingFees(fees);
+    console.log("Shipping fees updated:", fees);
+  };
+
+  const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
+
+  const finalTotalAmount = totalAmount + totalShippingFee;
+
   return (
     <>
       <h1 className="text-3xl text-[#002278] font-bold bg-white w-full text-center py-4">
@@ -281,6 +291,7 @@ const CheckoutService = () => {
             onNoteChange={handleNoteChange}
             onDeliveryOptionChange={handleDeliveryOptionChange}
             defaultAddress={defaultAddress}
+            onShippingFeesChange={handleShippingFeesChange}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">
@@ -300,7 +311,9 @@ const CheckoutService = () => {
             <div className="flex justify-end mb-2">
               <div className="flex justify-between w-full max-w-md">
                 <h2 className="text-lg">Tiền giao hàng:</h2>
-                <span className="text-lg text-[#002278] text-right">0 đ</span>
+                <span className="text-lg text-[#002278] text-right">
+                  {totalShippingFee.toLocaleString()} đ
+                </span>
               </div>
             </div>
 
@@ -308,7 +321,7 @@ const CheckoutService = () => {
               <div className="flex justify-between w-full max-w-md">
                 <h2 className="text-xl">Tổng tiền tạm tính:</h2>
                 <span className="text-xl text-[#002278] text-right">
-                  {totalAmount.toLocaleString()} đ
+                  {finalTotalAmount.toLocaleString()} đ
                 </span>
               </div>
             </div>

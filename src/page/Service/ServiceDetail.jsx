@@ -339,9 +339,7 @@ const ServiceDetail = () => {
 
                 <div
                   className={`mt-2 text-gray-600 transition-max-height duration-500 ease-in-out ${
-                    isExpanded
-                      ? "max-h-[1000px]"
-                      : "max-h-[120px] overflow-hidden"
+                    isExpanded ? "max-h-[1000px]" : "max-h-[120px] overflow-hidden"
                   }`}
                 >
                   <p>
@@ -352,13 +350,21 @@ const ServiceDetail = () => {
                 </div>
 
                 {isLongDescription && (
-                  <button
-                    onClick={toggleDescription}
-                    className="text-blue-500 mt-2"
-                  >
+                  <button onClick={toggleDescription} className="text-blue-500 mt-2">
                     {isExpanded ? "Ẩn bớt..." : "Xem thêm..."}
                   </button>
                 )}
+
+                <div className="mt-4 flex items-center">
+                  <span className="text-gray-500 font-semibold mr-2">Trạng thái:</span>
+                  <span className={`px-3 py-1 rounded-full ${
+                    service.status === 'Hoạt Động' 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {service.status === 'Hoạt Động' ? 'Đang hoạt động' : 'Ngưng hoạt động'}
+                  </span>
+                </div>
               </div>
 
               {/* Quantity */}
@@ -408,14 +414,24 @@ const ServiceDetail = () => {
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  className="bg-[#3A4980] text-white rounded-xl py-4 px-6 flex items-center"
+                  disabled={service.status !== 'Hoạt Động'}
+                  className={`rounded-xl py-4 px-6 flex items-center ${
+                    service.status === 'Hoạt Động'
+                      ? 'bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
                   Thêm vào giỏ hàng
                 </button>
                 <button
                   onClick={handleCheckout}
-                  className="bg-gray-200 text-[#3A4980] rounded-xl py-2 px-10"
+                  disabled={service.status !== 'Hoạt Động'}
+                  className={`rounded-xl py-2 px-10 ${
+                    service.status === 'Hoạt Động'
+                      ? 'bg-gray-200 text-[#3A4980] hover:bg-gray-300 cursor-pointer'
+                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   Thanh toán
                 </button>
