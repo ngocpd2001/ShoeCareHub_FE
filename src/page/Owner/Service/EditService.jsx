@@ -271,7 +271,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                 </div>
                 <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
                   <h2 className="text-xl font-semibold mb-4">
-                    Hình ảnh & Video
+                    Hình ảnh  
                   </h2>
                   <ComUpImg
                     onChange={onChange}
