@@ -52,8 +52,37 @@ export const getOrderDetailsByOrderId = async (id) => {
 
 export const updateOrder = async (id, orderData) => {
   try {
-    const response = await axiosInstances.login.patch(`/orders/${id}`, orderData);
-    return response.data;
+    const {
+      shippingUnit,
+      shippingCode,
+      deliveredFee,
+      pendingTime,
+      approvedTime,
+      revievedTime,
+      processingTime,
+      storagedTime,
+      shippingTime,
+      deliveredTime,
+      finishedTime,
+      abandonedTime
+    } = orderData;
+
+    const response = await axiosInstances.login.patch(`/orders/${id}`, {
+      shippingUnit,
+      shippingCode,
+      deliveredFee,
+      pendingTime,
+      approvedTime,
+      revievedTime,
+      processingTime, 
+      storagedTime,
+      shippingTime,
+      deliveredTime,
+      finishedTime,
+      abandonedTime
+    });
+
+    return response.data.message;
   } catch (error) {
     console.error("Lỗi khi cập nhật đơn hàng", error);
     throw error;
@@ -93,6 +122,20 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
     return response.data.data;
   } catch (error) {
     console.error("Lỗi khi gọi API nhân viên theo doanh nghiệp", error);
+    throw error;
+  }
+};
+
+export const updateOrderStatus = async (id, status) => {
+  try {
+    const response = await axiosInstances.login.put(`/orders/${id}/status`, null, {
+      params: {
+        status: status
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error);
     throw error;
   }
 };

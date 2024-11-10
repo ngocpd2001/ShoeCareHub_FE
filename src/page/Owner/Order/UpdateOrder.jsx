@@ -27,9 +27,37 @@ import {
   faTimesCircle,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { getOrderById, updateOrder } from "../../../api/order";
+import { getOrderById, updateOrder, updateOrderStatus } from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
+import { useNotification } from "../../../Notification/Notification";
+
+const STATUS_MAPPING = {
+  "Đã hủy": "CANCELED",
+  "Đang chờ": "PENDING",
+  "Đã xác nhận": "APPROVED",
+  "Đã nhận": "RECIEVED",
+  "Đang xử lý": "PROCESSING",
+  "Lưu trữ": "STORAGE",
+  "Đang giao hàng": "SHIPPING",
+  "Đã giao": "DELIVERIED",
+  "Hoàn thành": "FINISHED",
+  "Quá hạn nhận hàng": "ABANDONED"
+};
+
+// Thêm mapping ngược từ ENUM sang text hiển thị
+const REVERSE_STATUS_MAPPING = {
+  CANCELED: "Đã hủy",
+  PENDING: "Đang chờ",
+  APPROVED: "Đã xác nhận",
+  RECIEVED: "Đã nhận",
+  PROCESSING: "Đang xử lý",
+  STORAGE: "Lưu trữ",
+  SHIPPING: "Đang giao hàng",
+  DELIVERIED: "Đã giao",
+  FINISHED: "Hoàn thành",
+  ABANDONED: "Quá hạn nhận hàng"
+};
 
 const UpdateOrder = () => {
   const navigate = useNavigate();
@@ -43,7 +71,8 @@ const UpdateOrder = () => {
     shippingUnit: "",
   });
   const [isPopupVisible, setIsPopupVisible] = useState(false);
-  const [orderStatus, setOrderStatus] = useState(orderData?.status || "");
+  const [orderStatus, setOrderStatus] = useState("");
+  const { notificationApi } = useNotification();
 
   const fetchOrderData = async () => {
     try {
@@ -51,6 +80,10 @@ const UpdateOrder = () => {
       const data = await getOrderById(id);
       console.log("Order data:", data);
       setOrderData(data);
+      
+      // Cập nhật orderStatus ngay khi có dữ liệu
+      const mappedStatus = REVERSE_STATUS_MAPPING[data.status] || "Đang xử lý";
+      setOrderStatus(mappedStatus);
 
       if (data.addressId) {
         const address = await getAddressById(data.addressId);
@@ -80,14 +113,17 @@ const UpdateOrder = () => {
     try {
       const updatedOrderData = {
         ...orderData,
-        shippingCode,
-        status: orderStatus,
+        deliveredFee: formData.deliveredFee,
+        shippingCode: formData.shippingCode,
+        shippingUnit: formData.shippingUnit,
+        status: STATUS_MAPPING[orderStatus]
       };
 
-      const response = await updateOrder(id, updatedOrderData);
-      console.log("Order updated successfully:", response);
+      await updateOrder(id, updatedOrderData);
+      notificationApi("success", "Thành công", "Đã cập nhật thông tin đơn hàng");
+      navigate('/owner/order', { state: { refresh: true } });
     } catch (error) {
-      console.error("Lỗi khi cập nhật đơn hàng:", error);
+      notificationApi("error", "Lỗi", "Không thể cập nhật thông tin đơn hàng");
     }
   };
 
@@ -100,37 +136,95 @@ const UpdateOrder = () => {
   };
 
   const getStatusHistory = (data) => {
-    const statusMap = {
-      createTime: { label: "Đã tạo đơn hàng", icon: faFileAlt },
-      pendingTime: { label: "Đang chờ xử lý", icon: faHourglassHalf },
-      approvedTime: { label: "Đã duyệt", icon: faCheck },
-      revievedTime: { label: "Đã nhận", icon: faInbox },
-      processingTime: { label: "Đang xử lý", icon: faCog },
-      storagedTime: { label: "Đã lưu kho", icon: faWarehouse },
-      shippingTime: { label: "Đang giao hàng", icon: faTruck },
-      deliveredTime: { label: "Đã giao hàng", icon: faBoxOpen },
-      finishedTime: { label: "Hoàn thành", icon: faCheckCircle },
-      abandonedTime: { label: "Đã hủy", icon: faTimesCircle },
+    // Định nghĩa các trạng thái và thứ tự của chúng
+    const statusFlow = {
+      createTime: { label: "Đã tạo đơn hàng", icon: faFileAlt, order: 1 },
+      pendingTime: { label: "Đang chờ xử lý", icon: faHourglassHalf, order: 2 },
+      approvedTime: { label: "Đã duyệt", icon: faCheck, order: 3 },
+      revievedTime: { label: "Đã nhận", icon: faInbox, order: 4 },
+      processingTime: { label: "Đang xử lý", icon: faCog, order: 5 },
+      storagedTime: { label: "Đã lưu kho", icon: faWarehouse, order: 6 },
+      shippingTime: { label: "Đang giao hàng", icon: faTruck, order: 7 },
+      deliveredTime: { label: "Đã giao hàng", icon: faBoxOpen, order: 8 },
+      finishedTime: { label: "Hoàn thành", icon: faCheckCircle, order: 9 },
+      abandonedTime: { label: "Đã hủy", icon: faTimesCircle, order: 10 }
     };
 
-    return Object.entries(statusMap)
-      .map(([key, { label, icon }]) => ({
+    // Lấy trạng thái hiện tại của đơn hàng
+    const currentStatus = data.status;
+
+    // Nếu đơn hàng đã hủy, chỉ hiển thị trạng thái tạo đơn và hủy
+    if (currentStatus === 'CANCELED') {
+      return Object.entries(statusFlow)
+        .filter(([key]) => key === 'createTime' || key === 'abandonedTime')
+        .map(([key, { label, icon }]) => ({
+          status: label,
+          icon: icon,
+          time: data[key]
+        }))
+        .filter(item => item.time)
+        .sort((a, b) => new Date(a.time) - new Date(b.time));
+    }
+
+    // Với các trạng thái khác, hiển thị theo luồng bình thường
+    return Object.entries(statusFlow)
+      .map(([key, { label, icon, order }]) => ({
         status: label,
         icon: icon,
         time: data[key],
+        order: order
       }))
-      .filter((item) => item.time !== null)
-      .sort((a, b) => new Date(a.time) - new Date(b.time));
+      .filter(item => item.time !== null)
+      .sort((a, b) => a.order - b.order);
   };
 
-  const handleStatusChange = (event) => {
-    setOrderStatus(event.target.value);
-    // Cập nhật trạng thái đơn hàng trong orderData
-    setOrderData((prevData) => ({
-      ...prevData,
-      status: event.target.value,
+  const handleStatusChange = async (e) => {
+    try {
+      const newStatus = e.target.value; // Lấy giá trị trực tiếp từ select
+      const statusEnum = STATUS_MAPPING[newStatus];
+      const currentTime = new Date().toISOString();
+      
+      // Gọi API updateOrderStatus với giá trị ENUM
+      await updateOrderStatus(id, statusEnum);
+
+      // Cập nhật state với giá trị hiển thị
+      setOrderStatus(newStatus);
+      
+      // Cập nhật thời gian cho trạng thái mới
+      const statusTimeMapping = {
+        PENDING: { pendingTime: currentTime },
+        APPROVED: { approvedTime: currentTime },
+        RECIEVED: { revievedTime: currentTime },
+        PROCESSING: { processingTime: currentTime },
+        STORAGE: { storagedTime: currentTime },
+        SHIPPING: { shippingTime: currentTime },
+        DELIVERIED: { deliveredTime: currentTime },
+        FINISHED: { finishedTime: currentTime },
+        CANCELED: { abandonedTime: currentTime },
+        ABANDONED: { abandonedTime: currentTime }
+      };
+
+      const timeUpdate = statusTimeMapping[statusEnum] || {};
+      
+      setOrderData(prev => ({
+        ...prev,
+        ...timeUpdate,
+        status: statusEnum
+      }));
+
+      notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
+    } catch (error) {
+      console.error("Lỗi khi cập nhật trạng thái:", error);
+      notificationApi("error", "Lỗi", "Không thể cập nhật trạng thái đơn hàng");
+    }
+  };
+
+  const handleFormChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
     }));
-    // Gọi API hoặc thực hiện hành động cần thiết để cập nhật trạng thái trên server
   };
 
   if (!orderData) {
@@ -262,31 +356,37 @@ const UpdateOrder = () => {
                 <select
                   value={orderStatus}
                   onChange={handleStatusChange}
-                  className="font-medium text-gray-900 w-full p-2 border rounded-md"
+                  className="font-medium text-gray-900 w-full p-2 border rounded-md bg-white"
                 >
-                  <option value="Đang xử lý" className="bg-orange-100 text-orange-600">
+                  <option value="Đang xử lý" className="bg-orange-50 text-orange-700">
                     Đang xử lý
                   </option>
-                  <option value="Đang chờ" className="bg-blue-100 text-blue-600">
+                  <option value="Đang chờ" className="bg-blue-50 text-blue-700">
                     Đang chờ
                   </option>
-                  <option value="Hoàn thành" className="bg-green-100 text-green-600">
-                    Hoàn thành
+                  <option value="Đã xác nhận" className="bg-teal-50 text-teal-700">
+                    Đã xác nhận
                   </option>
-                  <option value="Đã hủy" className="bg-red-100 text-red-600">
-                    Đã hủy
+                  <option value="Đã nhận" className="bg-green-50 text-green-700">
+                    Đã nhận
                   </option>
-                  <option value="Lưu trữ" className="bg-gray-100 text-gray-600">
-                    Lưu trữ
-                  </option>
-                  <option value="Đang giao hàng" className="bg-yellow-100 text-yellow-600">
+                  <option value="Đang giao hàng" className="bg-yellow-50 text-yellow-700">
                     Đang giao hàng
                   </option>
-                  <option value="Quá hạn nhận hàng" className="bg-purple-100 text-purple-600">
-                    Quá hạn nhận hàng
+                  <option value="Đã giao" className="bg-green-50 text-green-700">
+                    Đã giao
                   </option>
-                  <option value="Đã xác nhận" className="bg-teal-100 text-teal-600">
-                    Đã xác nhận
+                  <option value="Hoàn thành" className="bg-green-50 text-green-700">
+                    Hoàn thành
+                  </option>
+                  <option value="Đã hủy" className="bg-red-50 text-red-700">
+                    Đã hủy
+                  </option>
+                  <option value="Lưu trữ" className="bg-gray-50 text-gray-700">
+                    Lưu trữ
+                  </option>
+                  <option value="Quá hạn nhận hàng" className="bg-purple-50 text-purple-700">
+                    Quá hạn nhận hàng
                   </option>
                 </select>
               </div>
@@ -398,31 +498,54 @@ const UpdateOrder = () => {
         {/* Thông tin vận chuyển */}
         <div className="flex items-start bg-white rounded-lg shadow p-4 w-full">
           <Truck className="w-5 h-5 text-blue-600 mr-2" />
-          <div>
+          <div className="w-full">
             <h3 className="font-semibold text-blue-600 text-xl">Vận chuyển</h3>
-            <div className="flex justify-between items-center text-black mt-3 text-lg">
+            
+            <div className="mt-4 space-y-4">
               <div>
-                <FontAwesomeIcon icon={faFile} className="mr-2" />
-                Mã vận chuyển:
+                <label className="block text-gray-700 mb-2">Phí giao hàng (VNĐ)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    name="deliveredFee"
+                    value={formData.deliveredFee}
+                    onChange={handleFormChange}
+                    className="w-full p-2 border rounded pr-12"
+                    min="0"
+                    step="1000"
+                    placeholder="0"
+                  />
+                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    VNĐ
+                  </span>
+                </div>
+                {/* <p className="text-sm text-gray-500 mt-1">
+                  {formData.deliveredFee?.toLocaleString('vi-VN')} đồng
+                </p> */}
               </div>
-              {orderData?.shippingCode && (
-                <FontAwesomeIcon
-                  icon={faCopy}
-                  className="cursor-pointer"
-                  onClick={() => handleCopy(orderData.shippingCode)}
+
+              <div>
+                <label className="block text-gray-700 mb-2">Mã vận chuyển</label>
+                <input
+                  type="text"
+                  name="shippingCode"
+                  value={formData.shippingCode}
+                  onChange={handleFormChange}
+                  className="w-full p-2 border rounded"
                 />
-              )}
+              </div>
+
+              <div>
+                <label className="block text-gray-700 mb-2">Đơn vị vận chuyển</label>
+                <input
+                  type="text"
+                  name="shippingUnit"
+                  value={formData.shippingUnit}
+                  onChange={handleFormChange}
+                  className="w-full p-2 border rounded"
+                />
+              </div>
             </div>
-            <p className="text-gray-600">
-              {orderData?.shippingCode || "Không có mã vận chuyển"}
-            </p>
-            <p className="text-black mt-2 text-lg">
-              <FontAwesomeIcon icon={faTruck} className="mr-2" />
-              Đơn vị vận chuyển:
-            </p>
-            <p className="text-gray-600">
-              {orderData?.shippingUnit || "Không có đơn vị vận chuyển"}
-            </p>
           </div>
         </div>
       </div>

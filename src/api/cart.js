@@ -134,52 +134,6 @@ export const deleteCartItem = async (itemId) => {
   }
 };
 
-export const checkout = async (items, cartItemIds, accountId, addressId, note, isShip) => {
-  try {
-    const checkoutData = {
-      accountId,
-      addressId,
-      isAutoReject: false,
-      note,
-      isShip,
-    };
-
-    if (items && items.length > 0 && (!cartItemIds || cartItemIds.length === 0)) {
-      checkoutData.items = items;
-    } else if (cartItemIds && cartItemIds.length > 0 && (!items || items.length === 0)) {
-      checkoutData.cartItemIds = cartItemIds;
-    } else {
-      throw new Error("Vui lòng chỉ chọn một trong hai: cartItemIds hoặc items.");
-    }
-
-    console.log("Dữ liệu gửi đi:", checkoutData);
-
-    const response = await fetch("https://shoecarehub.site/api/carts/cart/checkout", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(checkoutData),
-    });
-
-    const responseText = await response.text();
-
-    if (!response.ok) {
-      console.error("Lỗi khi thực hiện checkout:", responseText);
-      throw new Error(`Lỗi không xác định: ${response.status} - ${response.statusText}`);
-    }
-
-    try {
-      return JSON.parse(responseText);
-    } catch (jsonError) {
-      console.log("Phản hồi không phải là JSON, xử lý như văn bản:", responseText);
-      return { message: responseText };
-    }
-  } catch (error) {
-    console.error('Lỗi khi thực hiện checkout:', error.message);
-    throw error;
-  }
-};
 
 // Lấy thông tin một mục trong giỏ hàng theo ID
 export const getCartItemById = async (id) => {
@@ -189,6 +143,89 @@ export const getCartItemById = async (id) => {
   } catch (error) {
     console.error('Lỗi khi lấy thông tin mục trong giỏ hàng:', error);
     throw error;
+  }
+};
+
+// Thực hiện thanh toán giỏ hàng
+export const checkoutCart = async ({
+  cartItemIds,
+  accountId,
+  addressId,
+  isAutoReject = false,
+  note = '',
+  isShip
+}) => {
+  try {
+    const requestBody = {
+      cartItemIds,
+      accountId,
+      addressId,
+      isAutoReject,
+      note,
+      isShip: Boolean(isShip)
+    };
+
+    console.log('Request body before API call:', requestBody);
+
+    const response = await axiosInstances.login.post('/carts/cart/checkout', requestBody);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi từ server khi thanh toán:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.error('Lỗi mạng khi thanh toán:', error.request);
+      throw new Error('Network error: No response received');
+    } else {
+      console.error('Lỗi khi thiết lập yêu cầu thanh toán:', error.message);
+      throw new Error(`Error: ${error.message}`);
+    }
+  }
+};
+
+// Thực hiện thanh toán dịch vụ
+export const checkoutService = async (checkoutData) => {
+  try {
+    const response = await axiosInstances.login.post('/services/service/checkout', checkoutData);
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi từ server khi thanh toán dịch vụ:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.error('Lỗi mạng khi thanh toán dịch vụ:', error.request);
+      throw new Error('Network error: No response received');
+    } else {
+      console.error('Lỗi khi thiết lập yêu cầu thanh toán dịch vụ:', error.message);
+      throw new Error(`Error: ${error.message}`);
+    }
+  }
+};
+
+// Tính phí ship dựa trên địa chỉ và số lượng
+export const calculateShippingFee = async ({ addressId, branchId, quantity }) => {
+  try {
+    const requestBody = {
+      addressId,
+      branchId,
+      quantity
+    };
+
+    const response = await axiosInstances.login.get('/carts/cart/checkout/feeship', { 
+      params: requestBody 
+    });
+    return response.data;
+  } catch (error) {
+    if (error.response) {
+      console.error('Lỗi từ server khi tính phí ship:', error.response.data);
+      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
+    } else if (error.request) {
+      console.error('Lỗi mạng khi tính phí ship:', error.request);
+      throw new Error('Network error: No response received');
+    } else {
+      console.error('Lỗi khi thiết lập yêu cầu tính phí ship:', error.message);
+      throw new Error(`Error: ${error.message}`);
+    }
   }
 };
 

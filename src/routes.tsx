@@ -23,8 +23,6 @@ import Dashboard from "./page/Owner/Dashboard";
 import EmployeeManager from "./page/Owner/Employee/EmployeeManager";
 import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
-import UpdateEmployee from "./page/Owner/Employee/UpdateEmployee";
-import ServiceGrid from "./Components/ServiceGrid/ServiceGrid";
 import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from './utils/jwt';
@@ -34,13 +32,14 @@ import RegisterPage from "./page/Register/RegisterPage";
 import RegisterOwner from "./page/Register/RegisterOwner";
 import ServiceDiscounted from "./page/ServiceDiscounted/ServiceDiscounted";
 import ServiceAll from "./page/ServiceDiscounted/ServiceAll";
+import CheckoutService from "./page/Cart&Checkout/CheckoutService";
 
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
   const token = localStorage.getItem('token');
-  console.log('Token:', token);
+  // console.log('Token:', token);
   const isValid = isValidToken(token);
-  console.log('Is Valid Token:', isValid);
+  // console.log('Is Valid Token:', isValid);
   return isValid;
 };
 
@@ -148,6 +147,14 @@ export const routers = createBrowserRouter([
           </RequireAuth>
         ),
       },
+      {
+        path: "/checkout-service",
+        element: (
+          <RequireAuth>
+            <CheckoutService />
+          </RequireAuth>
+        ),
+      },
     ],
   },
   {
@@ -213,10 +220,6 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/employee/create",
         element: <CreateEmployee />,
-      },
-      {
-        path: "/owner/employee/update/:id",
-        element: <UpdateEmployee />,
       },
     ],
   },

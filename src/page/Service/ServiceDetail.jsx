@@ -87,6 +87,10 @@ const ServiceDetail = () => {
             img,
             type: "image",
           })),
+          ...service.assetUrls.map((img) => ({
+            img,
+            type: "image",
+          })),
         ]
       : [];
 
@@ -163,14 +167,21 @@ const ServiceDetail = () => {
 
   const handleCheckout = () => {
     if (service) {
+      const branchId = service.branchServices[0]?.branch.id;
       const checkoutService = {
         ...service,
         quantity: quantity || 1,
+        branchId: branchId,
         shopName: service.branchServices[0]?.branch.name,
         shopAddress: service.branchServices[0]?.branch.address,
       };
-      navigate("/checkout", {
-        state: { selectedItems: [{ services: [checkoutService] }] },
+      navigate("/checkout-service", {
+        state: { 
+          selectedItems: [{
+            branchId: branchId,
+            services: [checkoutService] 
+          }] 
+        },
       });
     }
   };
@@ -212,7 +223,7 @@ const ServiceDetail = () => {
                 {/* Thumbnails cho hình ảnh/video */}
                 {combinedData.map((item, index) => (
                   <div key={index} className="relative">
-                    {item.type === "video" ? (
+                     {/* {item.type === "video" ? (
                       <video
                         src={item.img}
                         className={`w-32 h-32 object-cover cursor-pointer rounded ${
@@ -237,12 +248,18 @@ const ServiceDetail = () => {
                     )}
                     {item.type === "video" && (
                       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                        {/* <FontAwesomeIcon
-                          icon={faPlay}
-                          className="text-white text-2xl"
-                        /> */}
                       </div>
-                    )}
+                    )} */}
+                    <img
+                      src={item.img}
+                      alt={`Thumbnail ${index + 1}`}
+                      className={`w-32 h-32 object-cover cursor-pointer rounded ${
+                        index === currentImageIndex
+                          ? "border-2 border-[#3A4980]"
+                          : ""
+                      }`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    />
                   </div>
                 ))}
 
@@ -322,9 +339,7 @@ const ServiceDetail = () => {
 
                 <div
                   className={`mt-2 text-gray-600 transition-max-height duration-500 ease-in-out ${
-                    isExpanded
-                      ? "max-h-[1000px]"
-                      : "max-h-[120px] overflow-hidden"
+                    isExpanded ? "max-h-[1000px]" : "max-h-[120px] overflow-hidden"
                   }`}
                 >
                   <p>
@@ -335,13 +350,21 @@ const ServiceDetail = () => {
                 </div>
 
                 {isLongDescription && (
-                  <button
-                    onClick={toggleDescription}
-                    className="text-blue-500 mt-2"
-                  >
+                  <button onClick={toggleDescription} className="text-blue-500 mt-2">
                     {isExpanded ? "Ẩn bớt..." : "Xem thêm..."}
                   </button>
                 )}
+
+                <div className="mt-4 flex items-center">
+                  <span className="text-gray-500 font-semibold mr-2">Trạng thái:</span>
+                  <span className={`px-3 py-1 rounded-full ${
+                    service.status === 'Hoạt Động' 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {service.status === 'Hoạt Động' ? 'Đang hoạt động' : 'Ngưng hoạt động'}
+                  </span>
+                </div>
               </div>
 
               {/* Quantity */}
@@ -391,14 +414,24 @@ const ServiceDetail = () => {
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  className="bg-[#3A4980] text-white rounded-xl py-4 px-6 flex items-center"
+                  disabled={service.status !== 'Hoạt Động'}
+                  className={`rounded-xl py-4 px-6 flex items-center ${
+                    service.status === 'Hoạt Động'
+                      ? 'bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
                   Thêm vào giỏ hàng
                 </button>
                 <button
                   onClick={handleCheckout}
-                  className="bg-gray-200 text-[#3A4980] rounded-xl py-2 px-10"
+                  disabled={service.status !== 'Hoạt Động'}
+                  className={`rounded-xl py-2 px-10 ${
+                    service.status === 'Hoạt Động'
+                      ? 'bg-gray-200 text-[#3A4980] hover:bg-gray-300 cursor-pointer'
+                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                  }`}
                 >
                   Thanh toán
                 </button>

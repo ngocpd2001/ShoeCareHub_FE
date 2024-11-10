@@ -17,14 +17,26 @@ const UserCart = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const userId = user ? user.id : null;
 
+  const calculateTotalAmount = (items) => {
+    return items.reduce((total, shop) => {
+      return total + shop.services.reduce((serviceTotal, service) => {
+        if (service.selected) {
+          const price = service.promotion?.newPrice || service.price;
+          return serviceTotal + (price * service.quantity);
+        }
+        return serviceTotal;
+      }, 0);
+    }, 0);
+  };
+
   const fetchCartItems = async () => {
     try {
       const data = await getUserCart(userId);
-      setBranches(data || []);
-      // console.log("data:", data);
+      const dataArray = Array.isArray(data) ? data : [];
+      setBranches(dataArray);
 
       const detailedItems = await Promise.all(
-        (data || []).flatMap((branch) =>
+        dataArray.flatMap((branch) =>
           (branch.items || []).map(async (item) => {
             const serviceDetails = await getServiceById(item.serviceId);
             return {
@@ -38,6 +50,8 @@ const UserCart = () => {
               promotion: serviceDetails.promotion,
               quantity: item.quantity,
               selected: false,
+              status: serviceDetails.status,
+              isAvailable: serviceDetails.status !== 'UNAVAILABLE'
             };
           })
         )
@@ -59,9 +73,12 @@ const UserCart = () => {
       }, []);
 
       setCartItems(groupedItems);
+      const newTotal = calculateTotalAmount(groupedItems);
+      setTotalAmount(newTotal);
     } catch (error) {
       console.error("Lỗi khi lấy giỏ hàng:", error);
       setCartItems([]);
+      setTotalAmount(0);
     }
   };
 
@@ -182,7 +199,7 @@ const UserCart = () => {
               ...shop,
               services: shop.services.map((service) => ({
                 ...service,
-                selected: !shop.services.every((s) => s.selected),
+                selected: service.isAvailable ? !shop.services.every((s) => s.selected) : false
               })),
             }
           : shop
@@ -196,7 +213,10 @@ const UserCart = () => {
         ...shop,
         services: shop.services.map((service) =>
           service.id === serviceId
-            ? { ...service, selected: !service.selected }
+            ? {
+                ...service,
+                selected: service.isAvailable ? !service.selected : false
+              }
             : service
         ),
       }))
@@ -205,14 +225,17 @@ const UserCart = () => {
 
   const handleSelectAllShops = () => {
     const allSelected = cartItems.every((shop) =>
-      shop.services.every((service) => service.selected)
+      shop.services.every((service) => 
+        service.isAvailable ? service.selected : true
+      )
     );
+    
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
         services: shop.services.map((service) => ({
           ...service,
-          selected: !allSelected,
+          selected: service.isAvailable ? !allSelected : false
         })),
       }))
     );

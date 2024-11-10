@@ -2,7 +2,7 @@ import React from "react";
 import { Menu, Dropdown, Button, Typography } from "antd";
 import { EllipsisOutlined } from "@ant-design/icons";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEye, faPenToSquare, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faPenToSquare, faTrash, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
 
 
 const ComMenuButonTable = ({
@@ -10,6 +10,8 @@ const ComMenuButonTable = ({
   showModalDetails,
   showModalEdit,
   showModalDelete,
+  showModalAccept,
+  showModalReject,
   extraMenuItems = [],
   excludeDefaultItems = [],
   order = [],
@@ -56,6 +58,34 @@ const ComMenuButonTable = ({
       ),
       onClick: () => showModalDelete(record),
       visible: !excludeDefaultItems.includes("delete"),
+    },
+    {
+      key: "accept",
+      label: (
+        <>
+          <FontAwesomeIcon
+            icon={faCheck}
+            className="text-xl text-green-600 mr-2"
+          />
+          Chấp nhận
+        </>
+      ),
+      onClick: () => showModalAccept(record),
+      visible: !excludeDefaultItems.includes("accept"),
+    },
+    {
+      key: "reject",
+      label: (
+        <>
+          <FontAwesomeIcon
+            icon={faXmark}
+            className="text-xl text-red-600 mr-2"
+          />
+          Từ chối
+        </>
+      ),
+      onClick: () => showModalReject(record),
+      visible: !excludeDefaultItems.includes("reject"),
     },
   ];
 

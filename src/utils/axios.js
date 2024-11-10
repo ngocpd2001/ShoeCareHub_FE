@@ -73,6 +73,20 @@ requestLogin.interceptors.response.use(
   (error) => Promise.reject((error.response && error.response.data) || 'Có lỗi xảy ra')
 );
 
+// Thêm interceptor cho axiosInstances.login
+requestLogin.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
 class AxiosClientFactory {
   getAxiosClient(type, config = {}) {
     switch (type) {
@@ -87,5 +101,4 @@ const axiosClientFactory = new AxiosClientFactory();
 export const axiosInstances = {
   login: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.LOGIN)
 };
-
 export default axiosInstances.webAdmin;
