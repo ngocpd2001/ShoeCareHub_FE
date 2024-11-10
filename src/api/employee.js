@@ -1,7 +1,14 @@
 import { axiosInstances } from "../utils/axios";
 
-export const getEmployeeByBusinessId = async (businessId) => {
+export const getEmployeeByBusinessId = async () => {
   try {
+    const userData = localStorage.getItem('user');
+    const businessId = userData ? JSON.parse(userData).businessId : null;
+    
+    if (!businessId) {
+      throw new Error('Không tìm thấy businessId. Vui lòng đăng nhập lại.');
+    }
+
     const response = await axiosInstances.login.get('/accounts/employees', {
       params: {
         BusinessId: businessId,

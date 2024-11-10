@@ -76,7 +76,7 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
           </Select>
         </Form.Item>
         <Form.Item
-          name="quantity"
+          name="quantity" 
           label="Quantity"
           rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
         >

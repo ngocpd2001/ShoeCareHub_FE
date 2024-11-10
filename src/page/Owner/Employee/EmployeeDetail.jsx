@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { getAccountById } from "../../../api/user";
 import { notification } from "antd";
+import { getAccountById } from "../../../api/user";
 
 const EmployeeDetail = () => {
   const navigate = useNavigate();
@@ -23,40 +23,18 @@ const EmployeeDetail = () => {
         }  
   
         if (id) {  
-          console.log('Fetching employee details for ID:', id);  
-          console.log('Using token:', token);  
-  
           const data = await getAccountById(id);  
-          console.log('Employee data received:', data);  
           setEmployeeDetails(data);  
         }  
       } catch (error) {  
         let errorMessage = 'Không thể tải thông tin nhân viên';  
         
-        if (error.response) {  
-          switch (error.response.status) {  
-            case 401:  
-              errorMessage = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';  
-              localStorage.removeItem('token');  
-              navigate('/login');  
-              break;  
-            case 404:  
-              errorMessage = 'Không tìm thấy thông tin nhân viên';  
-              break;  
-            case 403:  
-              errorMessage = 'Bạn không có quyền truy cập thông tin này';  
-              break;  
-            default:  
-              errorMessage = `Lỗi server: ${error.response.data?.message || 'Đã có lỗi xảy ra'}`;  
-          }  
-        } else if (error.request) {  
-          errorMessage = 'Không thể kết nối đến server';  
-        } else {  
-          errorMessage = 'Đã xảy ra lỗi khi gửi yêu cầu';  
-        }  
-  
-        console.error("Chi tiết lỗi:", error); // Log the entire error for full context  
-  
+        if (error.response?.status === 401) {
+          errorMessage = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';
+          localStorage.removeItem('token');
+          navigate('/login');
+        }
+
         notification.error({  
           message: 'Lỗi',  
           description: errorMessage,  

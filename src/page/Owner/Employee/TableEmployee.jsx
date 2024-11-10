@@ -31,7 +31,7 @@ export const TableEmployee = forwardRef((props, ref) => {
       title: "Tên nhân viên",
       dataIndex: "fullName",
       key: "fullName",
-      width: 200,
+      width: 150,
       sorter: (a, b) => a.fullName.localeCompare(b.fullName),
       ...getColumnSearchProps("fullName", "Tên nhân viên"),
       render: (text, record) => (
@@ -110,7 +110,7 @@ export const TableEmployee = forwardRef((props, ref) => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      width: 150,
+      width: 200,
       sorter: (a, b) => a.status.localeCompare(b.status),
       ...getColumnSearchProps("status", "Trạng thái"),
     },
@@ -143,19 +143,18 @@ export const TableEmployee = forwardRef((props, ref) => {
     reloadData,
   }));
 
-  const reloadData = () => {
+  const reloadData = async () => {
     table.handleOpenLoading();
-    const temporaryBusinessId = 1;
-    getEmployeeByBusinessId(temporaryBusinessId)
-      .then((response) => {
-        setData(response.employees);
-        table.handleCloseLoading();
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu nhân viên:", error);
-        table.handleCloseLoading();
-        setData([]);
-      });
+    try {
+      const response = await getEmployeeByBusinessId();
+      setData(Array.isArray(response.employees) ? response.employees : []);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu nhân viên:", error);
+      notificationApi("error", "Lỗi", "Không thể tải dữ liệu nhân viên");
+      setData([]);
+    } finally {
+      table.handleCloseLoading();
+    }
   };
 
   useEffect(() => {
@@ -178,10 +177,24 @@ export const TableEmployee = forwardRef((props, ref) => {
         y={"50vh"}
         x={1020}
         columns={columns}
-        dataSource={data}
-        loading={false}
+        dataSource={Array.isArray(data) ? data : []}
+        loading={table.loading}
         rowKey="id"
-        pagination={false}
+        pagination={{
+          total: data.length,
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          locale: {
+            jump_to: "Đến",
+            page: "Trang", 
+            items_per_page: "/ trang",
+            prev_page: "Trang trước",
+            next_page: "Trang sau",
+            prev_5: "5 trang trước",
+            next_5: "5 trang sau"
+          }
+        }}
         bordered
         className="w-full"
       />

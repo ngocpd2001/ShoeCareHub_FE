@@ -24,11 +24,9 @@ export const login = async (email, password) => {
     });
     
     if (response.data.token) {
-      const token = response.data.token.startsWith('Bearer ') 
-        ? response.data.token 
-        : `Bearer ${response.data.token}`;
+      const token = response.data.token.replace(/^["']|["']$/g, '').trim();
       localStorage.setItem('token', token);
-      console.log('Token saved:', token);
+      console.log('Token đã lưu:', token);
     }
     
     return response.data;
@@ -45,34 +43,27 @@ export const getAccountById = async (id) => {
       throw new Error('Không tìm thấy token xác thực');  
     }  
 
-    console.log('Token being used:', token);
+    console.log('Token gốc:', token);
 
-    const response = await axiosInstances.login.get(`/accounts/${id}`, {  
-      headers: {  
-        'accept': '*/*',  
-        'Authorization': token.startsWith('Bearer') ? token : `Bearer ${token}`,
-        'Content-Type': 'application/json'  
-      }  
-    });  
+    const cleanToken = token.replace(/^["']|["']$/g, '').trim();
+    
+    console.log('Token sau khi làm sạch:', cleanToken);
 
-    if (response.data.status === "success") {  
-      return response.data.data;  
-    } else {
-      if (response.data.statusCode === 401) {
-        localStorage.removeItem('token');
-        throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
-      }
-      throw new Error(response.data.message || 'Có lỗi xảy ra');  
-    }  
+    const headers = {
+      'Authorization': 'Bearer ' + cleanToken,
+      'Content-Type': 'application/json'
+    };
 
+    const response = await axiosInstances.login.get(`/accounts/${id}`, { headers });  
+
+    return response.data;
   } catch (error) {  
-    console.error('Chi tiết lỗi:', error);
-
-    if (error.response?.status === 401 || error.response?.data?.statusCode === 401) {  
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       window.location.href = '/login';
-      throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');  
-    }  
+      throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+    }
+    
     throw error;
   }  
 };

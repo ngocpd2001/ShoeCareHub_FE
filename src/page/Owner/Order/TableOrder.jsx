@@ -199,19 +199,37 @@ export const TableOrder = forwardRef((props, ref) => {
   useImperativeHandle(ref, () => ({
     reloadData,
   }));
+
+  const getBusinessId = () => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      return null;
+    }
+    return JSON.parse(userData)?.businessId;
+  };
+
   const reloadData = async () => {
     table.handleOpenLoading();
     try {
-      const temporaryBusinessId = 1;
-      const response = await getOrderByBusiness(temporaryBusinessId);
+      const businessId = getBusinessId();
+      if (!businessId) {
+        notificationApi("error", "Lỗi", "Vui lòng đăng nhập lại để tiếp tục");
+        navigate('/login');
+        return;
+      }
+
+      const response = await getOrderByBusiness(businessId);
       setData(response);
-      console.log("Dữ liệu đơn hàng:", response);
+      
     } catch (error) {
       console.error("Lỗi khi lấy dữ liệu đơn hàng:", error);
+      notificationApi("error", "Lỗi", "Không thể tải dữ liệu đơn hàng");
+      setData([]);
     } finally {
       table.handleCloseLoading();
     }
   };
+
   useEffect(() => {
     reloadData();
     // Kiểm tra nếu có state refresh từ UpdateOrder
@@ -228,9 +246,24 @@ export const TableOrder = forwardRef((props, ref) => {
         x={1020}
         columns={columns}
         dataSource={data}
-        loading={false}
+        loading={table.loading}
         rowKey="id"
-        pagination={false}
+        pagination={{
+          total: data.length,
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          // showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} mục`,
+          locale: {
+            jump_to: "Đến",
+            page: "Trang",
+            items_per_page: "/ trang",
+            prev_page: "Trang trước",
+            next_page: "Trang sau",
+            prev_5: "5 trang trước",
+            next_5: "5 trang sau"
+          }
+        }}
         bordered
         className="w-full"
       />

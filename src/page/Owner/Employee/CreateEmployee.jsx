@@ -40,8 +40,7 @@ const CreateEmployee = () => {
     const fetchBranches = async () => {
       try {
         setLoading(true);
-        // const businessId = localStorage.getItem("businessId"); 
-        const businessId = 1;
+        const businessId = JSON.parse(localStorage.getItem('business'))?.id;
         
         if (!businessId) {
           throw new Error('BusinessId không được để trống');
