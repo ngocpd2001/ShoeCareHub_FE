@@ -114,7 +114,11 @@ const CreateEmployee = () => {
       showSuccess(response.message || "Tạo nhân viên thành công!");
       navigate("/owner/employee");
     } catch (error) {
-      showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo nhân viên");
+      if (error.response?.data?.message === "Email already exists") {
+        showError("Email này đã được sử dụng. Vui lòng sử dụng email khác.");
+      } else {
+        showError(error.response?.data?.message || "Có lỗi xảy ra khi tạo nhân viên");
+      }
     }
   };
 

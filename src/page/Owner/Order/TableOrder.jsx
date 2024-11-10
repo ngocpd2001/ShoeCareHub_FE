@@ -8,7 +8,7 @@ import { useTableState } from "../../../hooks/useTableState";
 import { useModalState } from "../../../hooks/useModalState";
 import { Image, Tooltip } from "antd";
 import { useNotification } from "../../../Notification/Notification";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
@@ -35,6 +35,7 @@ export const TableOrder = forwardRef((props, ref) => {
   const modalEdit = useModalState();
   const { notificationApi } = useNotification();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const {
     getColumnSearchProps,
@@ -43,6 +44,34 @@ export const TableOrder = forwardRef((props, ref) => {
     getColumnFilterProps,
     getColumnApprox,
   } = useColumnFilters();
+
+  const handleStatusChange = async (orderId, newStatus) => {
+    try {
+      const currentTime = new Date().toISOString();
+      
+      const statusTimeMapping = {
+        PENDING: { pendingTime: currentTime },
+        APPROVED: { approvedTime: currentTime },
+        RECIEVED: { revievedTime: currentTime },
+        PROCESSING: { processingTime: currentTime },
+        STORAGE: { storagedTime: currentTime },
+        SHIPPING: { shippingTime: currentTime },
+        DELIVERIED: { deliveredTime: currentTime },
+        FINISHED: { finishedTime: currentTime },
+        ABANDONED: { abandonedTime: currentTime }
+      };
+
+      const timeUpdate = statusTimeMapping[newStatus] || {};
+      
+      await updateOrderStatus(orderId, newStatus, timeUpdate);
+      
+      notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
+      reloadData();
+    } catch (error) {
+      notificationApi("error", "Lỗi", "Không thể cập nhật trạng thái đơn hàng");
+    }
+  };
+
   const columns = [
     {
       title: "Chi nhánh",
@@ -151,22 +180,10 @@ export const TableOrder = forwardRef((props, ref) => {
               navigate(`/owner/order/update/${orderId}`);
             }}
             showModalAccept={async () => {
-              try {
-                await updateOrderStatus(record.id, "APPROVED");
-                notificationApi("success", "Thành công", "Đã chấp nhận đơn hàng");
-                reloadData();
-              } catch (error) {
-                notificationApi("error", "Lỗi", "Không thể chấp nhận đơn hàng");
-              }
+              await handleStatusChange(record.id, "APPROVED");
             }}
             showModalReject={async () => {
-              try {
-                await updateOrderStatus(record.id, "CANCELED");
-                notificationApi("success", "Thành công", "Đã từ chối đơn hàng");
-                reloadData();
-              } catch (error) {
-                notificationApi("error", "Lỗi", "Không thể từ chối đơn hàng");
-              }
+              await handleStatusChange(record.id, "CANCELED");
             }}
             excludeDefaultItems={[
               "delete",
@@ -177,30 +194,32 @@ export const TableOrder = forwardRef((props, ref) => {
       ),
     },
   ];
-  const notificationError = () => {
-    notificationApi("error", "Lỗi", "Lỗi");
-  };
+
   useImperativeHandle(ref, () => ({
     reloadData,
   }));
-  const reloadData = () => {
+  const reloadData = async () => {
     table.handleOpenLoading();
-    // getOrderByBusiness(props.businessId)
-    const temporaryBusinessId = 1;
-    getOrderByBusiness(temporaryBusinessId)
-      .then((response) => {
-        setData(response);
-        console.log("Dữ liệu đơn hàng:", response);
-        table.handleCloseLoading();
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu đơn hàng:", error);
-        table.handleCloseLoading();
-      });
+    try {
+      const temporaryBusinessId = 1;
+      const response = await getOrderByBusiness(temporaryBusinessId);
+      setData(response);
+      console.log("Dữ liệu đơn hàng:", response);
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu đơn hàng:", error);
+    } finally {
+      table.handleCloseLoading();
+    }
   };
   useEffect(() => {
     reloadData();
-  }, []);
+    // Kiểm tra nếu có state refresh từ UpdateOrder
+    if (location.state?.refresh) {
+      reloadData();
+      // Reset state để tránh reload không cần thiết
+      navigate(location.pathname, { replace: true });
+    }
+  }, [location.state]);
   return (
     <div>
       <ComTable

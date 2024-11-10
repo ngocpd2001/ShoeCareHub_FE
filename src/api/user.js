@@ -24,8 +24,11 @@ export const login = async (email, password) => {
     });
     
     if (response.data.token) {
-      localStorage.setItem('token', response.data.token);
-      console.log('Token saved:', response.data.token);
+      const token = response.data.token.startsWith('Bearer ') 
+        ? response.data.token 
+        : `Bearer ${response.data.token}`;
+      localStorage.setItem('token', token);
+      console.log('Token saved:', token);
     }
     
     return response.data;
@@ -42,32 +45,35 @@ export const getAccountById = async (id) => {
       throw new Error('Không tìm thấy token xác thực');  
     }  
 
-    // console.log('Token being used:', token);  
+    console.log('Token being used:', token);
 
     const response = await axiosInstances.login.get(`/accounts/${id}`, {  
       headers: {  
         'accept': '*/*',  
-        'Authorization': `Bearer ${token}`,  
+        'Authorization': token.startsWith('Bearer') ? token : `Bearer ${token}`,
         'Content-Type': 'application/json'  
       }  
     });  
 
-    console.log('API Response:', response);  
-
     if (response.data.status === "success") {  
       return response.data.data;  
-    } else {  
-      throw new Error(response.data.message);  
+    } else {
+      if (response.data.statusCode === 401) {
+        localStorage.removeItem('token');
+        throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');
+      }
+      throw new Error(response.data.message || 'Có lỗi xảy ra');  
     }  
 
   } catch (error) {  
-    console.error('Chi tiết lỗi:', error); // Changed from error.response?.data to error  
-    if (error.response?.status === 401) {  
-      console.log('Current token in localStorage:', localStorage.getItem('token'));  
-      localStorage.removeItem('token');  
+    console.error('Chi tiết lỗi:', error);
+
+    if (error.response?.status === 401 || error.response?.data?.statusCode === 401) {  
+      localStorage.removeItem('token');
+      window.location.href = '/login';
       throw new Error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại');  
     }  
-    throw error; // Re-throwing the error to handle in the calling function  
+    throw error;
   }  
 };
 

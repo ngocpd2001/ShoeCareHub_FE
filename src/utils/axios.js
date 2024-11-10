@@ -101,5 +101,4 @@ const axiosClientFactory = new AxiosClientFactory();
 export const axiosInstances = {
   login: axiosClientFactory.getAxiosClient(AxiosClientFactoryEnum.LOGIN)
 };
-
 export default axiosInstances.webAdmin;
