@@ -66,7 +66,6 @@ const ProfileForm = () => {
             setUser(dataPut);
             setDisabled(false);
             setTimeout(() => {
-              
               window.location.reload();
             }, 1000);
           })
@@ -89,6 +88,9 @@ const ProfileForm = () => {
             setUser(dataPut);
 
             setDisabled(false);
+              setTimeout(() => {
+                window.location.reload();
+              }, 1000);
           })
           .catch((e) => {
             console.log(e);
