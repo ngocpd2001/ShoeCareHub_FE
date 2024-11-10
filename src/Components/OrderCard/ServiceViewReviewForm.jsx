@@ -3,13 +3,13 @@ import { Star } from "lucide-react";
 import ComUpImg from "./../ComUpImg/ComUpImg";
 import { firebaseImgs } from "../../upImgFirebase/firebaseImgs";
 import { postData } from "../../api/api";
-import { message } from "antd";
+import { Image } from "antd";
 
-const ServiceReviewForm = ({ data, onClose, reloadData }) => {
+const ServiceViewReviewForm = ({ data, onClose }) => {
   const [reviews, setReviews] = useState(
     data?.orderDetails?.map((item) => ({
       id: item?.id,
-      rating: 5,
+      rating: item.feedback.rating,
       review: "",
       images: [],
     })) || []
@@ -61,16 +61,14 @@ const ServiceReviewForm = ({ data, onClose, reloadData }) => {
               console.log("data :", response);
 
               if (reviews.length === index + 1) {
-                reloadData();
-                message.success(`Đánh giá thành công `);
+                alert("Đánh giá đã được gửi thành công!");
                 onClose(); // Đóng modal
                 setLoading(false);
               }
             })
             .catch((error) => {
               console.error("Lỗi :", error);
-              message.error(`Đánh giá không thành công`);
-              reloadData();
+              alert("Bạn đã đánh giá rồi");
               setLoading(false);
             });
           console.log(1111, {
@@ -105,7 +103,7 @@ const ServiceReviewForm = ({ data, onClose, reloadData }) => {
   };
   return (
     <div className="max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Đánh Giá Dịch Vụ</h1>
+      <h1 className="text-2xl font-bold mb-4">Xem đánh giá</h1>
       {data?.orderDetails &&
         data?.orderDetails.map((value) => (
           <div key={value?.id} className="mb-10 border-b">
@@ -124,7 +122,7 @@ const ServiceReviewForm = ({ data, onClose, reloadData }) => {
                   <Star
                     key={star}
                     size={24}
-                    onClick={() => handleRatingChange(value?.id, star)}
+                    // onClick={() => handleRatingChange(value?.id, star)}
                     className={`cursor-pointer ${
                       star <=
                       reviews.find((item) => item.id === value?.id)?.rating
@@ -139,34 +137,37 @@ const ServiceReviewForm = ({ data, onClose, reloadData }) => {
               className="w-full p-2 border rounded mb-4"
               rows="4"
               placeholder="Để lại chi tiết đánh giá dịch vụ"
-              value={
-                reviews.find((item) => item.id === value?.id)?.review || ""
-              }
-              onChange={(e) => handleReviewChange(value?.id, e.target.value)}
+              value={value?.feedback?.content}
             ></textarea>
             <p className="text-paragraph font-bold">Hình ảnh</p>
             <div className="flex flex-wrap gap-2 mb-4">
-              <ComUpImg
-                onChange={(data) => handleImageChange(value?.id, data)}
-                numberImg={5}
-              />
+              <div className=" h-24 flex items-center justify-center overflow-hidden">
+                <Image.PreviewGroup>
+                  {value?.feedback?.assetUrls?.map(
+                    (item, index) =>
+                      item.type === "image" && (
+                        <div className="flex h-24 gap-4">
+                          <Image
+                            key={index}
+                            maskClassName="object-cover w-24 h-24 object-cover object-center flex items-center justify-center"
+                            className=" w-24 h-24 object-center flex items-center justify-center"
+                            src={item.url}
+                            style={{ width: "6rem", height: "6rem", padding:4 }}
+                            alt={`image-${index}`}
+                            preview={{ mask: "Xem ảnh" }}
+                          />
+                        </div>
+                      )
+                  )}
+                </Image.PreviewGroup>
+              </div>
             </div>
           </div>
         ))}
 
-      <div className="flex justify-end">
-        <button
-          className={`bg-[#002278] text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors ${
-            loading ? "opacity-50 cursor-not-allowed" : ""
-          }`}
-          onClick={handleSubmit}
-          disabled={loading}
-        >
-          {loading ? "Đang gửi đánh giá..." : "Đánh giá"}
-        </button>
-      </div>
+    
     </div>
   );
 };
 
-export default ServiceReviewForm;
+export default ServiceViewReviewForm;

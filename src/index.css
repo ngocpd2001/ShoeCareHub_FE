@@ -92,14 +92,18 @@ code {
 
 .ant-tabs-nav-wrap {
   display: flex;
-  justify-content: space-around; /* Chia đều các tab */
+  width: 100%;
+  justify-content: space-around; 
+  /* Chia đều các tab */
 }
 
 .ant-tabs-tab {
-  flex: 1 !important; /* Để tab chiếm đều chiều rộng */
+  flex: 1 !important;
+   /* Để tab chiếm đều chiều rộng */
   display: flex;
   justify-content: center;
 }
 .ant-tabs-nav-list {
-  width: 100%; /* Mặc định là 100% chiều rộng của container */
+  width: 90%;
+   /* Mặc định là 100% chiều rộng của container */
 }

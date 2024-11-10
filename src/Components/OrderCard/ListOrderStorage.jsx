@@ -4,31 +4,30 @@ import { getData } from "../../api/api";
 import { useStorage } from "../../hooks/useLocalStorage";
 import { Empty, Spin } from "antd";
 
-export default function ListOrder({ activeKey }) {
+export default function ListOrderStorage({ activeKey }) {
   const [data, setData] = useState([]);
   const [user, setUser] = useStorage("user", null);
   const [loading, setLoading] = useState(true);
 
-  const reloadData = () => {
-    getData(`/orders/accounts/${user.id}`)
-      .then((data) => {
-        setData(data?.data.data);
-        // console.log(data.data.data);
-      })
-      .catch((error) => {
-        console.error(error);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  };
   useEffect(() => {
-    setLoading(true);
-    reloadData();
+        setLoading(true);
+        getData(
+          `/orders/accounts/${user.id}?status=storage&orderBy=CreateDateAsc`
+        )
+          .then((data) => {
+            setData(data?.data.data);
+            console.log(data.data.data);
+          })
+          .catch((error) => {
+            console.log(error);
+          })
+          .finally(() => {
+            setLoading(false);
+          });
   }, [activeKey]);
 
   return (
-    <div className="list-order-container">
+     <div className="list-order-container">
       {loading ? (
         <div className="flex justify-center">
           <Spin size="large" tip="Đang tải đơn hàng..." />
@@ -40,7 +39,7 @@ export default function ListOrder({ activeKey }) {
       ) : (
         data.map((order, index) => (
           <div key={order.id || index} className="mt-4">
-            <OrderCard order={order} reloadData={reloadData} />
+            <OrderCard order={order} />
           </div>
         ))
       )}

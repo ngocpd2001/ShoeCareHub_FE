@@ -4,19 +4,18 @@ import { getData } from "../../api/api";
 import { useStorage } from "../../hooks/useLocalStorage";
 import { Empty, Spin } from "antd";
 
-export default function ListOrder({ activeKey }) {
+export default function ListOrderFinished({ activeKey }) {
   const [data, setData] = useState([]);
   const [user, setUser] = useStorage("user", null);
   const [loading, setLoading] = useState(true);
-
   const reloadData = () => {
-    getData(`/orders/accounts/${user.id}`)
+    getData(`/orders/accounts/${user.id}?status=finished&orderBy=CreateDateAsc`)
       .then((data) => {
         setData(data?.data.data);
-        // console.log(data.data.data);
+        console.log(data.data.data);
       })
       .catch((error) => {
-        console.error(error);
+        console.log(error);
       })
       .finally(() => {
         setLoading(false);

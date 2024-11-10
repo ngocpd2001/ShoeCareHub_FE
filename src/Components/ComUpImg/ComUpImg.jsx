@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, message } from 'antd';
+import { Modal, Upload, message } from 'antd';
 import { PlusOutlined } from "@ant-design/icons";
 const ComUpImg = ({
   onChange,
@@ -11,6 +11,9 @@ const ComUpImg = ({
   label,
 }) => {
   const [fileList, setFileList] = useState([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+    const [previewImage, setPreviewImage] = useState("");
+    const [previewTitle, setPreviewTitle] = useState("");
   const maxImages = numberImg || 15;
   const isImageFile = (file) => {
     const acceptedFormats = [".jpeg", ".jpg", ".png", ".gif", ".mp4"];
@@ -36,6 +39,26 @@ const ComUpImg = ({
       onChange(filteredFileList);
     }
   };
+    const handlePreview = async (file) => {
+      if (!file.url && !file.preview) {
+        file.preview = await getBase64(file.originFileObj);
+      }
+      setPreviewImage(file.url || file.preview);
+      setPreviewTitle(
+        file.name || file.url.substring(file.url.lastIndexOf("/") + 1)
+      );
+      setPreviewOpen(true);
+    };
+
+    const getBase64 = (file) =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = (error) => reject(error);
+      });
+
+    const handleCancelPreview = () => setPreviewOpen(false);
   return (
     <>
       {label && (
@@ -54,12 +77,21 @@ const ComUpImg = ({
         fileList={fileList}
         listType={listType || "picture-card"}
         onChange={handleFileChange}
+        onPreview={handlePreview}
         beforeUpload={() => false} // Để tránh tải lên tự động
-        accept=".jpg,.jpeg,.png,.gif,.mp4" // Chỉ cho phép chọn các tệp hình ảnh
+        accept=".jpg,.jpeg,.png,.gif," // Chỉ cho phép chọn các tệp hình ảnh
         multiple={multiple || true} // Cho phép chọn nhiều tệp
       >
         <PlusOutlined />
       </Upload>
+      <Modal
+        open={previewOpen}
+        // title={previewTitle}
+        footer={null}
+        onCancel={handleCancelPreview}
+      >
+        <img className='mt-8' alt="Preview" style={{ width: "100%" }} src={previewImage} />
+      </Modal>
     </>
   );
 };

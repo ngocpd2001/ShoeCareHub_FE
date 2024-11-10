@@ -4,6 +4,7 @@ import ComModal from "./../ComModal/ComModal";
 import { useModalState } from "./../../hooks/useModalState";
 import ServiceReviewForm from "./ServiceReviewForm";
 import { Link } from "react-router-dom";
+import ServiceViewReviewForm from "./ServiceViewReviewForm";
 
 const CartItem = ({ item }) => (
   <div className="flex items-center py-4 border-b">
@@ -25,32 +26,11 @@ const CartItem = ({ item }) => (
   </div>
 );
 
-export default function OrderCard({ order }) {
+export default function OrderCard({ order, reloadData }) {
   const modalFeedback = useModalState();
-
-  const cartItems = [
-    {
-      id: 1,
-      name: "Dịch vụ giặt giày siêu sạch222",
-      quantity: 1,
-      price: 123000,
-      originalPrice: 200000,
-      image:
-        "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
-    },
-    {
-      id: 2,
-      name: "Dịch vụ giặt giày siêu sạch",
-      quantity: 1,
-      price: 123000,
-      originalPrice: 200000,
-      image:
-        "https://bizweb.dktcdn.net/100/431/113/files/san-pham-ve-sinh-giay-sneaker.jpg?v=1628575452717",
-    },
-  ];
+  const modalViewFeedback = useModalState();
 
   console.log(order);
-  
 
   return (
     <div className=" mx-auto bg-white rounded-lg shadow-md overflow-hidden border border-[#7F7F7F]">
@@ -106,24 +86,57 @@ export default function OrderCard({ order }) {
             {order?.totalPrice?.toLocaleString()}đ
           </span>
         </div>
-        <div className="flex justify-end gap-2">
-          <button className="bg-[#002278] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
-            Mua lại
-          </button>
-          <button
-            onClick={modalFeedback.handleOpen}
-            className="bg-white text-[#002278] border border-[#002278] px-6 py-2 rounded-md hover:bg-blue-50 transition-colors"
-          >
-            Đánh giá
-          </button>
-        </div>
+
+        {order.status === "Hoàn thành" && (
+          <div className="flex justify-end gap-2">
+            <button className="bg-[#002278] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+              Đặt lại
+            </button>
+            {order?.orderDetails && order?.orderDetails[0]?.feedback ? (
+              <button
+                onClick={modalViewFeedback.handleOpen}
+                className="bg-white text-[#002278] border border-[#002278] px-6 py-2 rounded-md hover:bg-blue-50 transition-colors"
+              >
+                Xem đánh giá
+              </button>
+            ) : (
+              <button
+                onClick={modalFeedback.handleOpen}
+                className="bg-white text-[#002278] border border-[#002278] px-6 py-2 rounded-md hover:bg-blue-50 transition-colors"
+              >
+                Đánh giá
+              </button>
+            )}
+            {/* <button
+              onClick={modalFeedback.handleOpen}
+              className="bg-white text-[#002278] border border-[#002278] px-6 py-2 rounded-md hover:bg-blue-50 transition-colors"
+            >
+              Đánh giá
+            </button> */}
+          </div>
+        )}
       </div>
       <ComModal
         isOpen={modalFeedback?.isModalOpen}
         onClose={modalFeedback?.handleClose}
         width={700}
       >
-        <ServiceReviewForm data={order} onClose={modalFeedback?.handleClose} />
+        <ServiceReviewForm
+          data={order}
+          onClose={modalFeedback?.handleClose}
+          reloadData={reloadData}
+        />
+      </ComModal>
+
+      <ComModal
+        isOpen={modalViewFeedback?.isModalOpen}
+        onClose={modalViewFeedback?.handleClose}
+        width={700}
+      >
+        <ServiceViewReviewForm
+          data={order}
+          onClose={modalViewFeedback?.handleClose}
+        />
       </ComModal>
     </div>
   );
