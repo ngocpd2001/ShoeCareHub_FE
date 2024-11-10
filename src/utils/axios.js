@@ -70,15 +70,24 @@ requestLogin.interceptors.request.use((options) => {
 
 requestLogin.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject((error.response && error.response.data) || 'Có lỗi xảy ra')
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      return Promise.reject(new Error('Phiên đăng nhập đã hết hạn hoặc token không hợp lệ'));
+    }
+    return Promise.reject((error.response && error.response.data) || 'Có lỗi xảy ra');
+  }
 );
 
-// Thêm interceptor cho axiosInstances.login
+// Sửa lại interceptor cho requestLogin
 requestLogin.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      // Làm sạch token trước khi gửi
+      const cleanToken = token.replace(/^["']|["']$/g, '').trim();
+      config.headers.Authorization = `Bearer ${cleanToken}`;
     }
     return config;
   },

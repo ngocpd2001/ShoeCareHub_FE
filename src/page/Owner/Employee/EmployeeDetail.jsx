@@ -5,6 +5,42 @@ import { faPen } from "@fortawesome/free-solid-svg-icons";
 import { notification } from "antd";
 import { getAccountById } from "../../../api/user";
 
+const formatDate = (dateString) => {
+  if (!dateString) return "N/A";
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
+  });
+};
+
+// Thêm hàm chuyển đổi role sang tiếng Việt
+const getRole = (role) => {
+  switch(role) {
+    case 'OWNER':
+      return 'Chủ cửa hàng';
+    case 'MANAGER':
+      return 'Quản lý';
+    case 'STAFF':
+      return 'Nhân viên';
+    default:
+      return role;
+  }
+};
+
+// Sửa lại hàm chuyển đổi status
+const getStatus = (status) => {
+  switch(status) {
+    case 'Hoạt Động':
+      return 'Đang hoạt động';
+    case 'Ngừng Hoạt Động':
+      return 'Ngừng hoạt động';
+    default:
+      return status || 'Không xác định';
+  }
+};
+
 const EmployeeDetail = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -23,10 +59,17 @@ const EmployeeDetail = () => {
         }  
   
         if (id) {  
-          const data = await getAccountById(id);  
-          setEmployeeDetails(data);  
+          const response = await getAccountById(id);  
+          console.log("API Response:", response);
+          
+          if (response && response.data) {
+            setEmployeeDetails(response.data);
+          } else {
+            console.error("Không có dữ liệu trong response:", response);
+          }
         }  
       } catch (error) {  
+        console.error("Error fetching employee details:", error);
         let errorMessage = 'Không thể tải thông tin nhân viên';  
         
         if (error.response?.status === 401) {
@@ -64,13 +107,13 @@ const EmployeeDetail = () => {
           </nav>
         </div>
         
-        <button
+        {/* <button
           onClick={() => navigate(`/edit-employee/${employeeDetails.id}`)}
           className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 flex items-center gap-2 justify-center"
         >
           <FontAwesomeIcon icon={faPen} />
           Chỉnh sửa nhân viên
-        </button>
+        </button> */}
       </div>
 
       <div className="flex gap-8">
@@ -79,7 +122,7 @@ const EmployeeDetail = () => {
           <h3 className="text-lg font-medium mb-3 text-center">Ảnh nhân viên</h3>
           <div className="bg-white rounded-lg p-4 shadow-sm">
             <img
-              src={employeeDetails.avatar}
+              src={employeeDetails.imageUrl}
               alt="Ảnh nhân viên"
               className="w-full h-auto rounded-lg"
               onError={(e) => {
@@ -95,19 +138,33 @@ const EmployeeDetail = () => {
           <div className="space-y-4">
             <div className="flex items-center">
               <span className="font-medium text-lg">Họ và tên: </span>
-              <span className="ml-2">{employeeDetails.name}</span>
+              <span className="ml-2">{employeeDetails.fullName}</span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Ngày sinh: </span>
-              <span className="ml-2">{employeeDetails.dob || "N/A"}</span>
+              <span className="ml-2">{formatDate(employeeDetails.dob)}</span>
             </div>
             <div className="flex items-center">
-              <span className="font-medium text-lg">Chức vụ: </span>
-              <span className="ml-2">{employeeDetails.position}</span>
+              <span className="font-medium text-lg">Giới tính: </span>
+              <span className="ml-2">
+                {employeeDetails.gender === 'MALE' ? 'Nam' : 
+                 employeeDetails.gender === 'FEMALE' ? 'Nữ' : 
+                 employeeDetails.gender}
+              </span>
             </div>
             <div className="flex items-center">
-              <span className="font-medium text-lg">Chi nhánh: </span>
-              <span className="ml-2">{employeeDetails.branch}</span>
+              <span className="font-medium text-lg">Vai trò: </span>
+              <span className="ml-2">{getRole(employeeDetails.role)}</span>
+            </div>
+            <div className="flex items-center">
+              <span className="font-medium text-lg">Trạng thái: </span>
+              <span className={`ml-2 px-2 py-1 rounded-full text-sm ${
+                employeeDetails.status === 'Hoạt Động' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {getStatus(employeeDetails.status)}
+              </span>
             </div>
             <div className="flex items-center">
               <span className="font-medium text-lg">Gmail: </span>
