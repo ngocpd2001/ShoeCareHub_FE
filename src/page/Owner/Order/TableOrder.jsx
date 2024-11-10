@@ -179,16 +179,17 @@ export const TableOrder = forwardRef((props, ref) => {
               const orderId = record.id;
               navigate(`/owner/order/update/${orderId}`);
             }}
-            showModalAccept={async () => {
-              await handleStatusChange(record.id, "APPROVED");
-            }}
-            showModalReject={async () => {
-              await handleStatusChange(record.id, "CANCELED");
-            }}
-            excludeDefaultItems={[
-              "delete",
-              ...(record.status !== "Đang chờ" ? ["accept", "reject"] : [])
-            ]} 
+            excludeDefaultItems={["reject", "accept", "delete"]} 
+            // showModalAccept={async () => {
+            //   await handleStatusChange(record.id, "APPROVED");
+            // }}
+            // showModalReject={async () => {
+            //   await handleStatusChange(record.id, "CANCELED");
+            // }}
+            // excludeDefaultItems={[
+            //   "delete",
+            //   ...(record.status !== "Đang chờ" ? ["accept", "reject"] : [])
+            // ]} 
           />
         </div>
       ),

@@ -79,6 +79,22 @@ export const getServiceByBusinessId = async (businessId, pageNum = 1, pageSize =
   }
 };
 
+export const getServiceFeedback = async (serviceId) => {
+  try {
+    const response = await axiosInstances.login.get(`/feedbacks/services/${serviceId}`);
+
+    if (response.data && response.data.message === "Lấy danh sách đánh giá thành công") {
+      return response.data.data; // Trả về mảng feedback
+    } else {
+      console.error("Dữ liệu không hợp lệ:", response.data);
+      return []; // Trả về mảng rỗng nếu dữ liệu không hợp lệ
+    }
+  } catch (error) {
+    console.error("Lỗi khi lấy feedback service:", error);
+    throw error;
+  }
+};
+
 
 
 

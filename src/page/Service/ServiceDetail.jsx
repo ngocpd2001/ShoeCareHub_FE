@@ -36,8 +36,6 @@ const ServiceDetail = () => {
 
   // console.log("Business ID:", businessId);
 
-  const dataImages = [];
-
   useEffect(() => {
     if (!serviceId) return;
 
@@ -79,20 +77,13 @@ const ServiceDetail = () => {
   if (loading) return <div>Đang tải thông tin dịch vụ...</div>;
   if (error) return <div>{error}</div>;
 
-  const combinedData =
-    service && service.images
-      ? [
-          ...dataImages,
-          ...service.images.thumbnails.map((img) => ({
-            img,
-            type: "image",
-          })),
-          ...service.assetUrls.map((img) => ({
-            img,
-            type: "image",
-          })),
-        ]
-      : [];
+  const combinedData = service ? [
+    // Nếu có assetUrls thì map qua nó
+    ...(service.assetUrls || []).map((asset) => ({
+      img: asset.url || asset, // Tùy vào cấu trúc của assetUrl
+      type: "image"
+    }))
+  ] : [];
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
@@ -212,29 +203,9 @@ const ServiceDetail = () => {
                 )}
               </div>
               <div className="flex justify-center mt-6 space-x-2 overflow-x-auto relative">
-                {/* Button Previous */}
-                <button
-                  onClick={prevImage}
-                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} size="lg" />
-                </button>
-
-                {/* Thumbnails cho hình ảnh/video */}
-                {combinedData.map((item, index) => (
-                  <div key={index} className="relative">
-                     {/* {item.type === "video" ? (
-                      <video
-                        src={item.img}
-                        className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                          index === currentImageIndex
-                            ? "border-2 border-[#3A4980]"
-                            : ""
-                        }`}
-                        controls
-                        onClick={() => setCurrentImageIndex(index)}
-                      />
-                    ) : (
+                {combinedData.length > 0 ? (
+                  combinedData.map((item, index) => (
+                    <div key={index} className="relative">
                       <img
                         src={item.img}
                         alt={`Thumbnail ${index + 1}`}
@@ -245,23 +216,22 @@ const ServiceDetail = () => {
                         }`}
                         onClick={() => setCurrentImageIndex(index)}
                       />
-                    )}
-                    {item.type === "video" && (
-                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                      </div>
-                    )} */}
-                    <img
-                      src={item.img}
-                      alt={`Thumbnail ${index + 1}`}
-                      className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                        index === currentImageIndex
-                          ? "border-2 border-[#3A4980]"
-                          : ""
-                      }`}
-                      onClick={() => setCurrentImageIndex(index)}
-                    />
+                    </div>
+                  ))
+                ) : (
+                  // Hiển thị hình ảnh mặc định nếu không có hình ảnh
+                  <div className="text-center text-gray-500">
+                    Không có hình ảnh
                   </div>
-                ))}
+                )}
+
+                {/* Button Previous */}
+                <button
+                  onClick={prevImage}
+                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
+                >
+                  <FontAwesomeIcon icon={faChevronLeft} size="lg" />
+                </button>
 
                 {/* Button Next */}
                 <button

@@ -13,8 +13,15 @@ import ShopAvatar from "../../assets/images/Provider/shop_avatar.jpg";
 import ServiceDetail from "../../assets/videos/Service/servicedetail.mp4";
 // Import FaStar từ react-icons/fa
 import { FaStar } from "react-icons/fa";
+import { getServiceFeedback, getServiceById } from "../../api/service";
+import { useParams } from "react-router-dom";
 
 const FeedbackService = () => {
+  const { id } = useParams();
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [serviceRating, setServiceRating] = useState(0);
+
   const ratings = [
     { stars: 5, percentage: 70 },
     { stars: 4, percentage: 15 },
@@ -23,49 +30,22 @@ const FeedbackService = () => {
     { stars: 1, percentage: 2 },
   ];
 
-  const reviews = [
-    {
-      name: "Nicolas Cage",
-      date: "3 Days ago",
-      rating: 5,
-      comment:
-        "Great Product. There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour.",
-      images: [
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
-        "https://atmos.co.id/cdn/shop/files/Sepatu-Sneaker-Palermo_3_1360x.jpg?v=1721196741",
-        "https://us.levelshoes.com/media/catalog/product/cache/d6b308721eea44dce854000e2ac7b2ba/3/9/39684-105_1.jpg",
-      ],
-    },
-    {
-      name: "Sr. Robert Downey",
-      date: "3 Days ago",
-      rating: 5,
-      comment:
-        "The best product in Market. Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old.",
-      images: [
-        "https://www.asphaltgold.com/cdn/shop/files/e64c4e8e212476f63a541616935dd8657b358ba9_396463_02_Puma_Palermo_Fresh_Mint_Fast_Pink_sm_1_768x768_crop_center.jpg?v=1713163092",
-        "https://atmos.co.id/cdn/shop/files/Sepatu-Sneaker-Palermo_3_1360x.jpg?v=1721196741",
-        "https://us.levelshoes.com/media/catalog/product/cache/d6b308721eea44dce854000e2ac7b2ba/3/9/39684-105_1.jpg",
-      ],
-    },
-  ];
-
   const media = [
     { id: 1, src: ServiceDetail, alt: "Review Video", type: "video" },
   ];
 
   const [likedReviews, setLikedReviews] = useState(
-    Array(reviews.length).fill(false)
+    Array(feedbacks.length).fill(false)
   );
 
   // Khai báo trạng thái cho chỉ số video hiện tại, mỗi phần tử tương ứng với một feedback
   const [currentVideoIndex, setCurrentVideoIndex] = useState(
-    Array(reviews.length).fill(null)
+    Array(feedbacks.length).fill(null)
   );
 
   // Khai báo trạng thái cho chỉ số hình ảnh hiện tại, mỗi phần tử tương ứng với một feedback
   const [currentImageIndex, setCurrentImageIndex] = useState(
-    Array(reviews.length).fill(null)
+    Array(feedbacks.length).fill(null)
   );
 
   const containerRef = useRef(null);
@@ -76,8 +56,8 @@ const FeedbackService = () => {
         containerRef.current &&
         !containerRef.current.contains(event.target)
       ) {
-        setCurrentVideoIndex(Array(reviews.length).fill(null));
-        setCurrentImageIndex(Array(reviews.length).fill(null));
+        setCurrentVideoIndex(Array(feedbacks.length).fill(null));
+        setCurrentImageIndex(Array(feedbacks.length).fill(null));
       }
     };
 
@@ -85,7 +65,7 @@ const FeedbackService = () => {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [reviews.length]);
+  }, [feedbacks.length]);
 
   // Hàm xử lý khi nhấp vào video
   const handleVideoClick = (reviewIndex, id) => {
@@ -128,6 +108,29 @@ const FeedbackService = () => {
     const filledStars = (percentage / 100) * totalStars;
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Gọi cả 2 API song song
+        const [feedbackData, serviceData] = await Promise.all([
+          getServiceFeedback(id),
+          getServiceById(id)
+        ]);
+        setFeedbacks(feedbackData);
+        setServiceRating(serviceData.rating); // Lưu rating từ service
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchData();
+    }
+  }, [id]);
+
   return (
     <div ref={containerRef} className="p-6 bg-white rounded-lg shadow-md mt-10">
       <div>
@@ -145,15 +148,17 @@ const FeedbackService = () => {
 
         <div className="flex flex-row mr-5 mt-5">
           <div className="flex flex-col ml-4 w-1/3 bg-[#F9FAFB] justify-center items-center">
-            <span className="text-6xl font-bold text-[#164C96] mb-4 ">4.8</span>
+            <span className="text-6xl font-bold text-[#164C96] mb-4">
+              {serviceRating.toFixed(1)}
+            </span>
             <div className="flex ml-2 mb-4">
               {[...Array(5)].map((_, index) => {
                 const fillPercentage = Math.max(
                   0,
-                  Math.min(100, (4.8 - index) * 100) // Giả sử rating là 4.8
+                  Math.min(100, (serviceRating - index) * 100) // Giả sử rating là 4.8
                 );
                 const totalStars = 5; // Định nghĩa totalStars tại đây
-                const filledStars = (4.8 / 5) * totalStars; // Định nghĩa filledStars tại đây
+                const filledStars = (serviceRating / 5) * totalStars; // Định nghĩa filledStars tại đây
 
                 if (index < Math.floor(filledStars)) {
                   // Ngôi sao đầy
@@ -233,7 +238,10 @@ const FeedbackService = () => {
                             style={{
                               position: "absolute",
                               color: "gold",
-                              clipPath: `inset(0 ${Math.max(0, 100 - fillPercentage)}% 0 0)`,
+                              clipPath: `inset(0 ${Math.max(
+                                0,
+                                100 - fillPercentage
+                              )}% 0 0)`,
                               width: "1em",
                               height: "1em",
                               zIndex: 2,
@@ -255,99 +263,86 @@ const FeedbackService = () => {
           </div>
         </div>
 
-        <h3 className="text-xl font-medium text-[#344054] mt-7 pb-5 ">
+        <h3 className="text-xl font-medium text-[#344054] mt-7 pb-5">
           Đánh giá
         </h3>
-        {reviews.map((review, reviewIndex) => (
-          <div
-            key={reviewIndex}
-            className="border-b pb-4 mb-4 flex items-start"
-          >
-            <img
-              src={ShopAvatar}
-              alt="ShopAvatar"
-              className="rounded-full w-10 h-10 mr-4"
-            />
-            <div className="flex-1">
-              <div className="flex items-center mb-2">
-                <span className="font-semibold pr-10">{review.name}</span>
-                <span className="text-gray-500 ml-2">{review.date}</span>
-              </div>
-              <div className="flex mb-2">
-                {[...Array(review.rating)].map((_, starIndex) => (
-                  <FontAwesomeIcon
-                    key={starIndex}
-                    icon={solidStar}
-                    className="text-yellow-500"
-                  />
-                ))}
-              </div>
-              <p className="text-gray-700">{review.comment}</p>
-              <div className="mt-6">
-                <div className="grid md:grid-cols-8 gap-4">
-                  {/* Render Video */}
-                  {media.map(
-                    (item) =>
-                      item.type === "video" && (
-                        <div key={item.id} className="relative">
-                          <video
-                            src={item.src}
-                            className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                              currentVideoIndex[reviewIndex] === item.id
-                                ? "border-2 border-[#3A4980]"
-                                : ""
-                            }`}
-                            controls
-                            onClick={() =>
-                              handleVideoClick(reviewIndex, item.id)
-                            }
-                          />
-                        </div>
-                      )
-                  )}
-
-                  {/* Render Images */}
-                  {review.images.map((image, imageIndex) => (
-                    <div key={image} className="relative">
-                      <img
-                        src={image}
-                        alt={review.name}
-                        className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                          currentImageIndex[reviewIndex] === imageIndex
-                            ? "border-2 border-[#3A4980]"
-                            : ""
-                        }`}
-                        onClick={() =>
-                          handleImageClick(reviewIndex, imageIndex)
-                        }
-                      />
-                    </div>
+        {loading ? (
+          <div>Đang tải...</div>
+        ) : (
+          feedbacks.map((feedback, reviewIndex) => (
+            <div
+              key={feedback.id}
+              className="border-b pb-4 mb-4 flex items-start"
+            >
+              <img
+                src={ShopAvatar}
+                alt="ShopAvatar"
+                className="rounded-full w-10 h-10 mr-4"
+              />
+              <div className="flex-1">
+                <div className="flex items-center mb-2">
+                  <span className="font-semibold pr-10">Khách hàng</span>
+                  <span className="text-gray-500 ml-2">
+                    {new Date(feedback.createdTime).toLocaleDateString("vi-VN")}
+                  </span>
+                </div>
+                <div className="flex mb-2">
+                  {[...Array(feedback.rating)].map((_, starIndex) => (
+                    <FontAwesomeIcon
+                      key={starIndex}
+                      icon={solidStar}
+                      className="text-yellow-500"
+                    />
                   ))}
                 </div>
+                <p className="text-gray-700">{feedback.content}</p>
+                <div className="mt-6">
+                  <div className="grid md:grid-cols-8 gap-4">
+                    {/* Render Images */}
+                    {feedback.assetUrls.map((asset, imageIndex) => (
+                      <div key={asset.id} className="relative">
+                        <img
+                          src={asset.url}
+                          alt={`Feedback ${imageIndex + 1}`}
+                          className={`w-32 h-32 object-cover cursor-pointer rounded ${
+                            currentImageIndex[reviewIndex] === imageIndex
+                              ? "border-2 border-[#3A4980]"
+                              : ""
+                          }`}
+                          onClick={() =>
+                            handleImageClick(reviewIndex, imageIndex)
+                          }
+                        />
+                      </div>
+                    ))}
+                  </div>
 
-                <div className="flex mt-5 items-center">
-                  <button
-                    onClick={() => handleLikeClick(reviewIndex)}
-                    className="flex items-center"
-                    style={{
-                      color: likedReviews[reviewIndex] ? "#3B82F6" : "#667085",
-                    }}
-                  >
-                    <FontAwesomeIcon
-                      icon={
-                        likedReviews[reviewIndex]
-                          ? solidThumbsUp
-                          : regularThumbsUp
-                      }
-                      className="mr-2"
-                    />
-                    Like
-                  </button>
+                  <div className="flex mt-5 items-center">
+                    <button
+                      onClick={() => handleLikeClick(reviewIndex)}
+                      className="flex items-center"
+                      style={{
+                        color: likedReviews[reviewIndex]
+                          ? "#3B82F6"
+                          : "#667085",
+                      }}
+                    >
+                      <FontAwesomeIcon
+                        icon={
+                          likedReviews[reviewIndex]
+                            ? solidThumbsUp
+                            : regularThumbsUp
+                        }
+                        className="mr-2"
+                      />
+                      Thích
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
         <button className="text-[#3A4980] font-semibold mt-4">
           Xem tất cả
         </button>
