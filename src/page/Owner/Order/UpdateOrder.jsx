@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Box, Truck, MapPin, FileText, CheckCircle, Home } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
 import { Breadcrumb } from "antd";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouseUser,
@@ -62,6 +62,7 @@ const REVERSE_STATUS_MAPPING = {
 const UpdateOrder = () => {
   const navigate = useNavigate();
   const { id } = useParams();
+  const location = useLocation();
   const [orderData, setOrderData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [shippingCode, setShippingCode] = useState("");
@@ -180,41 +181,53 @@ const UpdateOrder = () => {
 
   const handleStatusChange = async (e) => {
     try {
-      const newStatus = e.target.value; // Lấy giá trị trực tiếp từ select
+      const newStatus = e.target.value;
       const statusEnum = STATUS_MAPPING[newStatus];
-      const currentTime = new Date().toISOString();
       
-      // Gọi API updateOrderStatus với giá trị ENUM
-      await updateOrderStatus(id, statusEnum);
+      if (!statusEnum) {
+        throw new Error("Trạng thái không hợp lệ");
+      }
 
-      // Cập nhật state với giá trị hiển thị
-      setOrderStatus(newStatus);
-      
-      // Cập nhật thời gian cho trạng thái mới
-      const statusTimeMapping = {
-        PENDING: { pendingTime: currentTime },
-        APPROVED: { approvedTime: currentTime },
-        RECIEVED: { revievedTime: currentTime },
-        PROCESSING: { processingTime: currentTime },
-        STORAGE: { storagedTime: currentTime },
-        SHIPPING: { shippingTime: currentTime },
-        DELIVERIED: { deliveredTime: currentTime },
-        FINISHED: { finishedTime: currentTime },
-        CANCELED: { abandonedTime: currentTime },
-        ABANDONED: { abandonedTime: currentTime }
+      // Log để kiểm tra
+      console.log('Current status:', {
+        newStatus,
+        statusEnum,
+        orderId: id
+      });
+
+      // Gọi API với body mới
+      const updateData = {
+        Status: statusEnum  // Viết hoa chữ cái đầu
       };
 
-      const timeUpdate = statusTimeMapping[statusEnum] || {};
-      
+      console.log('Sending data:', updateData);
+
+      const result = await updateOrderStatus(id, updateData);
+
+      // Nếu thành công, cập nhật UI
+      setOrderStatus(newStatus);
       setOrderData(prev => ({
         ...prev,
-        ...timeUpdate,
         status: statusEnum
       }));
 
       notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
+      
+      // Đánh dấu cần refresh table
+      navigate(location.pathname, { 
+        state: { refresh: true },
+        replace: true 
+      });
+
     } catch (error) {
-      console.error("Lỗi khi cập nhật trạng thái:", error);
+      // Log chi tiết lỗi
+      console.error("Error response:", error.response?.data);
+      if (error.response?.data?.errors) {
+        console.error("Validation errors:", JSON.stringify(error.response.data.errors, null, 2));
+      }
+      
+      // Khôi phục trạng thái cũ
+      setOrderStatus(REVERSE_STATUS_MAPPING[orderData.status]);
       notificationApi("error", "Lỗi", "Không thể cập nhật trạng thái đơn hàng");
     }
   };
@@ -396,7 +409,7 @@ const UpdateOrder = () => {
                   Khách hàng
                 </p>
                 <p className="font-medium text-gray-900">
-                  {orderData.fullName || "Không có thông tin khách hàng"}
+                  {orderData.fullName || "Khng có thông tin khách hàng"}
                 </p>
               </div>
               <div>
