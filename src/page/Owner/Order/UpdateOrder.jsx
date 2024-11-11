@@ -342,12 +342,30 @@ const UpdateOrder = () => {
       const response = await updateOrderStatus(id, statusEnum);
 
       if (response) {
+        // Cập nhật orderData với status mới
         setOrderData(prev => ({
           ...prev,
-          status: statusEnum
+          status: statusEnum,
+          updatedTime: new Date().toISOString() // Thêm thời gian cập nhật mới
         }));
         
         setOrderStatus(newStatus);
+        
+        // Tạo một bản ghi lịch sử mới
+        const newHistoryEntry = {
+          status: newStatus,
+          icon: getIconForStatus(newStatus),
+          time: new Date().toISOString(),
+          order: statusHistory.length + 1
+        };
+
+        // Cập nhật statusHistory với bản ghi mới
+        const updatedHistory = [...statusHistory, newHistoryEntry];
+        setStatusHistory(updatedHistory);
+        
+        // Lưu vào localStorage
+        localStorage.setItem(`orderHistory_${id}`, JSON.stringify(updatedHistory));
+        
         setNewStatus(null);
         
         notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
@@ -635,7 +653,7 @@ const UpdateOrder = () => {
             <p className="text-gray-600">
               {addressData
                 ? `${addressData.address}, ${addressData.ward}, ${addressData.district}, ${addressData.province}`
-                : "Lấy t��i cửa hàng"}
+                : "Lấy ti cửa hàng"}
             </p>
             <p className="text-black mt-2 text-lg">
               <FontAwesomeIcon icon={faStore} className="mr-2" />
