@@ -49,6 +49,13 @@ const UpdateTicket = () => {
   const handleStatusChange = async (newStatus) => {
     try {
       setLoading(true);
+      
+      // Log để debug
+      console.log('Updating status:', {
+        ticketId: id,
+        newStatus,
+      });
+
       await updateTicketStatus(id, newStatus);
       
       notification.success({
@@ -56,13 +63,14 @@ const UpdateTicket = () => {
         description: "Cập nhật trạng thái thành công",
       });
 
-      // Refresh data sau khi cập nhật
+      // Refresh data
       const response = await getTicketById(id);
       setTicketDetails(response.data);
     } catch (error) {
+      console.error('Error details:', error);
       notification.error({
         message: "Lỗi",
-        description: error.message || "Không thể cập nhật trạng thái",
+        description: error.response?.data?.message || "Không thể cập nhật trạng thái",
       });
     } finally {
       setLoading(false);
