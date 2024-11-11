@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPen } from "@fortawesome/free-solid-svg-icons";
-import { notification } from "antd";
+import { notification, Breadcrumb } from "antd";
 import { getAccountById } from "../../../api/user";
 
 const formatDate = (dateString) => {
@@ -70,17 +70,9 @@ const EmployeeDetail = () => {
         }  
       } catch (error) {  
         console.error("Error fetching employee details:", error);
-        let errorMessage = 'Không thể tải thông tin nhân viên';  
-        
-        if (error.response?.status === 401) {
-          errorMessage = 'Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại';
-          localStorage.removeItem('token');
-          navigate('/login');
-        }
-
         notification.error({  
           message: 'Lỗi',  
-          description: errorMessage,  
+          description: 'Không thể tải thông tin nhân viên',  
           duration: 3  
         });  
       }  
@@ -95,84 +87,130 @@ const EmployeeDetail = () => {
 
   return (
     <div className="p-6">
-      <div className="mb-4 flex justify-between items-start">
-        <div>
-          <h2 className="text-2xl font-semibold text-[#002278] mb-4">Chi tiết nhân viên</h2>
-          <nav className="mb-4 text-base text-gray-500">
-            <span className="cursor-pointer" onClick={() => navigate("/")}>Cửa hàng</span> &gt; 
-            <span className="mx-1"></span>
-            <span className="cursor-pointer" onClick={() => navigate("/owner/employee")}> Nhân viên</span> &gt; 
-            <span className="mx-1"></span>
-            <span>Chi tiết nhân viên</span>
-          </nav>
-        </div>
-        
-        {/* <button
-          onClick={() => navigate(`/edit-employee/${employeeDetails.id}`)}
-          className="px-4 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 flex items-center gap-2 justify-center"
-        >
-          <FontAwesomeIcon icon={faPen} />
-          Chỉnh sửa nhân viên
-        </button> */}
+      {/* Header section */}
+      <div className="pb-4 px-4">
+        <h2 className="text-xl font-semibold text-blue-800">
+          Chi tiết nhân viên
+        </h2>
+        <Breadcrumb
+          separator=">"
+          items={[
+            { title: "Cửa hàng" },
+            { title: <Link to="/owner/employee">Nhân viên</Link> },
+            { title: "Chi tiết nhân viên" },
+          ]}
+        />
       </div>
 
-      <div className="flex gap-8">
-        {/* Left side - Image section */}
-        <div className="w-72 bg-white rounded-lg p-4 shadow-sm">
-          <h3 className="text-lg font-medium mb-3 text-center">Ảnh nhân viên</h3>
-          <div className="bg-white rounded-lg p-4 shadow-sm">
-            <img
-              src={employeeDetails.imageUrl}
-              alt="Ảnh nhân viên"
-              className="w-full h-auto rounded-lg"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = "/path/to/default/avatar.png";
-              }}
-            />
-          </div>
-        </div>
+      {/* Main content - 2 columns */}
+      <div className="bg-white rounded-lg border p-8">
+        <div className="flex gap-8">
+          {/* Left column - Information */}
+          <div className="flex-1 space-y-6">
+            <div className="space-y-5">
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Họ và tên</span>
+                <input 
+                  type="text" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={employeeDetails.fullName}
+                  disabled
+                />
+              </div>
 
-        {/* Right side - Employee details */}
-        <div className="flex-1 bg-white rounded-lg p-6 shadow-sm space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Họ và tên: </span>
-              <span className="ml-2">{employeeDetails.fullName}</span>
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Email</span>
+                <input 
+                  type="email" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={employeeDetails.email}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Số điện thoại</span>
+                <input 
+                  type="tel" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={employeeDetails.phone}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Giới tính</span>
+                <input 
+                  type="text" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={employeeDetails.gender === 'MALE' ? 'Nam' : 'Nữ'}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Ngày sinh</span>
+                <input 
+                  type="text" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={formatDate(employeeDetails.dob)}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Vai trò</span>
+                <input 
+                  type="text" 
+                  className="border rounded-md p-2 w-full text-lg"
+                  value={getRole(employeeDetails.role)}
+                  disabled
+                />
+              </div>
+
+              <div className="flex flex-col">
+                <span className="text-gray-600 text-lg mb-2">Trạng thái</span>
+                <div className={`inline-flex px-4 py-2 rounded-md text-lg font-medium ${
+                  employeeDetails.status === 'Hoạt Động' 
+                    ? 'bg-green-100 text-green-800' 
+                    : 'bg-red-100 text-red-800'
+                }`}>
+                  {getStatus(employeeDetails.status)}
+                </div>
+              </div>
             </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Ngày sinh: </span>
-              <span className="ml-2">{formatDate(employeeDetails.dob)}</span>
+
+            {/* Action buttons */}
+            <div className="flex justify-center gap-2 mt-10">
+              <button
+                onClick={() => navigate("/owner/employee")}
+                className="px-6 py-2 text-lg bg-blue-900 text-white rounded hover:bg-blue-800 flex items-center gap-2"
+              >
+                Quay lại
+              </button>
+              {/* <button
+                onClick={() => navigate(`/edit-employee/${employeeDetails.id}`)}
+                className="px-6 py-2 text-lg bg-blue-900 text-white rounded hover:bg-blue-800 flex items-center gap-2"
+              >
+                <FontAwesomeIcon icon={faPen} />
+                Chỉnh sửa
+              </button> */}
             </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Giới tính: </span>
-              <span className="ml-2">
-                {employeeDetails.gender === 'MALE' ? 'Nam' : 
-                 employeeDetails.gender === 'FEMALE' ? 'Nữ' : 
-                 employeeDetails.gender}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Vai trò: </span>
-              <span className="ml-2">{getRole(employeeDetails.role)}</span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Trạng thái: </span>
-              <span className={`ml-2 px-2 py-1 rounded-full text-sm ${
-                employeeDetails.status === 'Hoạt Động' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {getStatus(employeeDetails.status)}
-              </span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Gmail: </span>
-              <span className="ml-2">{employeeDetails.email}</span>
-            </div>
-            <div className="flex items-center">
-              <span className="font-medium text-lg">Số điện thoại: </span>
-              <span className="ml-2">{employeeDetails.phone}</span>
+          </div>
+
+          {/* Right column - Image */}
+          <div className="w-1/3">
+            <h3 className="text-xl font-semibold mb-4">Ảnh nhân viên</h3>
+            <div className="w-full aspect-square rounded-lg overflow-hidden bg-white border">
+              <img
+                src={employeeDetails.imageUrl}
+                alt="Ảnh nhân viên"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "/path/to/default/avatar.png";
+                }}
+              />
             </div>
           </div>
         </div>

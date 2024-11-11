@@ -5,6 +5,8 @@ import { useModalState } from "./../../hooks/useModalState";
 import ServiceReviewForm from "./ServiceReviewForm";
 import { Link, useNavigate } from "react-router-dom";
 import ServiceViewReviewForm from "./ServiceViewReviewForm";
+import { useStorage } from "../../hooks/useLocalStorage";
+import { isWithin7Days } from '../../utils/dateUtils';
 
 const CartItem = ({ item }) => (
   <div className="flex items-center py-4 border-b">
@@ -27,6 +29,7 @@ const CartItem = ({ item }) => (
 );
 
 export default function OrderCard({ order, reloadData }) {
+  const [user, setUser] = useStorage("user", null);
   const modalFeedback = useModalState();
   const modalViewFeedback = useModalState();
   const navigate = useNavigate();
@@ -53,7 +56,7 @@ export default function OrderCard({ order, reloadData }) {
             <Store size={16} className="mr-1" />
             Xem shop
           </Link>
-          {order.status === "Đang giao hàng" && (
+          {order.status === "Hoàn thành" && isWithin7Days(order.finishedTime) && (
             <button 
               onClick={() => navigate('/user/create-ticket-order', { state: { orderId: order.id } })}
               className="bg-red-600 text-white px-3 py-1 rounded-md text-sm flex items-center"

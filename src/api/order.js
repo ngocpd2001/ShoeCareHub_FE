@@ -56,30 +56,39 @@ export const updateOrder = async (id, orderData) => {
       shippingUnit,
       shippingCode,
       deliveredFee,
-      pendingTime,
-      approvedTime,
-      revievedTime,
-      processingTime,
-      storagedTime,
-      shippingTime,
-      deliveredTime,
-      finishedTime,
-      abandonedTime
+      status,
+      ...timeFields
     } = orderData;
+
+    const statusToTimeField = {
+      PENDING: 'pendingTime',
+      APPROVED: 'approvedTime',
+      RECEIVED: 'revievedTime',
+      PROCESSING: 'processingTime',
+      STORAGE: 'storagedTime',
+      SHIPPING: 'shippingTime',
+      DELIVERED: 'deliveredTime',
+      FINISHED: 'finishedTime',
+      ABANDONED: 'abandonedTime'
+    };
+
+    const now = new Date();
+    const offset = 7;
+    now.setHours(now.getHours() + offset);
+    
+    const currentTime = now.toISOString().slice(0, 19);
+
+    const currentTimeField = statusToTimeField[status];
+    if (currentTimeField && !timeFields[currentTimeField]) {
+      timeFields[currentTimeField] = currentTime;
+    }
 
     const response = await axiosInstances.login.patch(`/orders/${id}`, {
       shippingUnit,
       shippingCode,
       deliveredFee,
-      pendingTime,
-      approvedTime,
-      revievedTime,
-      processingTime, 
-      storagedTime,
-      shippingTime,
-      deliveredTime,
-      finishedTime,
-      abandonedTime
+      status,
+      ...timeFields
     });
 
     return response.data.message;
@@ -126,26 +135,16 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
   }
 };
 
-export const updateOrderStatus = async (orderId, data) => {
+export const updateOrderStatus = async (orderId, newStatus) => {
   try {
-    console.log('Sending update status request:', {
-      orderId,
-      data
-    });
-    
-    const response = await axiosInstances.login.put(
-      `/orders/${orderId}/status`,
-      data,
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`
-        }
+    const response = await axiosInstances.login.put(`/orders/${orderId}/status`, null, {
+      params: {
+        status: newStatus
       }
-    );
+    });
     return response.data;
   } catch (error) {
-    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error.response?.data);
+    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error.response?.data || error);
     throw error.response?.data || error;
   }
 };
