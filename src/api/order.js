@@ -126,16 +126,26 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
   }
 };
 
-export const updateOrderStatus = async (id, status) => {
+export const updateOrderStatus = async (orderId, data) => {
   try {
-    const response = await axiosInstances.login.put(`/orders/${id}/status`, null, {
-      params: {
-        status: status
-      }
+    console.log('Sending update status request:', {
+      orderId,
+      data
     });
+    
+    const response = await axiosInstances.login.put(
+      `/orders/${orderId}/status`,
+      data,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${getToken()}`
+        }
+      }
+    );
     return response.data;
   } catch (error) {
-    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error);
-    throw error;
+    console.error("Lỗi khi cập nhật trạng thái đơn hàng", error.response?.data);
+    throw error.response?.data || error;
   }
 };

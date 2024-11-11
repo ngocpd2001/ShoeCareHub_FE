@@ -16,16 +16,31 @@ import React, {
   import useColumnFilters from "../../../Components/ComTable/utils";
   import { getAllTicket } from "../../../api/ticket";
   
+  export const getStatusDisplay = (status) => {
+    switch (status) {
+      case "OPENING":
+        return {
+          text: "Đang mở",
+          className: "bg-blue-100 text-blue-600"
+        };
+      case "PROCESSING":
+        return {
+          text: "Đang xử lý",
+          className: "bg-orange-100 text-orange-600"
+        };
+      case "CLOSED":
+        return {
+          text: "Đã đóng",
+          className: "bg-green-100 text-green-600"
+        };
+      default:
+        return {
+          text: status,
+          className: ""
+        };
+    }
+  };
   
-//   function formatCurrency(number) {
-//     // Sử dụng hàm toLocaleString() để định dạng số thành chuỗi với ngăn cách hàng nghìn và mặc định là USD.
-//     if (typeof number === "number") {
-//       return number.toLocaleString("vi-VN", {
-//         style: "currency",
-//         currency: "VND",
-//       });
-//     }
-//   }
   export const TableTicket = forwardRef((props, ref) => {
     const [data, setData] = useState([]);
     const [pagination, setPagination] = useState({
@@ -97,24 +112,14 @@ import React, {
         dataIndex: "status",
         key: "status",
         width: 150,
-        render: (status) => (
-          <span
-            className={`px-3 py-1 rounded-full text-sm ${
-              status === "OPENING"
-                ? "bg-blue-100 text-blue-600"
-                : status === "PROCESSING"
-                ? "bg-orange-100 text-orange-600"
-                : status === "CLOSED"
-                ? "bg-green-100 text-green-600"
-                : ""
-            }`}
-          >
-            {status === "OPENING" ? "Đang mở"
-             : status === "PROCESSING" ? "Đang xử lý"
-             : status === "CLOSED" ? "Đã đóng"
-             : status}
-          </span>
-        ),
+        render: (status) => {
+          const statusInfo = getStatusDisplay(status);
+          return (
+            <span className={`px-3 py-1 rounded-full text-sm ${statusInfo.className}`}>
+              {statusInfo.text}
+            </span>
+          );
+        },
       },
       {
         title: "Action",
