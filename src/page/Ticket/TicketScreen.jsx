@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faPlus, faSort } from "@fortawesome/free-solid-svg-icons";
-import { getCategoryTicket, getTicketById } from "../../api/ticket";
+import { getCategoryTicket, getAllTicket, cancelTicket } from "../../api/ticket";
 import { useNavigate } from 'react-router-dom';
 
 const TicketScreen = () => {
@@ -32,13 +32,13 @@ const TicketScreen = () => {
   const fetchTickets = async () => {
     try {
       setLoading(true);
-      const userStr = localStorage.getItem('user');
-      const userData = JSON.parse(userStr);
-      const userId = userData.id;
-
-      const response = await getTicketById(userId);
-      if (response.status === 'success') {
-        setTickets(Array.isArray(response.data) ? response.data : [response.data]);
+      const response = await getAllTicket({
+        pageSize: 10,
+        pageNum: 1
+      });
+      
+      if (response.tickets) {
+        setTickets(response.tickets);
       }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách ticket:", error);
@@ -73,6 +73,16 @@ const TicketScreen = () => {
         }
       }
     });
+  };
+
+  const handleCancelTicket = async (id) => {
+    try {
+      await cancelTicket(id);
+      // Refresh lại danh sách ticket sau khi hủy
+      fetchTickets();
+    } catch (error) {
+      console.error("Lỗi khi hủy ticket:", error);
+    }
   };
 
   const DropdownMenu = ({ position = "right" }) => (
@@ -133,7 +143,6 @@ const TicketScreen = () => {
         <td className="py-3 px-4">{ticket.title}</td>
         <td className="py-3 px-4">{ticket.fullName}</td>
         <td className="py-3 px-4">{ticket.categoryName}</td>
-        {/* <td className="py-3 px-4">-</td> */}
         <td className="py-3 px-4">
           <span className={`px-2 py-1 rounded-full text-sm ${
             ticket.status === 'PROCESSING' ? 'bg-yellow-100 text-yellow-800' :
@@ -145,19 +154,29 @@ const TicketScreen = () => {
           </span>
         </td>
         <td className="py-3 px-4">{new Date(ticket.createTime).toLocaleDateString('vi-VN')}</td>
+        <td className="py-3 px-4">
+          {ticket.status === 'PENDING' && (
+            <button
+              onClick={() => handleCancelTicket(ticket.id)}
+              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              Hủy
+            </button>
+          )}
+        </td>
       </tr>
     ));
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 px-2 py-6">
       {/* Header */}
       <div className="bg-[#002278] text-white p-4 rounded-t-lg">
         <h1 className="text-xl font-semibold">Danh sách khiếu nại</h1>
       </div>
 
       {/* Main Content */}
-      <div className="bg-white rounded-b-lg shadow-sm p-4">
+      <div className="bg-white rounded-b-lg shadow-sm p-4 overflow-x-auto">
         {/* Controls Row */}
         <div className="flex justify-between items-center mb-6">
           {/* Status Filter */}
@@ -204,16 +223,15 @@ const TicketScreen = () => {
         </div>
 
         {/* Table */}
-        <table className="w-full">
+        <table className="w-full min-w-[1000px]">
           <thead>
             <tr className="border-b text-left">
-              <th className="py-3 px-4 text-gray-600">Mã khiếu nại</th>
-              <th className="py-3 px-4 text-gray-600">Tiêu đề</th>
-              <th className="py-3 px-4 text-gray-600">Người gửi</th>
-              <th className="py-3 px-4 text-gray-600">Dịch vụ</th>
-              {/* <th className="py-3 px-4 text-gray-600">Cửa hàng</th> */}
-              <th className="py-3 px-4 text-gray-600">Trạng thái</th>
-              <th className="px-4 py-3 text-gray-600">
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[8%]">Mã khiếu nại</th>
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[25%]">Tiêu đề</th>
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[15%]">Người gửi</th>
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[22%]">Dịch vụ</th>
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[15%]">Trạng thái</th>
+              <th className="py-3 px-4 text-gray-600 whitespace-nowrap w-[15%]">
                 Cập nhật lần cuối
                 <FontAwesomeIcon icon={faSort} className="ml-2" />
               </th>

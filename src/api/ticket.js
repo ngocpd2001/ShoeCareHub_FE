@@ -71,17 +71,48 @@ export const getAllTicket = async ({
   try {
     const response = await axiosInstances.login.get('/support-tickets', {
       params: {
-        SearchKey: searchKey,
-        SortBy: sortBy,
-        Status: status,
-        IsDecsending: isDescending,
-        PageSize: pageSize,
-        PageNum: pageNum
+        searchKey,
+        sortBy,
+        status,
+        isDescending,
+        pageSize,
+        pageNum
       }
     });
+
+    if (response.data.status === 'error') {
+      throw new Error(response.data.message || 'Có lỗi xảy ra');
+    }
+
+    return {
+      tickets: response.data.data || [],
+      pagination: response.data.pagination || {
+        totalItems: 0,
+        pageSize: pageSize,
+        currentPage: pageNum,
+        totalPages: 0
+      }
+    };
+
+  } catch (error) {
+    if (error.response?.status === 401) {
+      throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+    }
+    
+    console.error('Lỗi khi lấy danh sách phiếu hỗ trợ:', error);
+    throw new Error(error.response?.data?.message || 'Không thể lấy danh sách phiếu hỗ trợ');
+  }
+};
+
+export const cancelTicket = async (id) => {
+  try {
+    const response = await axiosInstances.login.put(`/support-tickets/${id}/cancel`);
     return response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách phiếu hỗ trợ:', error);
-    throw error;
+    if (error.response?.status === 401) {
+      throw new Error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
+    }
+    console.error('Lỗi khi hủy phiếu hỗ trợ:', error);
+    throw new Error(error.response?.data?.message || 'Không thể hủy phiếu hỗ trợ');
   }
 };
