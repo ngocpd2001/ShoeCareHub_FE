@@ -2,7 +2,7 @@ import { axiosInstances } from "../utils/axios";
 
 export const getAllOrder = async () => {
   try {
-    const response = await axiosInstances.login.get('/orders');
+    const response = await axiosInstances.login.get("/orders");
     return response.data.data;
   } catch (error) {
     console.error("Lỗi khi gọi API đơn hàng", error);
@@ -12,7 +12,9 @@ export const getAllOrder = async () => {
 
 export const getOrderByBusiness = async (businessId) => {
   try {
-    const response = await axiosInstances.login.get(`/orders/businesses/${businessId}`);
+    const response = await axiosInstances.login.get(
+      `/orders/businesses/${businessId}`
+    );
     return response.data.data;
   } catch (error) {
     console.error("Lỗi khi gọi API đơn hàng theo doanh nghiệp", error);
@@ -22,7 +24,9 @@ export const getOrderByBusiness = async (businessId) => {
 
 export const getOrderByAccountId = async (accountId) => {
   try {
-    const response = await axiosInstances.login.get(`/orders/accounts/${accountId}`);
+    const response = await axiosInstances.login.get(
+      `/orders/accounts/${accountId}`
+    );
     return response.data.data;
   } catch (error) {
     console.error("Lỗi khi gọi API đơn hàng theo tài khoản", error);
@@ -42,7 +46,9 @@ export const getOrderDetailById = async (id) => {
 
 export const getOrderDetailsByOrderId = async (id) => {
   try {
-    const response = await axiosInstances.login.get(`/order/${id}/orderdetails`);
+    const response = await axiosInstances.login.get(
+      `/order/${id}/orderdetails`
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi gọi API chi tiết đơn hàng theo mã đơn hàng", error);
@@ -64,7 +70,7 @@ export const updateOrder = async (id, orderData) => {
       shippingTime,
       deliveredTime,
       finishedTime,
-      abandonedTime
+      abandonedTime,
     } = orderData;
 
     const response = await axiosInstances.login.patch(`/orders/${id}`, {
@@ -74,12 +80,12 @@ export const updateOrder = async (id, orderData) => {
       pendingTime,
       approvedTime,
       revievedTime,
-      processingTime, 
+      processingTime,
       storagedTime,
       shippingTime,
       deliveredTime,
       finishedTime,
-      abandonedTime
+      abandonedTime,
     });
 
     return response.data.message;
@@ -91,7 +97,10 @@ export const updateOrder = async (id, orderData) => {
 
 export const createOrderDetail = async (orderDetailData) => {
   try {
-    const response = await axiosInstances.login.post('/orderdetails', orderDetailData);
+    const response = await axiosInstances.login.post(
+      "/orderdetails",
+      orderDetailData
+    );
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tạo chi tiết đơn hàng", error);
@@ -109,15 +118,20 @@ export const getOrderById = async (id) => {
   }
 };
 
-export const getEmployeeByBusinessId = async (businessId, isDescending = false, pageSize = 10, pageNum = 1) => {
+export const getEmployeeByBusinessId = async (
+  businessId,
+  isDescending = false,
+  pageSize = 10,
+  pageNum = 1
+) => {
   try {
-    const response = await axiosInstances.login.get('/accounts', {
+    const response = await axiosInstances.login.get("/accounts", {
       params: {
         BusinessId: businessId,
         IsDecsending: isDescending,
         PageSize: pageSize,
-        PageNum: pageNum
-      }
+        PageNum: pageNum,
+      },
     });
     return response.data.data;
   } catch (error) {
@@ -128,19 +142,21 @@ export const getEmployeeByBusinessId = async (businessId, isDescending = false, 
 
 export const updateOrderStatus = async (orderId, data) => {
   try {
-    console.log('Sending update status request:', {
+    console.log("Sending update status request:", {
       orderId,
-      data
+      data,
     });
-    
+    const accessToken = localStorage.getItem("token"); // Lấy token từ localStorage (hoặc nơi bạn lưu trữ)
+    const Token = accessToken.replace(/"/g, ""); // Loại bỏ tất cả dấu ngoặc kép
+
     const response = await axiosInstances.login.put(
       `/orders/${orderId}/status`,
       data,
       {
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getToken()}`
-        }
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${Token()}`,
+        },
       }
     );
     return response.data;
