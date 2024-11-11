@@ -57,7 +57,7 @@ const navigation = [
   },
   {
     name: "Khiếu nại",
-    href: "/owner/report",
+    href: "/owner/ticket",
     icon: ExclamationTriangleIcon,
     current: true,
   },

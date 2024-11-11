@@ -123,40 +123,51 @@ const ServiceDetail = () => {
       console.error("Service not found or service ID is 0");
       return;
     }
+
+    // Kiểm tra đăng nhập
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) {
+      // Lưu URL hiện tại vào localStorage để sau khi đăng nhập có thể quay lại
+      localStorage.setItem('redirectAfterLogin', location.pathname);
+      // Chuyển hướng đến trang đăng nhập
+      navigate('/login');
+      return;
+    }
+
     try {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const userId = user ? user.id : null;
-
-      if (!userId) {
-        console.error("User not logged in");
-        return;
-      }
-
       const branchId = service.branchServices[0]?.branch.id;
-
       const itemData = {
         serviceId: service.id,
         branchId: branchId,
         quantity: quantity,
       };
-      console.log("Adding to cart:", { userId, itemData });
-      await addItemToCart(userId, itemData);
+      
+      console.log("Adding to cart:", { userId: user.id, itemData });
+      await addItemToCart(user.id, itemData);
       console.log("Item added to cart successfully");
-
-      // Điều hướng đến trang giỏ hàng sau khi thêm thành công
       navigate("/cart");
     } catch (error) {
-      if (error.response) {
-        console.error("Server error:", error.response.data);
-      } else if (error.request) {
-        console.error("Network error:", error.request);
+      console.error("Error adding item to cart:", error);
+      if (error.response?.status === 401) {
+        // Token hết hạn hoặc không hợp lệ
+        localStorage.removeItem('user');
+        localStorage.setItem('redirectAfterLogin', location.pathname);
+        navigate('/login');
       } else {
-        console.error("Error:", error.message);
+        setMessage("Có lỗi xảy ra khi thêm vào giỏ hàng");
       }
     }
   };
 
   const handleCheckout = () => {
+    // Kiểm tra đăng nhập
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || !user.id) {
+      localStorage.setItem('redirectAfterLogin', location.pathname);
+      navigate('/login');
+      return;
+    }
+
     if (service) {
       const branchId = service.branchServices[0]?.branch.id;
       const checkoutService = {
