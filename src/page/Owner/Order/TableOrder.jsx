@@ -288,9 +288,9 @@ export const TableOrder = forwardRef((props, ref) => {
     if (location.state?.refresh) {
       reloadData();
       // Reset state để tránh reload không cần thiết
-      navigate(location.pathname, { replace: true });
+      navigate(location.pathname, { replace: true, state: {} });
     }
-  }, [location.state]);
+  }, [location.state?.refresh]);
   return (
     <div>
       <div className="bg-white p-4 shadow-sm mb-4">
