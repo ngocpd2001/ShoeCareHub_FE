@@ -145,17 +145,17 @@ const TicketScreen = () => {
         <td className="py-3 px-4">{ticket.categoryName}</td>
         <td className="py-3 px-4">
           <span className={`px-2 py-1 rounded-full text-sm ${
-            ticket.status === 'PROCESSING' ? 'bg-yellow-100 text-yellow-800' :
-            ticket.status === 'COMPLETED' ? 'bg-green-100 text-green-800' :
+            ticket.status === 'OPENING' ? 'bg-yellow-100 text-yellow-800' :
+            ticket.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
             'bg-red-100 text-red-800'
           }`}>
-            {ticket.status === 'PROCESSING' ? 'Đang xử lý' :
-             ticket.status === 'COMPLETED' ? 'Hoàn thành' : 'Đã hủy'}
+            {ticket.status === 'OPENING' ? 'Đang chờ' :
+             ticket.status === 'PROCESSING' ? 'Đang xử lý' : 'Đã hủy'}
           </span>
         </td>
         <td className="py-3 px-4">{new Date(ticket.createTime).toLocaleDateString('vi-VN')}</td>
         <td className="py-3 px-4">
-          {ticket.status === 'PENDING' && (
+          {ticket.status === 'OPENING' && (
             <button
               onClick={() => handleCancelTicket(ticket.id)}
               className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
@@ -183,9 +183,8 @@ const TicketScreen = () => {
           <div className="relative">
             <select className="appearance-none border rounded-md px-4 py-2 pr-8 focus:outline-none focus:ring-2 focus:ring-[#002278] text-gray-700">
               <option>Trạng thái</option>
-              <option>Đang xử lý</option>
-          <option>Hoàn thành</option>
-          <option>Đã hủy</option>
+              <option value="OPENING">Đang chờ</option>
+              <option value="PROCESSING">Đang xử lý</option>
             </select>
             <FontAwesomeIcon
               icon={faSort}
