@@ -33,6 +33,9 @@ import RegisterOwner from "./page/Register/RegisterOwner";
 import ServiceDiscounted from "./page/ServiceDiscounted/ServiceDiscounted";
 import ServiceAll from "./page/ServiceDiscounted/ServiceAll";
 import CheckoutService from "./page/Cart&Checkout/CheckoutService";
+import TicketScreen from "./page/Ticket/TicketScreen";
+import CreateTicket from "./page/Ticket/CreateTicket";
+import CreateTicketOrder from "./page/Ticket/CreateTicketOrder";
 
 // Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
 const isAuthenticated = () => {
@@ -128,6 +131,18 @@ export const routers = createBrowserRouter([
           {
             path: "/user/profile",
             element: <ProfilePage />,
+          },
+          {
+            path: "/user/ticket",
+            element: <TicketScreen />,
+          },
+          {
+            path: "/user/create-ticket",
+            element: <CreateTicket />,
+          },
+          {
+            path: "/user/create-ticket-order",
+            element: <CreateTicketOrder />,
           },
         ],
       },
