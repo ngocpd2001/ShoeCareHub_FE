@@ -67,7 +67,13 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
           label="Dịch vụ"
           rules={[{ required: true, message: "Vui lòng chọn dịch vụ!" }]}
         >
-          <Select placeholder="Chọn dịch vụ">
+          <Select 
+            placeholder="Chọn dịch vụ"
+            showSearch
+            filterOption={(input, option) =>
+              (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+            }
+          >
             {services.map((service) => (
               <Option key={service.id} value={service.id}>
                 {service.name}

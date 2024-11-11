@@ -66,11 +66,11 @@ export const TableOrder = forwardRef((props, ref) => {
       const statusTimeMapping = {
         PENDING: { pendingTime: currentTime },
         APPROVED: { approvedTime: currentTime },
-        RECIEVED: { revievedTime: currentTime },
+        RECEIVED: { receivedTime: currentTime },
         PROCESSING: { processingTime: currentTime },
-        STORAGE: { storagedTime: currentTime },
+        STORAGE: { storageTime: currentTime },
         SHIPPING: { shippingTime: currentTime },
-        DELIVERIED: { deliveredTime: currentTime },
+        DELIVERED: { deliveredTime: currentTime },
         FINISHED: { finishedTime: currentTime },
         ABANDONED: { abandonedTime: currentTime }
       };
@@ -169,6 +169,10 @@ export const TableOrder = forwardRef((props, ref) => {
               ? "bg-purple-100 text-purple-600"
               : status === "Đã xác nhận"
               ? "bg-teal-100 text-teal-600"
+              : status === "Đã nhận"
+              ? "bg-indigo-100 text-indigo-600"
+              : status === "Đã giao hàng"
+              ? "bg-emerald-100 text-emerald-600"
               : ""
           }`}
         >
@@ -180,7 +184,7 @@ export const TableOrder = forwardRef((props, ref) => {
       title: "Action",
       key: "operation",
       fixed: "right",
-      width: 50,
+      width: 80,
       render: (_, record) => (
         <div className="flex items-center flex-col">
           <ComMenuButonTable
@@ -194,16 +198,6 @@ export const TableOrder = forwardRef((props, ref) => {
               navigate(`/owner/order/update/${orderId}`);
             }}
             excludeDefaultItems={["reject", "accept", "delete"]} 
-            // showModalAccept={async () => {
-            //   await handleStatusChange(record.id, "APPROVED");
-            // }}
-            // showModalReject={async () => {
-            //   await handleStatusChange(record.id, "CANCELED");
-            // }}
-            // excludeDefaultItems={[
-            //   "delete",
-            //   ...(record.status !== "Đang chờ" ? ["accept", "reject"] : [])
-            // ]} 
           />
         </div>
       ),
@@ -283,14 +277,13 @@ export const TableOrder = forwardRef((props, ref) => {
   };
 
   useEffect(() => {
-    reloadData();
-    // Kiểm tra nếu có state refresh từ UpdateOrder
     if (location.state?.refresh) {
       reloadData();
-      // Reset state để tránh reload không cần thiết
       navigate(location.pathname, { replace: true, state: {} });
+    } else {
+      reloadData();
     }
-  }, [location.state?.refresh]);
+  }, [location.state, navigate]);
   return (
     <div>
       <div className="bg-white p-4 shadow-sm mb-4">
@@ -345,22 +338,6 @@ export const TableOrder = forwardRef((props, ref) => {
         dataSource={data}
         loading={table.loading}
         rowKey="id"
-        pagination={{
-          total: data.length,
-          pageSize: 10,
-          showSizeChanger: true,
-          showQuickJumper: true,
-          // showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} mục`,
-          locale: {
-            jump_to: "Đến",
-            page: "Trang",
-            items_per_page: "/ trang",
-            prev_page: "Trang trước",
-            next_page: "Trang sau",
-            prev_5: "5 trang trước",
-            next_5: "5 trang sau"
-          }
-        }}
         bordered
         className="w-full"
       />

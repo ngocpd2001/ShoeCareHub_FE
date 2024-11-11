@@ -56,17 +56,9 @@ const TicketDetail = () => {
         }
       } catch (error) {
         console.error("Error fetching ticket details:", error);
-        let errorMessage = "Không thể tải thông tin phiếu hỗ trợ";
-
-        if (error.response?.status === 401) {
-          errorMessage = "Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại";
-          localStorage.removeItem("token");
-          navigate("/login");
-        }
-
         notification.error({
           message: "Lỗi",
-          description: errorMessage,
+          description: "Không thể tải thông tin phiếu hỗ trợ",
           duration: 3,
         });
       }

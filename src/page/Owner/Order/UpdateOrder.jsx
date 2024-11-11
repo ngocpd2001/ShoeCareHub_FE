@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Box, Truck, MapPin, FileText, CheckCircle, Home } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { Breadcrumb } from "antd";
-import { Link, useNavigate, useParams, useLocation } from "react-router-dom";
+import { Breadcrumb, Popconfirm } from "antd";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faHouseUser,
@@ -17,7 +17,7 @@ import {
   faPhone,
   faCalendar,
   faPlus,
-  faFileAlt,
+  faFileLines,
   faHourglassHalf,
   faCheck,
   faInbox,
@@ -32,37 +32,127 @@ import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
 import { useNotification } from "../../../Notification/Notification";
 
-const STATUS_MAPPING = {
-  "Đã hủy": "CANCELED",
+const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
+  "Đã hủy": "CANCELED",
   "Đã xác nhận": "APPROVED",
-  "Đã nhận": "RECIEVED",
+  "Đã nhận": "RECEIVED",
   "Đang xử lý": "PROCESSING",
   "Lưu trữ": "STORAGE",
   "Đang giao hàng": "SHIPPING",
-  "Đã giao": "DELIVERIED",
+  "Đã giao hàng": "DELIVERED",
   "Hoàn thành": "FINISHED",
   "Quá hạn nhận hàng": "ABANDONED"
 };
 
-// Thêm mapping ngược từ ENUM sang text hiển thị
-const REVERSE_STATUS_MAPPING = {
-  CANCELED: "Đã hủy",
+const ENUM_TO_STATUS = {
   PENDING: "Đang chờ",
+  CANCELED: "Đã hủy",
   APPROVED: "Đã xác nhận",
-  RECIEVED: "Đã nhận",
+  RECEIVED: "Đã nhận",
   PROCESSING: "Đang xử lý",
   STORAGE: "Lưu trữ",
   SHIPPING: "Đang giao hàng",
-  DELIVERIED: "Đã giao",
+  DELIVERED: "Đã giao hàng",
   FINISHED: "Hoàn thành",
   ABANDONED: "Quá hạn nhận hàng"
+};
+
+const getAvailableStatuses = (currentStatus) => {
+  if (!currentStatus) return [];
+
+  const statusEnum = STATUS_TO_ENUM[currentStatus] || currentStatus;
+  
+  switch (statusEnum) {
+    case "PENDING":
+      return [
+        { value: "Đã xác nhận", className: "bg-green-50 text-green-700" },
+        { value: "Đã hủy", className: "bg-red-50 text-red-700" }
+      ];
+      
+    case "APPROVED":
+      return [
+        { value: "Đã nhận", className: "bg-green-50 text-green-700" },
+        { value: "Đang xử lý", className: "bg-orange-50 text-orange-700" },
+        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
+        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
+      ];
+
+    case "RECEIVED":
+      return [
+        { value: "Đang xử lý", className: "bg-orange-50 text-orange-700" },
+        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
+        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
+      ];
+
+    case "PROCESSING":
+      return [
+        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
+        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
+      ];
+
+    case "STORAGE":
+      return [
+        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
+      ];
+    case "SHIPPING":
+      return [
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
+      ];
+
+    case "DELIVERED":
+      return [
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+      ];
+
+    case "ABANDONED":
+      return [
+        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
+        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
+        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
+      ];
+
+      case "FINISHED":
+        return [];
+
+    case "CANCELED":
+      return [];
+    
+    default:
+      return [];
+  }
+};
+
+// Thêm hàm kiểm tra thời gian
+const checkOrderExpiration = (createTime, status) => {
+  if (status === 'PENDING') {
+    const createdDate = new Date(createTime);
+    const currentDate = new Date();
+    const diffTime = Math.abs(currentDate - createdDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays > 7;
+  }
+  return false;
 };
 
 const UpdateOrder = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const location = useLocation();
   const [orderData, setOrderData] = useState(null);
   const [addressData, setAddressData] = useState(null);
   const [shippingCode, setShippingCode] = useState("");
@@ -74,33 +164,50 @@ const UpdateOrder = () => {
   const [isPopupVisible, setIsPopupVisible] = useState(false);
   const [orderStatus, setOrderStatus] = useState("");
   const { notificationApi } = useNotification();
+  const [statusHistory, setStatusHistory] = useState([]);
+  const [newStatus, setNewStatus] = useState(null);
 
   const fetchOrderData = async () => {
     try {
-      console.log("Fetching order data for id:", id);
       const data = await getOrderById(id);
-      console.log("Order data:", data);
-      setOrderData(data);
       
-      // Cập nhật orderStatus ngay khi có dữ liệu
-      const mappedStatus = REVERSE_STATUS_MAPPING[data.status] || "Đang xử lý";
-      setOrderStatus(mappedStatus);
+      // Kiểm tra nếu đơn hàng đã quá 7 ngày và vẫn ở trạng thái PENDING
+      if (checkOrderExpiration(data.createTime, data.status)) {
+        // Tự động cập nhật trạng thái thành CANCELED
+        await updateOrderStatus(id, 'CANCELED');
+        // Fetch lại dữ liệu sau khi cập nhật
+        const updatedData = await getOrderById(id);
+        setOrderData(updatedData);
+        const displayStatus = ENUM_TO_STATUS[updatedData.status];
+        setOrderStatus(displayStatus || updatedData.status);
+        notificationApi("info", "Thông báo", "Đơn hàng đã tự động hủy do quá 7 ngày không được xác nhận");
+      } else {
+        setOrderData(data);
+        const displayStatus = ENUM_TO_STATUS[data.status];
+        setOrderStatus(displayStatus || data.status);
+      }
+
+      setFormData({
+        deliveredFee: data.deliveredFee || 0,
+        shippingCode: data.shippingCode || "",
+        shippingUnit: data.shippingUnit || "",
+      });
 
       if (data.addressId) {
         const address = await getAddressById(data.addressId);
-        console.log("Address data:", address);
         setAddressData(address);
       }
+
+      const history = getStatusHistory(data);
+      setStatusHistory(history);
     } catch (error) {
-      console.error("Lỗi khi lấy dữ liệu đơn hàng: ", error);
+      notificationApi("error", "Lỗi", "Không thể tải dữ liệu đơn hàng");
     }
   };
 
   useEffect(() => {
     if (id) {
       fetchOrderData();
-    } else {
-      console.warn("id is null or undefined");
     }
   }, [id]);
 
@@ -117,13 +224,17 @@ const UpdateOrder = () => {
         deliveredFee: formData.deliveredFee,
         shippingCode: formData.shippingCode,
         shippingUnit: formData.shippingUnit,
-        status: STATUS_MAPPING[orderStatus]
+        status: orderData.status
       };
 
       await updateOrder(id, updatedOrderData);
+      
+      await fetchOrderData();
+      
       notificationApi("success", "Thành công", "Đã cập nhật thông tin đơn hàng");
       navigate('/owner/order', { state: { refresh: true } });
     } catch (error) {
+      console.error("Lỗi cập nhật:", error);
       notificationApi("error", "Lỗi", "Không thể cập nhật thông tin đơn hàng");
     }
   };
@@ -134,101 +245,117 @@ const UpdateOrder = () => {
 
   const handleCancel = () => {
     setIsPopupVisible(false);
+    setNewStatus(null);
   };
 
   const getStatusHistory = (data) => {
-    // Định nghĩa các trạng thái và thứ tự của chúng
-    const statusFlow = {
-      createTime: { label: "Đã tạo đơn hàng", icon: faFileAlt, order: 1 },
-      pendingTime: { label: "Đang chờ xử lý", icon: faHourglassHalf, order: 2 },
-      approvedTime: { label: "Đã duyệt", icon: faCheck, order: 3 },
-      revievedTime: { label: "Đã nhận", icon: faInbox, order: 4 },
-      processingTime: { label: "Đang xử lý", icon: faCog, order: 5 },
-      storagedTime: { label: "Đã lưu kho", icon: faWarehouse, order: 6 },
-      shippingTime: { label: "Đang giao hàng", icon: faTruck, order: 7 },
-      deliveredTime: { label: "Đã giao hàng", icon: faBoxOpen, order: 8 },
-      finishedTime: { label: "Hoàn thành", icon: faCheckCircle, order: 9 },
-      abandonedTime: { label: "Đã hủy", icon: faTimesCircle, order: 10 }
-    };
-
-    // Lấy trạng thái hiện tại của đơn hàng
-    const currentStatus = data.status;
-
-    // Nếu đơn hàng đã hủy, chỉ hiển thị trạng thái tạo đơn và hủy
-    if (currentStatus === 'CANCELED') {
-      return Object.entries(statusFlow)
-        .filter(([key]) => key === 'createTime' || key === 'abandonedTime')
-        .map(([key, { label, icon }]) => ({
-          status: label,
-          icon: icon,
-          time: data[key]
-        }))
-        .filter(item => item.time)
-        .sort((a, b) => new Date(a.time) - new Date(b.time));
+    const savedHistory = localStorage.getItem(`orderHistory_${id}`);
+    let history = savedHistory ? JSON.parse(savedHistory) : [];
+    
+    if (history.length === 0) {
+      history = [{
+        status: "Đã tạo đơn hàng",
+        icon: faFileLines,
+        time: data.createTime,
+        order: 1
+      }];
     }
 
-    // Với các trạng thái khác, hiển thị theo luồng bình thường
-    return Object.entries(statusFlow)
-      .map(([key, { label, icon, order }]) => ({
-        status: label,
-        icon: icon,
-        time: data[key],
-        order: order
-      }))
-      .filter(item => item.time !== null)
-      .sort((a, b) => a.order - b.order);
+    const currentStatus = data.status;
+    if (currentStatus) {
+      const statusLabel = ENUM_TO_STATUS[currentStatus] || currentStatus;
+      const lastStatus = history[history.length - 1];
+      
+      if (lastStatus.status !== statusLabel) {
+        history.push({
+          status: statusLabel,
+          icon: getIconForStatus(statusLabel),
+          time: data.updatedTime || new Date().toISOString(),
+          order: history.length + 1
+        });
+      }
+    }
+
+    const uniqueHistory = history.reduce((acc, current) => {
+      const exists = acc.some(item => item.status === current.status);
+      if (!exists) {
+        acc.push(current);
+      }
+      return acc;
+    }, []);
+
+    const sortedHistory = uniqueHistory.sort((a, b) => new Date(a.time) - new Date(b.time));
+    localStorage.setItem(`orderHistory_${id}`, JSON.stringify(sortedHistory));
+    
+    return sortedHistory;
+  };
+
+  const getIconForStatus = (status) => {
+    const iconMap = {
+      'PENDING': faHourglassHalf,
+      'APPROVED': faCheck,
+      'RECEIVED': faInbox,
+      'PROCESSING': faCog,
+      'STORAGE': faWarehouse,
+      'SHIPPING': faTruck,
+      'DELIVERED': faBoxOpen,
+      'FINISHED': faCheckCircle,
+      'ABANDONED': faTimesCircle,
+      'CANCELED': faTimesCircle,
+      // Map cho text tiếng Việt
+      'Đã tạo đơn hàng': faFileLines,
+      'Đang chờ': faHourglassHalf,
+      'Đã xác nhận': faCheck,
+      'Đã nhận': faInbox,
+      'Đang xử lý': faCog,
+      'Lưu trữ': faWarehouse,
+      'Đang giao hàng': faTruck,
+      'Đã giao hàng': faBoxOpen,
+      'Hoàn thành': faCheckCircle,
+      'Quá hạn nhận hàng': faTimesCircle,
+      'Đã hủy': faTimesCircle
+    };
+
+    return iconMap[status] || faFileLines;
   };
 
   const handleStatusChange = async (e) => {
     try {
-      const newStatus = e.target.value;
-      const statusEnum = STATUS_MAPPING[newStatus];
-      
+      const selectedStatus = e.target.value;
+      const statusEnum = STATUS_TO_ENUM[selectedStatus];
+
       if (!statusEnum) {
-        throw new Error("Trạng thái không hợp lệ");
+        notificationApi("error", "Lỗi", "Trạng thái không hợp lệ");
+        return;
       }
 
-      // Log để kiểm tra
-      console.log('Current status:', {
-        newStatus,
-        statusEnum,
-        orderId: id
-      });
-
-      // Gọi API với body mới
-      const updateData = {
-        Status: statusEnum  // Viết hoa chữ cái đầu
-      };
-
-      console.log('Sending data:', updateData);
-
-      const result = await updateOrderStatus(id, updateData);
-
-      // Nếu thành công, cập nhật UI
-      setOrderStatus(newStatus);
-      setOrderData(prev => ({
-        ...prev,
-        status: statusEnum
-      }));
-
-      notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
-      
-      // Đánh dấu cần refresh table
-      navigate(location.pathname, { 
-        state: { refresh: true },
-        replace: true 
-      });
-
+      setNewStatus(selectedStatus);
     } catch (error) {
-      // Log chi tiết lỗi
-      console.error("Error response:", error.response?.data);
-      if (error.response?.data?.errors) {
-        console.error("Validation errors:", JSON.stringify(error.response.data.errors, null, 2));
+      const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";
+      notificationApi("error", "Lỗi", `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`);
+    }
+  };
+
+  const confirmStatusChange = async () => {
+    try {
+      const statusEnum = STATUS_TO_ENUM[newStatus];
+      const response = await updateOrderStatus(id, statusEnum);
+
+      if (response) {
+        setOrderData(prev => ({
+          ...prev,
+          status: statusEnum
+        }));
+        
+        setOrderStatus(newStatus);
+        setNewStatus(null);
+        
+        notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
       }
-      
-      // Khôi phục trạng thái cũ
-      setOrderStatus(REVERSE_STATUS_MAPPING[orderData.status]);
-      notificationApi("error", "Lỗi", "Không thể cập nhật trạng thái đơn hàng");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";
+      notificationApi("error", "Lỗi", `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`);
+      setNewStatus(null);
     }
   };
 
@@ -245,8 +372,6 @@ const UpdateOrder = () => {
   }
 
   const orderDetails = orderData.orderDetails || [];
-
-  const statusHistory = getStatusHistory(orderData);
 
   const branchId = orderDetails.length > 0 ? orderDetails[0].branch.id : null;
 
@@ -302,7 +427,7 @@ const UpdateOrder = () => {
           <table className="w-full mb-6">
             <thead className="text-gray-500 text-sm">
               <tr>
-                <th className="text-left py-2">Dịch vụ</th>
+                <th className="text-left py-2">Dịch v</th>
                 <th className="text-right">Số lượng gói</th>
                 <th className="text-right">Đơn giá</th>
                 <th className="text-right">Thành tiền</th>
@@ -366,42 +491,58 @@ const UpdateOrder = () => {
                   <FontAwesomeIcon icon={faShoppingCart} className="mr-2" />
                   Trạng thái đơn hàng
                 </p>
-                <select
-                  value={orderStatus}
-                  onChange={handleStatusChange}
-                  className="font-medium text-gray-900 w-full p-2 border rounded-md bg-white"
-                >
-                  <option value="Đang xử lý" className="bg-orange-50 text-orange-700">
-                    Đang xử lý
-                  </option>
-                  <option value="Đang chờ" className="bg-blue-50 text-blue-700">
-                    Đang chờ
-                  </option>
-                  <option value="Đã xác nhận" className="bg-teal-50 text-teal-700">
-                    Đã xác nhận
-                  </option>
-                  <option value="Đã nhận" className="bg-green-50 text-green-700">
-                    Đã nhận
-                  </option>
-                  <option value="Đang giao hàng" className="bg-yellow-50 text-yellow-700">
-                    Đang giao hàng
-                  </option>
-                  <option value="Đã giao" className="bg-green-50 text-green-700">
-                    Đã giao
-                  </option>
-                  <option value="Hoàn thành" className="bg-green-50 text-green-700">
-                    Hoàn thành
-                  </option>
-                  <option value="Đã hủy" className="bg-red-50 text-red-700">
-                    Đã hủy
-                  </option>
-                  <option value="Lưu trữ" className="bg-gray-50 text-gray-700">
-                    Lưu trữ
-                  </option>
-                  <option value="Quá hạn nhận hàng" className="bg-purple-50 text-purple-700">
-                    Quá hạn nhận hàng
-                  </option>
-                </select>
+                {newStatus ? (
+                  <Popconfirm
+                    title="Xác nhận thay đổi trạng thái"
+                    description={`Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng thành "${newStatus}" không?`}
+                    onConfirm={confirmStatusChange}
+                    onCancel={handleCancel}
+                    okText="Đồng ý"
+                    cancelText="Hủy"
+                    okButtonProps={{ 
+                      style: { backgroundColor: '#1890ff' } 
+                    }}
+                    open={Boolean(newStatus)}
+                  >
+                    <select
+                      value={newStatus || orderStatus}
+                      onChange={handleStatusChange}
+                      className="font-medium text-gray-900 w-full p-2 border rounded-md bg-white"
+                    >
+                      <option value={orderStatus}>
+                        {ENUM_TO_STATUS[orderStatus] || orderStatus}
+                      </option>
+                      {getAvailableStatuses(orderStatus).map((status) => (
+                        <option
+                          key={status.value}
+                          value={status.value}
+                          className={status.className}
+                        >
+                          {status.value}
+                        </option>
+                      ))}
+                    </select>
+                  </Popconfirm>
+                ) : (
+                  <select
+                    value={orderStatus}
+                    onChange={handleStatusChange}
+                    className="font-medium text-gray-900 w-full p-2 border rounded-md bg-white"
+                  >
+                    <option value={orderStatus}>
+                      {ENUM_TO_STATUS[orderStatus] || orderStatus}
+                    </option>
+                    {getAvailableStatuses(orderStatus).map((status) => (
+                      <option
+                        key={status.value}
+                        value={status.value}
+                        className={status.className}
+                      >
+                        {status.value}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
               <div>
                 <p className="text-gray-500 text-lg mb-2">
@@ -409,7 +550,7 @@ const UpdateOrder = () => {
                   Khách hàng
                 </p>
                 <p className="font-medium text-gray-900">
-                  {orderData.fullName || "Khng có thông tin khách hàng"}
+                  {orderData.fullName || "Không có thông tin khách hàng"}
                 </p>
               </div>
               <div>
@@ -480,7 +621,7 @@ const UpdateOrder = () => {
 
       {/* Address and Shipping Info */}
       <div className="grid grid-cols-2 gap-4 border-t pt-4 mt-4">
-        {/* Địa chỉ giao hàng */}
+        {/* Địa ch giao hàng */}
         <div className="flex items-start bg-white rounded-lg shadow p-4">
           <MapPin className="w-5 h-5 text-blue-600 mr-2" />
           <div>
@@ -494,7 +635,7 @@ const UpdateOrder = () => {
             <p className="text-gray-600">
               {addressData
                 ? `${addressData.address}, ${addressData.ward}, ${addressData.district}, ${addressData.province}`
-                : "Lấy tại cửa hàng"}
+                : "Lấy t��i cửa hàng"}
             </p>
             <p className="text-black mt-2 text-lg">
               <FontAwesomeIcon icon={faStore} className="mr-2" />
@@ -532,9 +673,6 @@ const UpdateOrder = () => {
                     VNĐ
                   </span>
                 </div>
-                {/* <p className="text-sm text-gray-500 mt-1">
-                  {formData.deliveredFee?.toLocaleString('vi-VN')} đồng
-                </p> */}
               </div>
 
               <div>

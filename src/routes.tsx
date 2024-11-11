@@ -33,9 +33,9 @@ import RegisterOwner from "./page/Register/RegisterOwner";
 import ServiceDiscounted from "./page/ServiceDiscounted/ServiceDiscounted";
 import ServiceAll from "./page/ServiceDiscounted/ServiceAll";
 import CheckoutService from "./page/Cart&Checkout/CheckoutService";
-import TicketScreen from "./page/Ticket/TicketScreen";
-import CreateTicket from "./page/Ticket/CreateTicket";
-import CreateTicketOrder from "./page/Ticket/CreateTicketOrder";
+import TicketScreen from "./page/Ticket_User/TicketScreen";
+import CreateTicket from "./page/Ticket_User/CreateTicket";
+import CreateTicketOrder from "./page/Ticket_User/CreateTicketOrder";
 import TicketManager from "./page/Owner/Ticket/TicketManager";
 import TicketDetail from "./page/Owner/Ticket/TicketDetail";
 

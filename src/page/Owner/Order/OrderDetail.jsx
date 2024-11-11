@@ -27,62 +27,92 @@ import {
   faBoxOpen,
   faTimesCircle,
   faCheckCircle,
+  faFileLines,
 } from "@fortawesome/free-solid-svg-icons";
 
 const OrderDetail = () => {
   const { id } = useParams();
-  // console.log("Received id:", id);
-
   const [orderData, setOrderData] = useState(null);
   const [addressData, setAddressData] = useState(null);
+  const [intervalId, setIntervalId] = useState(null);
 
-  useEffect(() => {
-    const fetchOrderData = async () => {
-      try {
-        console.log("Fetching order data for id:", id);
-        const data = await getOrderById(id);
-        console.log("Order data:", data);
+  const fetchOrderData = async () => {
+    try {
+      console.log("Fetching order data for id:", id);
+      const data = await getOrderById(id);
+      console.log("Order data:", data);
+      
+      if (JSON.stringify(data) !== JSON.stringify(orderData)) {
         setOrderData(data);
-
+        
         if (data.addressId) {
           const address = await getAddressById(data.addressId);
           console.log("Address data:", address);
           setAddressData(address);
         }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu đơn hàng: ", error);
       }
-    };
+    } catch (error) {
+      console.error("Lỗi khi lấy dữ liệu đơn hàng: ", error);
+    }
+  };
 
+  useEffect(() => {
     if (id) {
       fetchOrderData();
+      
+      const interval = setInterval(fetchOrderData, 5000);
+      setIntervalId(interval);
     } else {
       console.warn("id is null or undefined");
     }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
   }, [id]);
 
   const getStatusHistory = (data) => {
-    const statusMap = {
-      createTime: { label: "Đã tạo đơn hàng", icon: faFileAlt },
-      pendingTime: { label: "Đang chờ xử lý", icon: faHourglassHalf },
-      approvedTime: { label: "Đã duyệt", icon: faCheck },
-      revievedTime: { label: "Đã nhận", icon: faInbox },
-      processingTime: { label: "Đang xử lý", icon: faCog },
-      storagedTime: { label: "Đã lưu kho", icon: faWarehouse },
-      shippingTime: { label: "Đang giao hàng", icon: faTruck },
-      deliveredTime: { label: "Đã giao hàng", icon: faBoxOpen },
-      finishedTime: { label: "Hoàn thành", icon: faCheckCircle },
-      abandonedTime: { label: "Đã hủy", icon: faTimesCircle },
-    };
+    const savedHistory = localStorage.getItem(`orderHistory_${id}`);
+    
+    if (savedHistory) {
+      return JSON.parse(savedHistory);
+    } else {
+      const statusMap = {
+        createTime: { label: "Đã tạo đơn hàng", icon: faFileLines },
+        pendingTime: { label: "Đang chờ xử lý", icon: faHourglassHalf },
+        approvedTime: { label: "Đã xác nhận", icon: faCheck },
+        receivedTime: { label: "Đã nhận", icon: faInbox },
+        processingTime: { label: "Đang xử lý", icon: faCog },
+        storagedTime: { label: "Lưu trữ", icon: faWarehouse },
+        shippingTime: { label: "Đang giao hàng", icon: faTruck },
+        deliveredTime: { label: "Đã giao hàng", icon: faBoxOpen },
+        finishedTime: { label: "Hoàn thành", icon: faCheckCircle },
+        abandonedTime: { label: "Quá hạn nhận hàng", icon: faTimesCircle },
+        canceledTime: { label: "Đã hủy", icon: faTimesCircle },
+      };
 
-    return Object.entries(statusMap)
-      .map(([key, { label, icon }]) => ({
-        status: label,
-        icon: icon,
-        time: data[key],
-      }))
-      .filter((item) => item.time !== null)
-      .sort((a, b) => new Date(a.time) - new Date(b.time));
+      const history = Object.entries(statusMap)
+        .map(([key, { label, icon }]) => ({
+          status: label,
+          icon: icon,
+          time: data[key],
+        }))
+        .filter((item) => item.time !== null)
+        .sort((a, b) => new Date(a.time) - new Date(b.time));
+
+      if (history.length === 0) {
+        history.push({
+          status: "Đã tạo đơn hàng",
+          icon: faFileLines,
+          time: data.createTime,
+        });
+      }
+
+      localStorage.setItem(`orderHistory_${id}`, JSON.stringify(history));
+      return history;
+    }
   };
 
   if (!orderData) {
