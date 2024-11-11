@@ -1,4 +1,4 @@
-import { Outlet, createBrowserRouter, Navigate } from "react-router-dom";
+import { Outlet, createBrowserRouter, Navigate, useLocation } from "react-router-dom";
 import React from "react";
 import LoginPage from "./page/login/LoginPage";
 import ErrorPage from "./page/404/ErrorPage";
@@ -36,19 +36,49 @@ import CheckoutService from "./page/Cart&Checkout/CheckoutService";
 import TicketScreen from "./page/Ticket/TicketScreen";
 import CreateTicket from "./page/Ticket/CreateTicket";
 import CreateTicketOrder from "./page/Ticket/CreateTicketOrder";
+import TicketManager from "./page/Owner/Ticket/TicketManager";
+import TicketDetail from "./page/Owner/Ticket/TicketDetail";
 
-// Giả sử bạn có một hàm để kiểm tra trạng thái đăng nhập
-const isAuthenticated = () => {
-  const token = localStorage.getItem('token');
-  // console.log('Token:', token);
-  const isValid = isValidToken(token);
-  // console.log('Is Valid Token:', isValid);
-  return isValid;
+// Hàm kiểm tra token hợp lệ
+const getCleanToken = () => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+    
+    // Làm sạch token
+    const cleanToken = token.replace(/^["']|["']$/g, '').trim();
+    
+    // Kiểm tra format token
+    const tokenParts = cleanToken.split('.');
+    return tokenParts.length === 3 ? cleanToken : null;
+  } catch (error) {
+    return null;
+  }
 };
 
-// Thành phần bảo vệ
+// Hàm kiểm tra trạng thái đăng nhập
+const isAuthenticated = () => {
+  try {
+    const token = getCleanToken();
+    if (!token) return false;
+    
+    return isValidToken(token);
+  } catch (error) {
+    return false;
+  }
+};
+
+// Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
-  return isAuthenticated() ? children : <Navigate to="/login" />;
+  const location = useLocation();
+  
+  if (!isAuthenticated()) {
+    // Lưu đường dẫn hiện tại để redirect sau khi đăng nhập
+    localStorage.setItem('redirectAfterLogin', location.pathname);
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  return children;
 };
 
 export const routers = createBrowserRouter([
@@ -111,9 +141,11 @@ export const routers = createBrowserRouter([
       {
         path: "/user",
         element: (
-          <ComHeaderUser>
-            <Outlet />
-          </ComHeaderUser>
+          <RequireAuth>
+            <ComHeaderUser>
+              <Outlet />
+            </ComHeaderUser>
+          </RequireAuth>
         ),
         children: [
           {
@@ -175,9 +207,11 @@ export const routers = createBrowserRouter([
   {
     path: "/owner",
     element: (
-      <ComHeaderOwner>
-        <Outlet />
-      </ComHeaderOwner>
+      <RequireAuth>
+        <ComHeaderOwner>
+          <Outlet />
+        </ComHeaderOwner>
+      </RequireAuth>
     ),
     children: [
       {
@@ -235,6 +269,14 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/employee/create",
         element: <CreateEmployee />,
+      },
+      {
+        path: "/owner/ticket",
+        element: <TicketManager />,
+      },
+      {
+        path: "/owner/ticket/:id",
+        element: <TicketDetail />,
       },
     ],
   },

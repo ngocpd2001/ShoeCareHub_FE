@@ -59,3 +59,29 @@ export const createTicketOrder = async (ticketData) => {
     throw error;
   }
 };
+
+export const getAllTicket = async ({
+  searchKey = '',
+  sortBy = '',
+  status = '',
+  isDescending = false,
+  pageSize = 10,
+  pageNum = 1
+}) => {
+  try {
+    const response = await axiosInstances.login.get('/support-tickets', {
+      params: {
+        SearchKey: searchKey,
+        SortBy: sortBy,
+        Status: status,
+        IsDecsending: isDescending,
+        PageSize: pageSize,
+        PageNum: pageNum
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách phiếu hỗ trợ:', error);
+    throw error;
+  }
+};

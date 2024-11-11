@@ -13,7 +13,7 @@ export default function OrderManager() {
     <>
       <div className="flex justify-between items-end pb-2 px-4 ">
         <div>
-          <h3 className="text-[#002278] text-4xl mb-4">Đơn hàng</h3>
+          <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Đơn hàng</h3>
           <Breadcrumb
             items={[
               {
