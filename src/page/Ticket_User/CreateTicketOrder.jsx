@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faLink, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import { getCategoryTicket, getCategoryTicketById, createTicketOrder } from '../../api/ticket';
+import { createTicketOrder } from '../../api/ticket';
 import { getAccountById } from '../../api/user';
 import { useNotification } from "../../Notification/Notification";
 

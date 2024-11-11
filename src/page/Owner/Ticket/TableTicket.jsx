@@ -14,7 +14,7 @@ import React, {
   import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
   import ComTable from "../../../Components/ComTable/ComTable";
   import useColumnFilters from "../../../Components/ComTable/utils";
-  import { getAllTicket } from "../../../api/ticket";
+  import { getTicketByBusiness } from "../../../api/ticket";
   
   export const getStatusDisplay = (status) => {
     switch (status) {
@@ -135,29 +135,54 @@ import React, {
                 console.log("Navigating to ticket:", ticketId);
                 navigate(`/owner/ticket/${ticketId}`);
               }}
-              excludeDefaultItems={["reject", "accept", "delete", "edit"]}
+              showModalEdit={() => {
+                const ticketId = record.id;
+                console.log("Navigating to update ticket:", ticketId);
+                navigate(`/owner/ticket/update/${ticketId}`);
+              }}
+              excludeDefaultItems={["reject", "accept", "delete"]}
             />
           </div>
         ),
       },
     ];
   
+    const [user, setUser] = useState(null);
+  
+    useEffect(() => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      }
+    }, []);
+  
     const reloadData = async () => {
+      if (!user?.businessId) {
+        notificationApi("error", "Lỗi", "Vui lòng đăng nhập lại");
+        return;
+      }
+  
       table.handleOpenLoading();
       try {
-        const response = await getAllTicket({
+        const response = await getTicketByBusiness({
+          id: user.businessId,
           pageSize: pagination.pageSize,
-          pageNum: pagination.current
+          pageNum: pagination.current - 1
         });
   
-        setData(response.data);
-        setPagination({
-          ...pagination,
-          total: response.pagination.totalItems
-        });
+        if (response.status === "success") {
+          setData(response.data);
+          setPagination({
+            ...pagination,
+            current: response.pagination.currentPage,
+            total: response.pagination.totalItems,
+            pageSize: response.pagination.pageSize
+          });
+        }
   
       } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
+        console.error("Chi tiết lỗi:", error);
         notificationApi("error", "Lỗi", "Không thể tải dữ liệu");
         setData([]);
       } finally {
@@ -170,12 +195,10 @@ import React, {
     }));
   
     useEffect(() => {
-      reloadData();
-      if (location.state?.refresh) {
+      if (user?.businessId) {
         reloadData();
-        navigate(location.pathname, { replace: true });
       }
-    }, [location.state]);
+    }, [user, location.state]);
   
     const handleTableChange = (pagination, filters, sorter) => {
       setPagination(pagination);
@@ -191,20 +214,6 @@ import React, {
           dataSource={data}
           loading={table.loading}
           rowKey="id"
-          pagination={{
-            ...pagination,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            locale: {
-              jump_to: "Đến",
-              page: "Trang",
-              items_per_page: "/ trang",
-              prev_page: "Trang trước",
-              next_page: "Trang sau",
-              prev_5: "5 trang trước",
-              next_5: "5 trang sau"
-            }
-          }}
           onChange={handleTableChange}
           bordered
           className="w-full"

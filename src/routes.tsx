@@ -38,6 +38,7 @@ import CreateTicket from "./page/Ticket_User/CreateTicket";
 import CreateTicketOrder from "./page/Ticket_User/CreateTicketOrder";
 import TicketManager from "./page/Owner/Ticket/TicketManager";
 import TicketDetail from "./page/Owner/Ticket/TicketDetail";
+import UpdateTicket from "./page/Owner/Ticket/UpdateTicket";
 
 // Hàm kiểm tra token hợp lệ
 const getCleanToken = () => {
@@ -277,6 +278,10 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/ticket/:id",
         element: <TicketDetail />,
+      },
+      {
+        path: "/owner/ticket/update/:id",
+        element: <UpdateTicket />,
       },
     ],
   },

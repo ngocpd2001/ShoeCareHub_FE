@@ -6,6 +6,7 @@ import { getTicketById } from "../../api/ticket";
 const TicketDetailModal = ({ ticketId, onClose }) => {
   const [ticket, setTicket] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     // console.log("ticketId nhận được:", ticketId);
@@ -62,6 +63,14 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
       default:
         return status;
     }
+  };
+
+  const handleImageClick = (url) => {
+    setSelectedImage(url);
+  };
+
+  const handleCloseImage = () => {
+    setSelectedImage(null);
   };
 
   return (
@@ -147,20 +156,23 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
                                 <img 
                                   src={asset.url} 
                                   alt="Ảnh đính kèm" 
-                                  className="w-10 h-10 object-cover rounded" 
+                                  className="w-10 h-10 object-cover rounded cursor-pointer" 
+                                  onClick={() => handleImageClick(asset.url)}
                                 />
                               ) : (
-                                <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
+                                <>
+                                  <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
+                                  <a 
+                                    href={asset.url} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-[#002278] hover:underline truncate"
+                                    title="Tải xuống tệp đính kèm"
+                                  >
+                                    Tải tệp
+                                  </a>
+                                </>
                               )}
-                              <a 
-                                href={asset.url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-[#002278] hover:underline truncate"
-                                title="Tải xuống tệp đính kèm"
-                              >
-                                {asset.type === "IMAGE" ? 'Xem ảnh' : 'Tải tệp'}
-                              </a>
                             </div>
                           ))}
                         </div>
@@ -186,20 +198,23 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
                       <img 
                         src={asset.url} 
                         alt="Ảnh đính kèm" 
-                        className="w-10 h-10 object-cover rounded" 
+                        className="w-10 h-10 object-cover rounded cursor-pointer" 
+                        onClick={() => handleImageClick(asset.url)}
                       />
                     ) : (
-                      <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
+                      <>
+                        <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
+                        <a 
+                          href={asset.url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[#002278] hover:underline truncate"
+                          title="Tải xuống tệp đính kèm"
+                        >
+                          Tải tệp
+                        </a>
+                      </>
                     )}
-                    <a 
-                      href={asset.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-[#002278] hover:underline truncate"
-                      title="Tải xuống tệp đính kèm"
-                    >
-                      {asset.type === "IMAGE" ? 'Xem ảnh' : 'Tải tệp'}
-                    </a>
                   </div>
                 ))}
               </div>
@@ -207,6 +222,25 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
           )}
         </div>
       </div>
+      {/* Modal hiển thị ảnh */}
+      {selectedImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-end p-4">
+              <button onClick={handleCloseImage} className="hover:opacity-80">
+                <FontAwesomeIcon icon={faTimes} className="text-xl" />
+              </button>
+            </div>
+            <div className="flex items-center justify-center">
+              <img 
+                src={selectedImage} 
+                alt="Ảnh đính kèm" 
+                className="max-w-full max-h-full" 
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

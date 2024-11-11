@@ -151,77 +151,69 @@ export const getTicketByBranch = async ({
   }
 };
 
-export const getTicketByBusiness = async ({
-  id,
-  searchKey = '',
-  sortBy = '',
-  status = '',
-  isDescending = false,
-  pageSize = 10,
-  pageNum = 1
-}) => {
+export const getTicketByBusiness = async ({ id, pageSize, pageNum }) => {
   try {
-    const response = await axiosInstances.login.get(`/support-tickets/business/${id}`, {
-      params: {
-        searchKey,
-        sortBy,
-        status,
-        isDescending,
-        pageSize,
-        pageNum
-      }
-    });
-
-    if (response.data.status === 'error') {
-      throw new Error(response.data.message || 'Có lỗi xảy ra');
-    }
-
-    return {
-      tickets: response.data.data || [],
-      pagination: response.data.pagination || {
-        totalItems: 0,
-        pageSize: pageSize,
-        currentPage: pageNum,
-        totalPages: 0
-      }
-    };
-
+    const response = await axiosInstances.login.get(
+      `/support-tickets/business/${id}?IsDecsending=false&PageSize=${pageSize}&PageNum=${pageNum + 1}`
+    );
+    return response.data;
   } catch (error) {
     console.error('Lỗi khi lấy danh sách phiếu hỗ trợ theo doanh nghiệp:', error);
-    throw new Error(error.response?.data?.message || 'Không thể lấy danh sách phiếu hỗ trợ theo doanh nghiệp');
+    throw error;
   }
 };
 
-export const updateTicketStatus = async (id, status) => {
+export const updateTicketStatus = async (ticketId, status) => {
   try {
-    // Kiểm tra status hợp lệ
-    const validStatuses = ['OPENING', 'PROCESSING', 'CLOSED'];
-    if (!validStatuses.includes(status)) {
-      throw new Error('Trạng thái không hợp lệ');
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Chưa đăng nhập");
     }
 
-    const response = await axiosInstances.login.put(`/support-tickets/${id}/status`, {
-      status: status
-    });
+    // Chỉ chấp nhận 2 trạng thái
+    if (status !== 'OPENING' && status !== 'CLOSED') {
+      throw new Error("Trạng thái không hợp lệ");
+    }
+
+    const response = await axiosInstances.login.put(
+      `/support-tickets/${ticketId}/status`,
+      { status },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     return response.data;
   } catch (error) {
-    console.error('Lỗi khi cập nhật trạng thái phiếu hỗ trợ:', error);
-    throw new Error(error.response?.data?.message || 'Không thể cập nhật trạng thái phiếu hỗ trợ');
+    console.error("API Error:", error);
+    throw error;
   }
 };
 
-export const createChildTicket = async (ticketData) => {
+export const createChildTicket = async (data) => {
   try {
-    const response = await axiosInstances.login.post('/support-tickets/child-ticket', {
-      parentTicketId: ticketData.parentTicketId,
-      title: ticketData.title,
-      content: ticketData.content,
-      assets: ticketData.assets || [] // Mảng assets là tùy chọn
-    });
+    const token = localStorage.getItem("token");
+    if (!token) {
+      throw new Error("Chưa đăng nhập");
+    }
+
+    const response = await axiosInstances.login.post(
+      '/support-tickets/child',
+      data,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
     return response.data;
   } catch (error) {
-    console.error('Lỗi khi tạo phiếu hỗ trợ con:', error);
-    throw new Error(error.response?.data?.message || 'Không thể tạo phiếu hỗ trợ con');
+    console.error("API Error:", error);
+    throw error;
   }
 };

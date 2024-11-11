@@ -38,7 +38,7 @@ const OrderDetail = () => {
 
   const fetchOrderData = async () => {
     try {
-      console.log("Fetching order data for id:", id);
+      // console.log("Fetching order data for id:", id);
       const data = await getOrderById(id);
       console.log("Order data:", data);
       
@@ -47,7 +47,7 @@ const OrderDetail = () => {
         
         if (data.addressId) {
           const address = await getAddressById(data.addressId);
-          console.log("Address data:", address);
+          // console.log("Address data:", address);
           setAddressData(address);
         }
       }
