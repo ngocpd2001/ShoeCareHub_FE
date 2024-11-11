@@ -1,11 +1,49 @@
 // src/page/Owner/Dashboard.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
+import { getEmployeeByBusinessId } from '../../api/employee';
+import { getBusinessById } from '../../api/businesses';
 
 const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('Tất cả');
   const branches = ['Tất cả', 'Chi nhánh A', 'Chi nhánh B', 'Chi nhánh C'];
+  const [statistics, setStatistics] = useState({
+    totalOrders: 0,
+    totalEmployees: 0,
+    totalServices: 0,
+    totalRevenue: 0
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Lấy thông tin user từ localStorage
+        const userStr = localStorage.getItem('user');
+        const user = JSON.parse(userStr);
+        const businessId = user?.businessId;
+        
+        // console.log("BusinessID:", businessId);
+
+        const employeeData = await getEmployeeByBusinessId(businessId);
+        const businessData = await getBusinessById(businessId);
+        
+        // console.log("Toàn bộ dữ liệu nhân viên:", employeeData);
+        // console.log("Số lượng nhân viên:", employeeData?.employees?.length);
+        
+        setStatistics(prev => ({
+          ...prev,
+          totalEmployees: employeeData?.employees?.length || 0,
+          totalServices: businessData?.toTalServiceNum || 0,
+          totalOrders: businessData?.totalOrder || 0,
+        }));
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const toggleDropdown = () => {
     setShowDropdown(!showDropdown);
@@ -37,20 +75,20 @@ const Dashboard = () => {
       </div>
       <div className="stats">
         <div className="stat-card">
-          <h3>Tổng số người dùng</h3>
-          <p>25</p>
+          <h3>Tổng số đơn hàng</h3>
+          <p>{statistics.totalOrders}</p>
         </div>
         <div className="stat-card">
           <h3>Tổng số nhân viên</h3>
-          <p>39</p>
+          <p>{statistics.totalEmployees}</p>
         </div>
         <div className="stat-card">
-          <h3>Tổng số photo</h3>
-          <p>12</p>
+          <h3>Tổng số dịch vụ</h3>
+          <p>{statistics.totalServices}</p>
         </div>
         <div className="stat-card">
-          <h3>Tổng số tiền</h3>
-          <p>1.096.130.000 ₫</p>
+          <h3>Tổng doanh thu</h3>
+          <p>{statistics.totalRevenue.toLocaleString('vi-VN')} ₫</p>
         </div>
       </div>
     </div>

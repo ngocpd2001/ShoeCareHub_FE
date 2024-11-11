@@ -3,7 +3,7 @@ import { MessageSquare, Store } from "lucide-react";
 import ComModal from "./../ComModal/ComModal";
 import { useModalState } from "./../../hooks/useModalState";
 import ServiceReviewForm from "./ServiceReviewForm";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import ServiceViewReviewForm from "./ServiceViewReviewForm";
 
 const CartItem = ({ item }) => (
@@ -29,6 +29,7 @@ const CartItem = ({ item }) => (
 export default function OrderCard({ order, reloadData }) {
   const modalFeedback = useModalState();
   const modalViewFeedback = useModalState();
+  const navigate = useNavigate();
 
   console.log(order);
 
@@ -47,11 +48,19 @@ export default function OrderCard({ order, reloadData }) {
             to={`/branch/${
               order?.orderDetails && order?.orderDetails[0].branch.businessId
             }`}
-            className="bg-white text-[#4e4e4e] border border-[#555555] px-3 py-1 rounded-md text-sm flex items-center"
+            className="bg-white text-[#4e4e4e] border border-[#555555] px-3 py-1 rounded-md text-sm flex items-center mr-2"
           >
             <Store size={16} className="mr-1" />
             Xem shop
           </Link>
+          {order.status === "Đang giao hàng" && (
+            <button 
+              onClick={() => navigate('/user/create-ticket-order', { state: { orderId: order.id } })}
+              className="bg-red-600 text-white px-3 py-1 rounded-md text-sm flex items-center"
+            >
+              Khiếu nại
+            </button>
+          )}
         </div>
         <div className="flex gap-1">
           <span className=" font-medium text-center">Chi tiết</span>

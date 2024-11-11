@@ -17,6 +17,7 @@ const navigation = [
       { name: "Đổi mật khẩu", href: "/user/reset-password" },
       { name: "Địa chỉ nhận hàng", href: "/user/addresses" },
       { name: "Trở thành nhà cung cấp", href: "/" },
+      { name: "Yêu cầu khiếu nại", href: "/user/ticket" },
     ],
   },
   {
