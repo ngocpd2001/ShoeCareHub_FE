@@ -208,3 +208,32 @@ export const createChildTicket = async (ticketId, data) => {
     throw error;
   }
 };
+
+export const getAllTicketsMod = async (pageNum = 1, pageSize = 10, sortField = '', isDescending = false) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Không tìm thấy thông tin đăng nhập');
+    }
+
+    const response = await axiosInstances.login.get('/support-tickets', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      params: {
+        SortField: sortField,
+        IsDecsending: isDescending,
+        PageSize: pageSize,
+        PageNum: pageNum
+      }
+    });
+
+    return {
+      tickets: response.data.data,
+      pagination: response.data.pagination
+    };
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách phiếu hỗ trợ:', error);
+    throw error;
+  }
+};

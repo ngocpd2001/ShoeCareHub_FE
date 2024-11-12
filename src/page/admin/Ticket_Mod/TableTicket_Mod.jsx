@@ -14,7 +14,7 @@ import React, {
   import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
   import ComTable from "../../../Components/ComTable/ComTable";
   import useColumnFilters from "../../../Components/ComTable/utils";
-  import { getAllTicket } from "../../../api/ticket";
+  import { getAllTicketsMod } from "../../../api/ticket";
   
   export const getStatusDisplay = (status) => {
     switch (status) {
@@ -150,7 +150,7 @@ import React, {
     const reloadData = async () => {
       table.handleOpenLoading();
       try {
-        const response = await getAllTicket(
+        const response = await getAllTicketsMod(
           pagination.current,
           pagination.pageSize,
           table.sortField,
@@ -190,7 +190,7 @@ import React, {
       
       setPagination(newPagination);
       
-      getAllTicket(
+      getAllTicketsMod(
         newPagination.current,
         newPagination.pageSize,
         sorter.field,
