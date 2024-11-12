@@ -48,6 +48,8 @@ import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
 import TableFeedback from "./page/admin/FeedbackManager/TableFeedback";
 import ComHeaderModerator from './Components/ComHeaderModerator/ComHeaderModerator';
 import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailVerificationFailedScreen";
+import TicketManager_Mod from "./page/admin/Ticket_Mod/TicketManager_Mod";
+import UpdateTicket_Mod from "./page/admin/Ticket_Mod/UpdateTicket_Mod";
 
 // Hàm kiểm tra token hợp lệ
 const getCleanToken = () => {
@@ -292,10 +294,10 @@ export const routers = createBrowserRouter([
         path: "/owner/ticket",
         element: <TicketManager />,
       },
-      {
-        path: "/owner/ticket/:id",
-        element: <TicketDetail />,
-      },
+      // {
+      //   path: "/owner/ticket/:id",
+      //   element: <TicketDetail />,
+      // },
       {
         path: "/owner/ticket/update/:id",
         element: <UpdateTicket />,
@@ -323,6 +325,14 @@ export const routers = createBrowserRouter([
       {
         path: "/moderator/profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "/moderator/ticket",
+        element: <TicketManager_Mod />,
+      },
+      {
+        path: "/moderator/ticket/update/:id",
+        element: <UpdateTicket_Mod />,
       },
     ],
   },

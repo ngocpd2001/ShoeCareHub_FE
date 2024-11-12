@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Truck, MapPin, FileText, CheckCircle, Home } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { Breadcrumb, Popconfirm } from "antd";
+import { Breadcrumb, Popconfirm, Image } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -27,10 +27,15 @@ import {
   faTimesCircle,
   faCheckCircle,
 } from "@fortawesome/free-solid-svg-icons";
-import { getOrderById, updateOrder, updateOrderStatus } from "../../../api/order";
+import {
+  getOrderById,
+  updateOrder,
+  updateOrderStatus,
+} from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
 import { useNotification } from "../../../Notification/Notification";
+import { message, Modal } from 'antd';
 
 const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
@@ -42,7 +47,7 @@ const STATUS_TO_ENUM = {
   "Đang giao hàng": "SHIPPING",
   "Đã giao hàng": "DELIVERED",
   "Hoàn thành": "FINISHED",
-  "Quá hạn nhận hàng": "ABANDONED"
+  "Quá hạn nhận hàng": "ABANDONED",
 };
 
 const ENUM_TO_STATUS = {
@@ -55,21 +60,21 @@ const ENUM_TO_STATUS = {
   SHIPPING: "Đang giao hàng",
   DELIVERED: "Đã giao hàng",
   FINISHED: "Hoàn thành",
-  ABANDONED: "Quá hạn nhận hàng"
+  ABANDONED: "Quá hạn nhận hàng",
 };
 
 const getAvailableStatuses = (currentStatus) => {
   if (!currentStatus) return [];
 
   const statusEnum = STATUS_TO_ENUM[currentStatus] || currentStatus;
-  
+
   switch (statusEnum) {
     case "PENDING":
       return [
         { value: "Đã xác nhận", className: "bg-green-50 text-green-700" },
-        { value: "Đã hủy", className: "bg-red-50 text-red-700" }
+        { value: "Đã hủy", className: "bg-red-50 text-red-700" },
       ];
-      
+
     case "APPROVED":
       return [
         { value: "Đã nhận", className: "bg-green-50 text-green-700" },
@@ -115,9 +120,7 @@ const getAvailableStatuses = (currentStatus) => {
       ];
 
     case "DELIVERED":
-      return [
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-      ];
+      return [{ value: "Hoàn thành", className: "bg-green-50 text-green-700" }];
 
     case "ABANDONED":
       return [
@@ -127,12 +130,12 @@ const getAvailableStatuses = (currentStatus) => {
         { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
       ];
 
-      case "FINISHED":
-        return [];
+    case "FINISHED":
+      return [];
 
     case "CANCELED":
       return [];
-    
+
     default:
       return [];
   }
@@ -140,7 +143,7 @@ const getAvailableStatuses = (currentStatus) => {
 
 // Thêm hàm kiểm tra thời gian
 const checkOrderExpiration = (createTime, status) => {
-  if (status === 'PENDING') {
+  if (status === "PENDING") {
     const createdDate = new Date(createTime);
     const currentDate = new Date();
     const diffTime = Math.abs(currentDate - createdDate);
@@ -170,17 +173,21 @@ const UpdateOrder = () => {
   const fetchOrderData = async () => {
     try {
       const data = await getOrderById(id);
-      
+
       // Kiểm tra nếu đơn hàng đã quá 7 ngày và vẫn ở trạng thái PENDING
       if (checkOrderExpiration(data.createTime, data.status)) {
         // Tự động cập nhật trạng thái thành CANCELED
-        await updateOrderStatus(id, 'CANCELED');
+        await updateOrderStatus(id, "CANCELED");
         // Fetch lại dữ liệu sau khi cập nhật
         const updatedData = await getOrderById(id);
         setOrderData(updatedData);
         const displayStatus = ENUM_TO_STATUS[updatedData.status];
         setOrderStatus(displayStatus || updatedData.status);
-        notificationApi("info", "Thông báo", "Đơn hàng đã tự động hủy do quá 7 ngày không được xác nhận");
+        notificationApi(
+          "info",
+          "Thông báo",
+          "Đơn hàng đã tự động hủy do quá 7 ngày không được xác nhận"
+        );
       } else {
         setOrderData(data);
         const displayStatus = ENUM_TO_STATUS[data.status];
@@ -218,25 +225,35 @@ const UpdateOrder = () => {
   };
 
   const handleUpdateOrder = async () => {
-    try {
-      const updatedOrderData = {
-        ...orderData,
-        deliveredFee: formData.deliveredFee,
-        shippingCode: formData.shippingCode,
-        shippingUnit: formData.shippingUnit,
-        status: orderData.status
-      };
+    Modal.confirm({
+      title: "Xác nhận cập nhật",
+      content: "Bạn có chắc chắn muốn cập nhật thông tin đơn hàng không?",
+      okText: "Đồng ý",
+      cancelText: "Hủy",
+      okButtonProps: {
+        className: "bg-blue-500 hover:bg-blue-600 text-white",
+      },
+      async onOk() {
+        try {
+          const updatedOrderData = {
+            ...orderData,
+            deliveredFee: formData.deliveredFee,
+            shippingCode: formData.shippingCode,
+            shippingUnit: formData.shippingUnit,
+            status: orderData.status,
+          };
 
-      await updateOrder(id, updatedOrderData);
-      
-      await fetchOrderData();
-      
-      notificationApi("success", "Thành công", "Đã cập nhật thông tin đơn hàng");
-      navigate('/owner/order', { state: { refresh: true } });
-    } catch (error) {
-      console.error("Lỗi cập nhật:", error);
-      notificationApi("error", "Lỗi", "Không thể cập nhật thông tin đơn hàng");
-    }
+          await updateOrder(id, updatedOrderData);
+          await fetchOrderData();
+
+          message.success("Cập nhật đơn hàng thành công!");
+          navigate("/owner/order", { state: { refresh: true } });
+        } catch (error) {
+          console.error("Lỗi cập nhật:", error);
+          message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
+        }
+      },
+    });
   };
 
   const handleButtonClick = () => {
@@ -251,69 +268,73 @@ const UpdateOrder = () => {
   const getStatusHistory = (data) => {
     const savedHistory = localStorage.getItem(`orderHistory_${id}`);
     let history = savedHistory ? JSON.parse(savedHistory) : [];
-    
+
     if (history.length === 0) {
-      history = [{
-        status: "Đã tạo đơn hàng",
-        icon: faFileLines,
-        time: data.createTime,
-        order: 1
-      }];
+      history = [
+        {
+          status: "Đã tạo đơn hàng",
+          icon: faFileLines,
+          time: data.createTime,
+          order: 1,
+        },
+      ];
     }
 
     const currentStatus = data.status;
     if (currentStatus) {
       const statusLabel = ENUM_TO_STATUS[currentStatus] || currentStatus;
       const lastStatus = history[history.length - 1];
-      
+
       if (lastStatus.status !== statusLabel) {
         history.push({
           status: statusLabel,
           icon: getIconForStatus(statusLabel),
           time: data.updatedTime || new Date().toISOString(),
-          order: history.length + 1
+          order: history.length + 1,
         });
       }
     }
 
     const uniqueHistory = history.reduce((acc, current) => {
-      const exists = acc.some(item => item.status === current.status);
+      const exists = acc.some((item) => item.status === current.status);
       if (!exists) {
         acc.push(current);
       }
       return acc;
     }, []);
 
-    const sortedHistory = uniqueHistory.sort((a, b) => new Date(a.time) - new Date(b.time));
+    const sortedHistory = uniqueHistory.sort(
+      (a, b) => new Date(a.time) - new Date(b.time)
+    );
     localStorage.setItem(`orderHistory_${id}`, JSON.stringify(sortedHistory));
-    
+
     return sortedHistory;
   };
 
   const getIconForStatus = (status) => {
     const iconMap = {
-      'PENDING': faHourglassHalf,
-      'APPROVED': faCheck,
-      'RECEIVED': faInbox,
-      'PROCESSING': faCog,
-      'STORAGE': faWarehouse,
-      'SHIPPING': faTruck,
-      'DELIVERED': faBoxOpen,
-      'FINISHED': faCheckCircle,
-      'ABANDONED': faTimesCircle,
-      'CANCELED': faTimesCircle,
+      PENDING: faHourglassHalf,
+      APPROVED: faCheck,
+      RECEIVED: faInbox,
+      PROCESSING: faCog,
+      STORAGE: faWarehouse,
+      SHIPPING: faTruck,
+      DELIVERED: faBoxOpen,
+      FINISHED: faCheckCircle,
+      ABANDONED: faTimesCircle,
+      CANCELED: faTimesCircle,
       // Map cho text tiếng Việt
-      'Đã tạo đơn hàng': faFileLines,
-      'Đang chờ': faHourglassHalf,
-      'Đã xác nhận': faCheck,
-      'Đã nhận': faInbox,
-      'Đang xử lý': faCog,
-      'Lưu trữ': faWarehouse,
-      'Đang giao hàng': faTruck,
-      'Đã giao hàng': faBoxOpen,
-      'Hoàn thành': faCheckCircle,
-      'Quá hạn nhận hàng': faTimesCircle,
-      'Đã hủy': faTimesCircle
+      "Đã tạo đơn hàng": faFileLines,
+      "Đang chờ": faHourglassHalf,
+      "Đã xác nhận": faCheck,
+      "Đã nhận": faInbox,
+      "Đang xử lý": faCog,
+      "Lưu trữ": faWarehouse,
+      "Đang giao hàng": faTruck,
+      "Đã giao hàng": faBoxOpen,
+      "Hoàn thành": faCheckCircle,
+      "Quá hạn nhận hàng": faTimesCircle,
+      "Đã hủy": faTimesCircle,
     };
 
     return iconMap[status] || faFileLines;
@@ -331,8 +352,13 @@ const UpdateOrder = () => {
 
       setNewStatus(selectedStatus);
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";
-      notificationApi("error", "Lỗi", `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Lỗi không xác định";
+      notificationApi(
+        "error",
+        "Lỗi",
+        `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`
+      );
     }
   };
 
@@ -343,45 +369,57 @@ const UpdateOrder = () => {
 
       if (response) {
         // Cập nhật orderData với status mới
-        setOrderData(prev => ({
+        setOrderData((prev) => ({
           ...prev,
           status: statusEnum,
-          updatedTime: new Date().toISOString() // Thêm thời gian cập nhật mới
+          updatedTime: new Date().toISOString(), // Thêm thời gian cập nhật mới
         }));
-        
+
         setOrderStatus(newStatus);
-        
+
         // Tạo một bản ghi lịch sử mới
         const newHistoryEntry = {
           status: newStatus,
           icon: getIconForStatus(newStatus),
           time: new Date().toISOString(),
-          order: statusHistory.length + 1
+          order: statusHistory.length + 1,
         };
 
         // Cập nhật statusHistory với bản ghi mới
         const updatedHistory = [...statusHistory, newHistoryEntry];
         setStatusHistory(updatedHistory);
-        
+
         // Lưu vào localStorage
-        localStorage.setItem(`orderHistory_${id}`, JSON.stringify(updatedHistory));
-        
+        localStorage.setItem(
+          `orderHistory_${id}`,
+          JSON.stringify(updatedHistory)
+        );
+
         setNewStatus(null);
-        
-        notificationApi("success", "Thành công", "Đã cập nhật trạng thái đơn hàng");
+
+        notificationApi(
+          "success",
+          "Thành công",
+          "Đã cập nhật trạng thái đơn hàng"
+        );
       }
     } catch (error) {
-      const errorMessage = error.response?.data?.message || error.message || "Lỗi không xác định";
-      notificationApi("error", "Lỗi", `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`);
+      const errorMessage =
+        error.response?.data?.message || error.message || "Lỗi không xác định";
+      notificationApi(
+        "error",
+        "Lỗi",
+        `Không thể cập nhật trạng thái đơn hàng: ${errorMessage}`
+      );
       setNewStatus(null);
     }
   };
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -413,7 +451,7 @@ const UpdateOrder = () => {
         <div className="flex justify-end">
           <button
             onClick={handleUpdateOrder}
-            className="bg-[#002278] text-white px-4 py-2 rounded"
+            className="bg-[#002278] hover:bg-blue-900 transition-colors duration-200 text-white px-6 py-2.5 rounded-md font-medium"
           >
             Cập nhật
           </button>
@@ -445,7 +483,7 @@ const UpdateOrder = () => {
           <table className="w-full mb-6">
             <thead className="text-gray-500 text-sm">
               <tr>
-                <th className="text-left py-2">Dịch v</th>
+                <th className="text-left py-2">Dịch vụ</th>
                 <th className="text-right">Số lượng gói</th>
                 <th className="text-right">Đơn giá</th>
                 <th className="text-right">Thành tiền</th>
@@ -456,11 +494,36 @@ const UpdateOrder = () => {
                 <tr key={item.id} className="border-t">
                   <td className="py-3">
                     <div className="flex items-center">
-                      <img
-                        src={item.service.assetUrls[0] || "default-image-url"}
-                        alt=""
-                        className="w-10 h-10 rounded mr-3"
-                      />
+                      <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
+                        {item.service.assetUrls &&
+                        item.service.assetUrls.length > 0 ? (
+                          <Image.PreviewGroup
+                            preview={{
+                              onChange: (current, prev) =>
+                                console.log(
+                                  `Switched from preview ${prev} to ${current}`
+                                ),
+                            }}
+                          >
+                            <Image
+                              src={item.service.assetUrls[0].url} // Thay đổi ở đây
+                              alt={item.service.name}
+                              className="object-cover w-full h-full"
+                              fallback="data:image/png;base64,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"
+                              preview={{
+                                mask: "Xem ảnh",
+                                urls: item.service.assetUrls.map(
+                                  (asset) => asset.url
+                                ), // Thay đổi ở đây
+                              }}
+                            />
+                          </Image.PreviewGroup>
+                        ) : (
+                          <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                            <span className="text-gray-400">No image</span>
+                          </div>
+                        )}
+                      </div>
                       <span>{item.service.name}</span>
                     </div>
                   </td>
@@ -517,8 +580,8 @@ const UpdateOrder = () => {
                     onCancel={handleCancel}
                     okText="Đồng ý"
                     cancelText="Hủy"
-                    okButtonProps={{ 
-                      style: { backgroundColor: '#1890ff' } 
+                    okButtonProps={{
+                      style: { backgroundColor: "#1890ff" },
                     }}
                     open={Boolean(newStatus)}
                   >
@@ -672,10 +735,12 @@ const UpdateOrder = () => {
           <Truck className="w-5 h-5 text-blue-600 mr-2" />
           <div className="w-full">
             <h3 className="font-semibold text-blue-600 text-xl">Vận chuyển</h3>
-            
+
             <div className="mt-4 space-y-4">
               <div>
-                <label className="block text-gray-700 mb-2">Phí giao hàng (VNĐ)</label>
+                <label className="block text-gray-700 mb-2">
+                  Phí giao hàng (VNĐ)
+                </label>
                 <div className="relative">
                   <input
                     type="number"
@@ -694,7 +759,9 @@ const UpdateOrder = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Mã vận chuyển</label>
+                <label className="block text-gray-700 mb-2">
+                  Mã vận chuyển
+                </label>
                 <input
                   type="text"
                   name="shippingCode"
@@ -705,7 +772,9 @@ const UpdateOrder = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 mb-2">Đơn vị vận chuyển</label>
+                <label className="block text-gray-700 mb-2">
+                  Đơn vị vận chuyển
+                </label>
                 <input
                   type="text"
                   name="shippingUnit"

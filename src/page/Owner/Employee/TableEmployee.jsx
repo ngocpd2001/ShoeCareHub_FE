@@ -9,7 +9,7 @@ import { useModalState } from "../../../hooks/useModalState";
 import { useNotification } from "../../../Notification/Notification";
 import { useNavigate } from "react-router-dom";
 import { deleteEmployee } from '../../../api/employee';
-import { message } from 'antd';
+import { message, Modal } from 'antd';
 
 import ComTable from "../../../Components/ComTable/ComTable";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
@@ -162,13 +162,22 @@ export const TableEmployee = forwardRef((props, ref) => {
   }, []);
 
   const handleDelete = async (record) => {
-    try {
-      await deleteEmployee(record.id);
-      message.success("Xóa nhân viên thành công!");
-      reloadData();
-    } catch (error) {
-      message.error("Có lỗi xảy ra khi xóa nhân viên!");
-    }
+    Modal.confirm({
+      title: 'Xác nhận xóa',
+      content: `Bạn có chắc chắn muốn xóa nhân viên "${record.fullName}" không?`,
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      async onOk() {
+        try {
+          await deleteEmployee(record.id);
+          message.success("Xóa nhân viên thành công!");
+          reloadData();
+        } catch (error) {
+          message.error("Có lỗi xảy ra khi xóa nhân viên!");
+        }
+      },
+    });
   };
 
   return (

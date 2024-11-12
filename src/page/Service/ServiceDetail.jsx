@@ -47,7 +47,8 @@ const ServiceDetail = () => {
         setService(fetchedService);
 
         // Lấy businessId từ dữ liệu dịch vụ
-        const fetchedBusinessId = fetchedService.branchServices[0]?.branch.businessId;
+        const fetchedBusinessId =
+          fetchedService.branchServices[0]?.branch.businessId;
         if (fetchedBusinessId) {
           setBusinessId(fetchedBusinessId);
         }
@@ -64,7 +65,10 @@ const ServiceDetail = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (containerRef.current && !containerRef.current.contains(event.target)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
         setCurrentImageIndex(-1);
       }
     };
@@ -76,7 +80,11 @@ const ServiceDetail = () => {
   }, []);
 
   useEffect(() => {
-    if (service && service.branchServices && service.branchServices.length > 0) {
+    if (
+      service &&
+      service.branchServices &&
+      service.branchServices.length > 0
+    ) {
       setSelectedBranch(service.branchServices[0].branch);
     }
   }, [service]);
@@ -84,18 +92,20 @@ const ServiceDetail = () => {
   if (loading) return <div>Đang tải thông tin dịch vụ...</div>;
   if (error) return <div>{error}</div>;
 
-  const combinedData = service ? [
-    // Ảnh chính
-    {
-      img: service.images?.main || '/path/to/default-image.jpg',
-      type: "image"
-    },
-    // Các ảnh phụ từ assetUrls
-    ...(service.assetUrls || []).map((asset) => ({
-      img: asset.url || asset,
-      type: "image"
-    }))
-  ] : [];
+  const combinedData = service
+    ? [
+        // Ảnh chính
+        {
+          img: service.images?.main || "/path/to/default-image.jpg",
+          type: "image",
+        },
+        // Thêm trực tiếp các ảnh từ assetUrls
+        ...(service.assetUrls || []).map((asset) => ({
+          img: asset.url,
+          type: "image",
+        })),
+      ]
+    : [];
 
   const nextImage = () => {
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
@@ -139,8 +149,8 @@ const ServiceDetail = () => {
     // Kiểm tra đăng nhập
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
-      localStorage.setItem('redirectAfterLogin', location.pathname);
-      navigate('/login');
+      localStorage.setItem("redirectAfterLogin", location.pathname);
+      navigate("/login");
       return;
     }
 
@@ -150,16 +160,16 @@ const ServiceDetail = () => {
         branchId: selectedBranch.id,
         quantity: quantity,
       };
-      
+
       await addItemToCart(user.id, itemData);
       navigate("/cart");
     } catch (error) {
       console.error("Error adding item to cart:", error);
       if (error.response?.status === 401) {
         // Token hết hạn hoặc không hợp lệ
-        localStorage.removeItem('user');
-        localStorage.setItem('redirectAfterLogin', location.pathname);
-        navigate('/login');
+        localStorage.removeItem("user");
+        localStorage.setItem("redirectAfterLogin", location.pathname);
+        navigate("/login");
       } else {
         setMessage("Có lỗi xảy ra khi thêm vào giỏ hàng");
       }
@@ -169,8 +179,8 @@ const ServiceDetail = () => {
   const handleCheckout = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id || !selectedBranch) {
-      localStorage.setItem('redirectAfterLogin', location.pathname);
-      navigate('/login');
+      localStorage.setItem("redirectAfterLogin", location.pathname);
+      navigate("/login");
       return;
     }
 
@@ -183,11 +193,13 @@ const ServiceDetail = () => {
         shopAddress: selectedBranch.address,
       };
       navigate("/checkout-service", {
-        state: { 
-          selectedItems: [{
-            branchId: selectedBranch.id,
-            services: [checkoutService] 
-          }] 
+        state: {
+          selectedItems: [
+            {
+              branchId: selectedBranch.id,
+              services: [checkoutService],
+            },
+          ],
         },
       });
     }
@@ -204,7 +216,7 @@ const ServiceDetail = () => {
   const handleBranchChange = (event) => {
     const selectedBranchId = event.target.value;
     const branch = service.branchServices.find(
-      bs => bs.branch.id === parseInt(selectedBranchId)
+      (bs) => bs.branch.id === parseInt(selectedBranchId)
     )?.branch;
     setSelectedBranch(branch);
   };
@@ -223,15 +235,31 @@ const ServiceDetail = () => {
                   alt="Main preview"
                   className="w-full h-full object-cover rounded-lg"
                 />
+                {combinedData.length > 1 && (
+                  <>
+                    <button
+                      onClick={prevImage}
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/50 rounded-full p-2"
+                    >
+                      <FontAwesomeIcon icon={faChevronLeft} />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/50 rounded-full p-2"
+                    >
+                      <FontAwesomeIcon icon={faChevronRight} />
+                    </button>
+                  </>
+                )}
               </div>
 
               {/* Thumbnails */}
               <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
                 {combinedData.map((item, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className={`relative min-w-[100px] h-[100px] cursor-pointer ${
-                      index === currentImageIndex ? 'ring-2 ring-[#3A4980]' : ''
+                      index === currentImageIndex ? "ring-2 ring-[#3A4980]" : ""
                     }`}
                     onClick={() => setCurrentImageIndex(index)}
                   >
@@ -311,7 +339,9 @@ const ServiceDetail = () => {
 
                 <div
                   className={`mt-2 text-gray-600 transition-max-height duration-500 ease-in-out ${
-                    isExpanded ? "max-h-[1000px]" : "max-h-[120px] overflow-hidden"
+                    isExpanded
+                      ? "max-h-[1000px]"
+                      : "max-h-[120px] overflow-hidden"
                   }`}
                 >
                   <p>
@@ -322,19 +352,28 @@ const ServiceDetail = () => {
                 </div>
 
                 {isLongDescription && (
-                  <button onClick={toggleDescription} className="text-blue-500 mt-2">
+                  <button
+                    onClick={toggleDescription}
+                    className="text-blue-500 mt-2"
+                  >
                     {isExpanded ? "Ẩn bớt..." : "Xem thêm..."}
                   </button>
                 )}
 
                 <div className="mt-4 flex items-center">
-                  <span className="text-gray-500 font-semibold mr-2">Trạng thái:</span>
-                  <span className={`px-3 py-1 rounded-full ${
-                    service.status === 'Hoạt Động' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {service.status === 'Hoạt Động' ? 'Đang hoạt động' : 'Ngưng hoạt động'}
+                  <span className="text-gray-500 font-semibold mr-2">
+                    Trạng thái:
+                  </span>
+                  <span
+                    className={`px-3 py-1 rounded-full ${
+                      service.status === "Hoạt Động"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-red-100 text-red-800"
+                    }`}
+                  >
+                    {service.status === "Hoạt Động"
+                      ? "Đang hoạt động"
+                      : "Ngưng hoạt động"}
                   </span>
                 </div>
               </div>
@@ -342,18 +381,20 @@ const ServiceDetail = () => {
               <div className="mt-5 border-t pt-4">
                 <h2 className="text-2xl font-semibold mb-4">Chọn chi nhánh</h2>
                 <select
-                  value={selectedBranch?.id || ''}
+                  value={selectedBranch?.id || ""}
                   onChange={handleBranchChange}
                   className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3A4980]"
                 >
                   {service?.branchServices?.map((bs) => (
-                    <option 
-                      key={bs.branch.id} 
+                    <option
+                      key={bs.branch.id}
                       value={bs.branch.id}
-                      disabled={bs.status === 'Ngưng Hoạt Động'}
+                      disabled={bs.status === "Ngưng Hoạt Động"}
                     >
                       {bs.branch.name} - {bs.branch.address}
-                      {bs.status === 'Ngưng Hoạt Động' ? ' (Ngưng hoạt động)' : ''}
+                      {bs.status === "Ngưng Hoạt Động"
+                        ? " (Ngưng hoạt động)"
+                        : ""}
                     </option>
                   ))}
                 </select>
@@ -406,11 +447,11 @@ const ServiceDetail = () => {
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  disabled={service.status !== 'Hoạt Động'}
+                  disabled={service.status !== "Hoạt Động"}
                   className={`rounded-xl py-4 px-6 flex items-center ${
-                    service.status === 'Hoạt Động'
-                      ? 'bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    service.status === "Hoạt Động"
+                      ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"
+                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
                   }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
@@ -418,11 +459,11 @@ const ServiceDetail = () => {
                 </button>
                 <button
                   onClick={handleCheckout}
-                  disabled={service.status !== 'Hoạt Động'}
+                  disabled={service.status !== "Hoạt Động"}
                   className={`rounded-xl py-2 px-10 ${
-                    service.status === 'Hoạt Động'
-                      ? 'bg-gray-200 text-[#3A4980] hover:bg-gray-300 cursor-pointer'
-                      : 'bg-gray-200 text-gray-500 cursor-not-allowed'
+                    service.status === "Hoạt Động"
+                      ? "bg-gray-200 text-[#3A4980] hover:bg-gray-300 cursor-pointer"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
                 >
                   Thanh toán

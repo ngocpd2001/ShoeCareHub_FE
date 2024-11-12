@@ -43,6 +43,8 @@ export default function CreateEmployee() {
     formState: { errors },
   } = methods;
 
+  console.log("Validation errors:", errors);
+
   // Lấy danh sách chi nhánh
   useEffect(() => {
     const fetchBranches = async () => {
@@ -110,23 +112,30 @@ export default function CreateEmployee() {
     try {
       setDisabled(true);
       const uploadedUrls = await firebaseImgs(image);
+      const userData = JSON.parse(localStorage.getItem("user"));
+
+      // Format lại dữ liệu trước khi gửi
       const employeeData = {
-        ...data,
+        fullName: data.fullName,
+        dob: new Date(data.dob).toISOString().split('T')[0], // Format lại ngày tháng
+        gender: data.gender,
+        email: data.email,
+        phone: data.phone,
+        branchId: parseInt(data.branchId), // Chuyển sang số
+        businessId: parseInt(userData.businessId), // Chuyển sang số
         avatar: uploadedUrls[0],
-        gender: data.gender === "Nam" ? "MALE" : "FEMALE",
-        genderName: data.gender,
+        status: "ACTIVE"
       };
+
+      console.log("Data gửi lên API:", employeeData);
 
       const response = await createEmployee(employeeData);
       notificationApi("success", "Thành công", "Tạo nhân viên thành công");
       navigate("/owner/employee");
     } catch (error) {
-      const errorMessage = error.response?.data?.message;
-      notificationApi(
-        "error",
-        "Lỗi",
-        errorMessage || "Có lỗi xảy ra khi tạo nhân viên"
-      );
+      console.log("Error details:", error.response?.data?.errors); // Log chi tiết lỗi validation
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi tạo nhân viên";
+      notificationApi("error", "Lỗi", errorMessage);
     } finally {
       setDisabled(false);
     }
@@ -170,8 +179,8 @@ export default function CreateEmployee() {
                 <ComSelect
                   label="Giới tính"
                   options={[
-                    { value: "Nam", label: "Nam" },
-                    { value: "Nữ", label: "Nữ" },
+                    { value: "MALE", label: "Nam" },
+                    { value: "FEMALE", label: "Nữ" },
                   ]}
                   required
                   value={selectedGender}
@@ -183,6 +192,7 @@ export default function CreateEmployee() {
                     setSelectedGender(value);
                     setValue("gender", value);
                   }}
+                  className="w-full min-w-[200px] max-w-full" 
                 />
               </div>
             </div>
@@ -226,9 +236,11 @@ export default function CreateEmployee() {
           <div className="mt-10 flex justify-end gap-6">
             <div>
               <ComButton
-                className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
+                onClick={() => navigate('/owner/employee')}
+                type="button"
+                className="block w-full rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm"
               >
-                <div className="text-black"> Hủy bỏ</div>
+                <div className="text-black">Hủy bỏ</div>
               </ComButton>
             </div>
             <div>

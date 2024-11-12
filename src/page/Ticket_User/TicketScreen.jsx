@@ -20,6 +20,9 @@ const TicketScreen = () => {
   const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [ticketToCancel, setTicketToCancel] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [pageSize] = useState(10);
 
   const statusOptions = [
     { value: '', label: 'Trạng thái' },
@@ -44,13 +47,13 @@ const TicketScreen = () => {
     }
   };
 
-  const fetchTickets = async (status = '', sortField = '', isDesc = false, search = '') => {
+  const fetchTickets = async (status = '', sortField = '', isDesc = false, search = '', page = 1) => {
     try {
       setLoading(true);
       const response = await getAllTicket({
         searchKey: search,
-        pageSize: 10,
-        pageNum: 1,
+        pageSize: pageSize,
+        pageNum: page,
         status: status,
         sortBy: sortField,
         isDescending: isDesc
@@ -60,6 +63,8 @@ const TicketScreen = () => {
         setTickets(response.tickets);
         setSortBy(sortField);
         setIsDescending(isDesc);
+        setTotalPages(Math.ceil(response.total / pageSize));
+        setCurrentPage(page);
       }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách ticket:", error);
@@ -106,8 +111,7 @@ const TicketScreen = () => {
       await cancelTicket(ticketToCancel);
       setShowCancelConfirm(false);
       setTicketToCancel(null);
-      // Refresh lại danh sách ticket sau khi hủy
-      fetchTickets(selectedStatus, sortBy, isDescending, searchKey);
+      fetchTickets(selectedStatus, sortBy, isDescending, searchKey, currentPage);
     } catch (error) {
       console.error("Lỗi khi hủy ticket:", error);
     }
@@ -116,26 +120,25 @@ const TicketScreen = () => {
   const handleSort = () => {
     if (sortBy === 'STATUS') {
       setIsDescending(!isDescending);
-      fetchTickets(selectedStatus, 'STATUS', !isDescending, searchKey);
+      fetchTickets(selectedStatus, 'STATUS', !isDescending, searchKey, currentPage);
     } else {
       setSortBy('STATUS');
       setIsDescending(false);
-      fetchTickets(selectedStatus, 'STATUS', false, searchKey);
+      fetchTickets(selectedStatus, 'STATUS', false, searchKey, currentPage);
     }
   };
 
   const handleStatusChange = (event) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
-    fetchTickets(newStatus, sortBy, isDescending, searchKey);
+    fetchTickets(newStatus, sortBy, isDescending, searchKey, 1);
   };
 
   const handleSearch = (event) => {
     const value = event.target.value;
     setSearchKey(value);
-    // Gọi API search với delay 500ms để tránh gọi quá nhiều
     const timeoutId = setTimeout(() => {
-      fetchTickets(selectedStatus, sortBy, isDescending, value);
+      fetchTickets(selectedStatus, sortBy, isDescending, value, 1);
     }, 500);
     return () => clearTimeout(timeoutId);
   };
@@ -238,6 +241,92 @@ const TicketScreen = () => {
     ));
   };
 
+  const handlePageChange = (page) => {
+    fetchTickets(selectedStatus, sortBy, isDescending, searchKey, page);
+  };
+
+  const Pagination = () => {
+    const pages = [];
+    const maxVisiblePages = 5;
+    
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+    
+    if (endPage - startPage + 1 < maxVisiblePages) {
+      startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`px-3 py-1 mx-1 rounded ${
+            currentPage === i
+              ? 'bg-[#002278] text-white'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="flex items-center justify-center mt-6">
+        <button
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={currentPage === 1}
+          className={`px-3 py-1 rounded mx-1 ${
+            currentPage === 1
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          Trước
+        </button>
+        
+        {startPage > 1 && (
+          <>
+            <button
+              onClick={() => handlePageChange(1)}
+              className="px-3 py-1 mx-1 rounded bg-white text-gray-700 hover:bg-gray-100"
+            >
+              1
+            </button>
+            {startPage > 2 && <span className="mx-2">...</span>}
+          </>
+        )}
+        
+        {pages}
+        
+        {endPage < totalPages && (
+          <>
+            {endPage < totalPages - 1 && <span className="mx-2">...</span>}
+            <button
+              onClick={() => handlePageChange(totalPages)}
+              className="px-3 py-1 mx-1 rounded bg-white text-gray-700 hover:bg-gray-100"
+            >
+              {totalPages}
+            </button>
+          </>
+        )}
+        
+        <button
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={currentPage === totalPages}
+          className={`px-3 py-1 rounded mx-1 ${
+            currentPage === totalPages
+              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+              : 'bg-white text-gray-700 hover:bg-gray-100'
+          }`}
+        >
+          Sau
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 px-2 py-6">
       {/* Header */}
@@ -308,14 +397,14 @@ const TicketScreen = () => {
               <th className="py-3 px-4 text-gray-600">Dịch vụ</th>
               <th className="py-3 px-4 text-gray-600 cursor-pointer" onClick={handleSort}>
                 Trạng thái
-                <FontAwesomeIcon 
+                {/* <FontAwesomeIcon 
                   icon={faSort} 
                   className={`ml-2 ${sortBy === 'STATUS' ? (isDescending ? 'rotate-180' : '') : ''}`} 
-                />
+                /> */}
               </th>
               <th className="py-3 px-4 text-gray-600">
                 Cập nhật
-                <FontAwesomeIcon icon={faSort} className="ml-2" />
+                {/* <FontAwesomeIcon icon={faSort} className="ml-2" /> */}
               </th>
               <th className="py-3 px-4 text-gray-600"></th>
             </tr>
@@ -324,6 +413,8 @@ const TicketScreen = () => {
             {renderTableBody()}
           </tbody>
         </table>
+
+        {!loading && tickets.length > 0 && <Pagination />}
       </div>
 
       {/* Thêm popup xác nhận hủy */}

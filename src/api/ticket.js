@@ -60,43 +60,31 @@ export const createTicketOrder = async (ticketData) => {
   }
 };
 
-export const getAllTicket = async ({
-  searchKey = '',
-  sortBy = '',
-  status = '',
-  isDescending = false,
-  pageSize = 10,
-  pageNum = 1
-}) => {
+export const getAllTicket = async (pageNum = 1, pageSize = 10, isDescending = false) => {
   try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Không tìm thấy token');
+    }
+
     const response = await axiosInstances.login.get('/support-tickets', {
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
       params: {
-        searchKey,
-        sortBy,
-        status,
-        isDescending,
-        pageSize,
-        pageNum
+        IsDecsending: isDescending,
+        PageSize: pageSize,
+        PageNum: pageNum
       }
     });
 
-    if (response.data.status === 'error') {
-      throw new Error(response.data.message || 'Có lỗi xảy ra');
-    }
-
     return {
-      tickets: response.data.data || [],
-      pagination: response.data.pagination || {
-        totalItems: 0,
-        pageSize: pageSize,
-        currentPage: pageNum,
-        totalPages: 0
-      }
+      tickets: response.data.data,
+      pagination: response.data.pagination
     };
-
   } catch (error) {
     console.error('Lỗi khi lấy danh sách phiếu hỗ trợ:', error);
-    throw new Error(error.response?.data?.message || 'Không thể lấy danh sách phiếu hỗ trợ');
+    throw error;
   }
 };
 
@@ -165,14 +153,15 @@ export const getTicketByBusiness = async ({ id, pageSize, pageNum }) => {
 
 export const updateTicketStatus = async (ticketId, status) => {
   try {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem('token');
     if (!token) {
-      throw new Error("Chưa đăng nhập");
+      throw new Error('Không tìm thấy token');
     }
 
-    // Chỉ chấp nhận 2 trạng thái
-    if (status !== 'OPENING' && status !== 'CLOSED') {
-      throw new Error("Trạng thái không hợp lệ");
+    // Kiểm tra status hợp lệ
+    const validStatuses = ['OPENING', 'PROCESSING', 'CLOSED'];
+    if (!validStatuses.includes(status)) {
+      throw new Error('Trạng thái không hợp lệ');
     }
 
     const response = await axiosInstances.login.put(
@@ -181,19 +170,19 @@ export const updateTicketStatus = async (ticketId, status) => {
       {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
+          'Content-Type': 'application/json'
+        }
       }
     );
 
     return response.data;
   } catch (error) {
-    console.error("API Error:", error);
+    console.error('Lỗi khi cập nhật trạng thái:', error);
     throw error;
   }
 };
 
-export const createChildTicket = async (data) => {
+export const createChildTicket = async (ticketId, data) => {
   try {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -201,7 +190,7 @@ export const createChildTicket = async (data) => {
     }
 
     const response = await axiosInstances.login.post(
-      '/support-tickets/child',
+      `/support-tickets/${ticketId}/child-ticket`,
       data,
       {
         headers: {

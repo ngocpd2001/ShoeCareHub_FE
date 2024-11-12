@@ -6,6 +6,7 @@ import { useState, useEffect } from 'react';
 import { getCategoryTicket, getCategoryTicketById, createTicket } from '../../api/ticket';
 import { getAccountById } from '../../api/user';
 import { useNotification } from "../../Notification/Notification";
+import { firebaseImgs } from "../../upImgFirebase/firebaseImgs";
 
 const CreateTicket = () => {
   const location = useLocation();
@@ -165,7 +166,7 @@ const CreateTicket = () => {
     const newAttachments = validFiles.map(file => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-      file // Lưu lại file để xử lý upload sau
+      file: file // Lưu lại file để upload lên Firebase sau
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
@@ -193,11 +194,30 @@ const CreateTicket = () => {
         return;
       }
 
-      // Xử lý attachments
-      const assets = attachments.map(attachment => ({
-        url: attachment.url,
-        type: attachment.type
-      }));
+      // Lọc ra các attachment có file để upload lên Firebase
+      const attachmentsWithFiles = attachments.filter(att => att.file);
+      const files = attachmentsWithFiles.map(att => att.file);
+
+      // Upload files lên Firebase
+      let assets = [];
+      
+      if (files.length > 0) {
+        const uploadedUrls = await firebaseImgs(files);
+        assets = uploadedUrls.map(url => ({
+          url: url,
+          type: url.includes('mp4') ? 'VIDEO' : 'IMAGE'
+        }));
+      }
+
+      // Thêm các attachment từ URL trực tiếp
+      const urlOnlyAttachments = attachments
+        .filter(att => !att.file)
+        .map(att => ({
+          url: att.url,
+          type: att.type
+        }));
+
+      assets = [...assets, ...urlOnlyAttachments];
 
       const ticketData = {
         categoryId: parseInt(selectedDepartment),
@@ -332,13 +352,13 @@ const CreateTicket = () => {
                   className="hidden"
                 />
               </label>
-              <button
+              {/* <button
                 className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2"
                 onClick={() => setShowLinkInput(!showLinkInput)}
               >
                 <FontAwesomeIcon icon={faLink} />
                 <span>Thêm link</span>
-              </button>
+              </button> */}
             </div>
 
             {/* Link Input */}

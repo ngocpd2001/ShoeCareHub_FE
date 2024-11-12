@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { notification, Breadcrumb, Form, Input, Upload, Image } from "antd";
+import { notification, Breadcrumb, Select, Form, Input, Upload, Image, Modal } from "antd";
 import {
   getTicketById,
+  updateTicketStatus,
   createChildTicket,
 } from "../../../api/ticket";
 import { UploadOutlined } from "@ant-design/icons";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
+
 
 // Thêm hàm formatDate
 const formatDate = (dateString) => {
@@ -28,33 +30,56 @@ const STATUS_DISPLAY = {
   'CLOSED': 'Đã đóng'
 };
 
-// Thêm object để map status với màu sắc và text
-const STATUS_STYLES = {
-  'OPENING': {
-    color: '#1890ff',
-    bgColor: '#e6f7ff',
-    borderColor: '#91d5ff'
-  },
-  'PROCESSING': {
-    color: '#faad14',
-    bgColor: '#fff7e6',
-    borderColor: '#ffd591'
-  },
-  'CLOSED': {
-    color: '#52c41a',
-    bgColor: '#f6ffed',
-    borderColor: '#b7eb8f'
-  }
-};
-
 // Sử dụng trực tiếp STATUS_DISPLAY trong component
-const UpdateTicket = () => {
+const UpdateTicket_Mod = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [ticketDetails, setTicketDetails] = useState(null);
+  const [loading, setLoading] = useState(false);
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
+  const [fileList, setFileList] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
   const [attachments, setAttachments] = useState([]);
+
+  // Sửa lại statusOptions để hiển thị tiếng Việt
+  const statusOptions = [
+    { value: 'OPENING', label: STATUS_DISPLAY['OPENING'] },
+    { value: 'PROCESSING', label: STATUS_DISPLAY['PROCESSING'] },
+    { value: 'CLOSED', label: STATUS_DISPLAY['CLOSED'] }
+  ];
+
+  const handleStatusChange = async (newStatus) => {
+    Modal.confirm({
+      title: 'Xác nhận thay đổi',
+      content: `Bạn có chắc chắn muốn thay đổi trạng thái thành "${STATUS_DISPLAY[newStatus]}"?`,
+      okText: 'Đồng ý',
+      cancelText: 'Hủy bỏ',
+      onOk: async () => {
+        try {
+          setLoading(true);
+          await updateTicketStatus(id, newStatus);
+          
+          notification.success({
+            message: "Thành công",
+            description: "Cập nhật trạng thái thành công",
+          });
+    
+          // Refresh data
+          const response = await getTicketById(id);
+          setTicketDetails(response.data);
+        } catch (error) {
+          console.error('Error details:', error);
+          notification.error({
+            message: "Lỗi",
+            description: error.response?.data?.message || "Không thể cập nhật trạng thái",
+          });
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
+  };
 
   // Thêm useEffect để fetch dữ liệu
   useEffect(() => {
@@ -90,6 +115,65 @@ const UpdateTicket = () => {
     fetchTicketDetails();
   }, [id, navigate]);
 
+  const handleSubmit = async (values) => {
+    try {
+      setSubmitting(true);
+
+      let assets = [];
+      const files = attachments.filter(att => att.file).map(att => att.file);
+      
+      if (files.length > 0) {
+        const uploadedUrls = await firebaseImgs(files);
+        assets = uploadedUrls.map(url => ({
+          url: url,
+          type: url.includes('mp4') ? 'VIDEO' : 'IMAGE'
+        }));
+      }
+
+      const requestData = {
+        title: ticketDetails.title,
+        content: values.content,
+        assets: assets
+      };
+
+      await createChildTicket(id, requestData);
+
+      notification.success({
+        message: "Thành công",
+        description: "Đã thêm phản hồi mới",
+      });
+
+      // Refresh data
+      const response = await getTicketById(id);
+      setTicketDetails(response.data);
+
+      // Reset form và attachments
+      form.resetFields();
+      setAttachments([]);
+    } catch (error) {
+      console.error("Submit error:", error);
+      notification.error({
+        message: "Lỗi",
+        description: error.message || "Không thể thêm phản hồi",
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleImageClick = (url) => {
+    setSelectedImage(url);
+  };
+
+  const handleCloseImage = () => {
+    setSelectedImage(null);
+  };
+
+  // Hiển thị status trong tiếng Việt
+  const displayStatus = (status) => {
+    return STATUS_DISPLAY[status] || status;
+  };
+
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
     const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
@@ -108,62 +192,10 @@ const UpdateTicket = () => {
     const newAttachments = validFiles.map(file => ({
       url: URL.createObjectURL(file),
       type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-      file: file // Lưu file gốc để upload sau
+      file: file
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
-  };
-
-  const handleSubmit = async (values) => {
-    try {
-      setSubmitting(true);
-
-      // Upload files lên Firebase
-      let assets = [];
-      const files = attachments.filter(att => att.file).map(att => att.file);
-      
-      if (files.length > 0) {
-        const uploadedUrls = await firebaseImgs(files);
-        assets = uploadedUrls.map(url => ({
-          url: url,
-          type: url.includes('mp4') ? 'VIDEO' : 'IMAGE'
-        }));
-      }
-
-      const requestData = {
-        title: ticketDetails.title,
-        content: values.content,
-        assets: assets
-      };
-
-      console.log("Request data:", requestData);
-
-      const response = await createChildTicket(id, requestData);
-
-      if (response.status === 'success') {
-        notification.success({
-          message: "Thành công",
-          description: "Đã thêm phản hồi mới",
-        });
-
-        // Refresh data
-        const newData = await getTicketById(id);
-        setTicketDetails(newData.data);
-
-        // Reset form và attachments
-        form.resetFields();
-        setAttachments([]);
-      }
-      
-    } catch (error) {
-      console.error("Submit error:", error);
-      notification.error({
-        message: "Lỗi",
-        description: error.message || "Không thể thêm phản hồi",
-      });
-    } finally {
-      setSubmitting(false);
-    }
   };
 
   const removeAttachment = (index) => {
@@ -208,16 +240,14 @@ const UpdateTicket = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium">Trạng thái:</span>
-            <span
-              className="px-3 py-1 rounded-full text-sm"
-              style={{
-                color: STATUS_STYLES[ticketDetails.status]?.color,
-                backgroundColor: STATUS_STYLES[ticketDetails.status]?.bgColor,
-                border: `1px solid ${STATUS_STYLES[ticketDetails.status]?.borderColor}`
-              }}
-            >
-              {STATUS_DISPLAY[ticketDetails.status] || ticketDetails.status}
-            </span>
+            <Select
+              value={ticketDetails.status}
+              onChange={handleStatusChange}
+              options={statusOptions}
+              loading={loading}
+              disabled={loading}
+              style={{ width: 150 }}
+            />
           </div>
         </div>
 
@@ -264,19 +294,20 @@ const UpdateTicket = () => {
               <div className="flex-1">
                 <div className="font-medium">{ticketDetails.fullName}</div>
                 <p className="text-gray-600 mb-2">
-                  {ticketDetails.content}
+                  {ticketDetails.description}
                 </p>
-                {ticketDetails.assets && ticketDetails.assets.map((asset, index) => (
-                  <div key={index} className="mb-2">
-                    <Image.PreviewGroup>
-                      <Image
-                        src={asset.url}
-                        alt={`Ảnh ${index + 1}`}
-                        className="max-w-[200px] rounded border"
-                      />
-                    </Image.PreviewGroup>
-                  </div>
-                ))}
+                {ticketDetails.assets &&
+                  ticketDetails.assets
+                    .filter((asset) => asset.isImage || asset.type === "IMAGE")
+                    .map((asset, index) => (
+                      <div key={index} className="mb-2">
+                        <img
+                          src={asset.url}
+                          alt={`Ảnh ${index + 1}`}
+                          className="max-w-[200px] rounded border"
+                        />
+                      </div>
+                    ))}
                 <div className="text-sm text-gray-500">
                   {formatDate(ticketDetails.createTime)}
                 </div>
@@ -304,15 +335,13 @@ const UpdateTicket = () => {
                         )
                         .map((asset, assetIndex) => (
                           <div key={assetIndex} className="mb-2">
-                            <Image.PreviewGroup>
-                              <Image
-                                src={asset.url}
-                                alt={`Ảnh phản hồi ${index + 1}-${
-                                  assetIndex + 1
-                                }`}
-                                className="max-w-[200px] rounded border"
-                              />
-                            </Image.PreviewGroup>
+                            <img
+                              src={asset.url}
+                              alt={`nh phản hồi ${index + 1}-${
+                                assetIndex + 1
+                              }`}
+                              className="max-w-[200px] rounded border"
+                            />
                           </div>
                         ))}
                     <div className="text-sm text-gray-500">
@@ -323,6 +352,23 @@ const UpdateTicket = () => {
               ))}
           </div>
         </div>
+
+        {/* Modal xem ảnh */}
+        {selectedImage && (
+          <div
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[60]"
+            onClick={handleCloseImage}
+          >
+            <div className="relative max-w-[90%] max-h-[90vh]">
+              <img
+                src={selectedImage}
+                alt="Ảnh lớn"
+                className="max-w-full max-h-[90vh] object-contain"
+                onClick={(e) => e.stopPropagation()}
+              />
+            </div>
+          </div>
+        )}
 
         {/* Form phản hồi mới */}
         <div className="mb-6 border-t pt-6">
@@ -356,9 +402,6 @@ const UpdateTicket = () => {
               <Input.TextArea
                 rows={4}
                 placeholder="Nhập nội dung phản hồi..."
-                maxLength={undefined}
-                showCount={false}
-                autoSize={{ minRows: 4, maxRows: 10 }}
               />
             </Form.Item>
 
@@ -435,4 +478,4 @@ const UpdateTicket = () => {
   );
 };
 
-export default UpdateTicket;
+export default UpdateTicket_Mod;

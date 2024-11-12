@@ -96,7 +96,7 @@ const FeedbackService = () => {
 
   // Định nghĩa hàm handleLikeClick
   const handleLikeClick = (reviewIndex) => {
-    // Cập nhật trạng thái likedReviews cho review được chọn
+    // Cập nhật trng thái likedReviews cho review được chọn
     const updatedLikedReviews = likedReviews.map((liked, i) =>
       i === reviewIndex ? !liked : liked
     );
@@ -112,13 +112,23 @@ const FeedbackService = () => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Gọi cả 2 API song song
         const [feedbackData, serviceData] = await Promise.all([
           getServiceFeedback(id),
           getServiceById(id)
         ]);
-        setFeedbacks(feedbackData);
-        setServiceRating(serviceData.rating); // Lưu rating từ service
+        
+        // Lọc feedback hợp lệ
+        const validFeedbacks = feedbackData.filter(feedback => 
+          feedback.isValidContent === true && 
+          feedback.isValidAsset === true && 
+          feedback.status !== 'SUSPENDED'
+        );
+        
+        console.log('Tất cả feedback:', feedbackData);
+        console.log('Feedback hợp lệ:', validFeedbacks);
+        
+        setFeedbacks(validFeedbacks);
+        setServiceRating(serviceData.rating);
       } catch (error) {
         console.error("Lỗi khi lấy dữ liệu:", error);
       } finally {
