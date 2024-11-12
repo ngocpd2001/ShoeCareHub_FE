@@ -414,7 +414,7 @@ const ServiceDetail = () => {
                   }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
-                  Thêm vào giỏ h��ng
+                  Thêm vào giỏ hàng
                 </button>
                 <button
                   onClick={handleCheckout}
