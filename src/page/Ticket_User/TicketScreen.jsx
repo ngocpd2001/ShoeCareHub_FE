@@ -50,21 +50,16 @@ const TicketScreen = () => {
   const fetchTickets = async (status = '', sortField = '', isDesc = false, search = '', page = 1) => {
     try {
       setLoading(true);
-      const response = await getAllTicket({
-        searchKey: search,
-        pageSize: pageSize,
-        pageNum: page,
-        status: status,
-        sortBy: sortField,
-        isDescending: isDesc
-      });
+      const response = await getAllTicket(page, pageSize, isDesc);
       
       if (response.tickets) {
         setTickets(response.tickets);
         setSortBy(sortField);
         setIsDescending(isDesc);
-        setTotalPages(Math.ceil(response.total / pageSize));
-        setCurrentPage(page);
+        if (response.pagination) {
+          setTotalPages(response.pagination.totalPages);
+          setCurrentPage(response.pagination.currentPage);
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách ticket:", error);
