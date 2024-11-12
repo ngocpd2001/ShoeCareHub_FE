@@ -45,8 +45,8 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
   const onSubmit = (data) => {
     setDisabled(true);
     putData(`/feedbacks`, selectedUser.id, {
-      isValidContent: selectedUser.isValidContent,
-      isValidAsset: selectedUser.isValidContent,
+      isValidContent: data.isValidContent,
+      isValidAsset: data.isValidAsset,
       status: data.status,
     })
       .then((e) => {
@@ -142,15 +142,15 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                             shouldValidate: true,
                           });
                         }
-                         if (watch("isValidContent") & watch("isValidAsset")) {
-                           setValue("status", "ACTIVE");
-                           console.log(456);
-                         } else {
-                           setValue("status", "SUSPENDED");
-                           console.log("====================================");
-                           console.log(123);
-                           console.log("====================================");
-                         }
+                        if (watch("isValidContent") & watch("isValidAsset")) {
+                          setValue("status", "ACTIVE");
+                          console.log(456);
+                        } else {
+                          setValue("status", "SUSPENDED");
+                          console.log("====================================");
+                          console.log(123);
+                          console.log("====================================");
+                        }
                       }}
                       // value={selectedUser}
                       value={watch("isValidAsset")}
@@ -190,15 +190,15 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                             shouldValidate: true,
                           });
                         }
-                         if (watch("isValidContent") & watch("isValidAsset")) {
-                           setValue("status", "ACTIVE");
-                           console.log(456);
-                         } else {
-                           setValue("status", "SUSPENDED");
-                           console.log("====================================");
-                           console.log(123);
-                           console.log("====================================");
-                         }
+                        if (watch("isValidContent") & watch("isValidAsset")) {
+                          setValue("status", "ACTIVE");
+                          console.log(456);
+                        } else {
+                          setValue("status", "SUSPENDED");
+                          console.log("====================================");
+                          console.log(123);
+                          console.log("====================================");
+                        }
                       }}
                       // value={selectedUser}
                       value={watch("isValidContent")}
@@ -231,7 +231,6 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                         setValue(e, value, {
                           shouldValidate: true,
                         });
-                       
                       }}
                       value={watch("status")}
                       mode="default"

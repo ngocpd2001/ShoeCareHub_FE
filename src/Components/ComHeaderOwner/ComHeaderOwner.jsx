@@ -80,7 +80,7 @@ const navigation = [
     current: false,
     children: [
       { name: "Hồ sơ của tôi", href: "/owner/profile" },
-      { name: "Đổi mật khẩu", href: "/owner/pass" },
+      { name: "Đổi mật khẩu", href: "/owner/reset-password" },
     ],
   },
 ];

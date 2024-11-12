@@ -31,7 +31,7 @@ export default function CreateSevice() {
     defaultValues: {
       title: "",
       content: "",
-      newPrice:null
+      newPrice: null,
     },
   });
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function CreateSevice() {
             label: `${branch.name} 
          ${branch.address},
           ${branch.ward},
-           ${branch.city}`,
+           ${branch.province}`,
           }))
         );
       })
@@ -176,8 +176,8 @@ export default function CreateSevice() {
                   <div className="mt-2.5">
                     <ComInput
                       type="text"
-                      label={"Tên bài viết"}
-                      placeholder={"Tên bài viết"}
+                      label={"Tên dịch vụ"}
+                      placeholder={"Tên dịch vụ"}
                       error={errors.title?.message}
                       required
                       {...register("name")}
@@ -185,8 +185,8 @@ export default function CreateSevice() {
                   </div>
                   <div className="mt-2.5">
                     <ComTextArea
-                      label={"Nội dung bài viết"}
-                      placeholder={"Vui lòng nhập nội dung bài viết"}
+                      label={"Nội dung "}
+                      placeholder={"Vui lòng nhập nội dung "}
                       {...register("description")}
                       rows={5}
                       error={errors.content?.message}
@@ -242,10 +242,8 @@ export default function CreateSevice() {
                     />
                   </div>
                 </div>
-                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
-                  <h2 className="text-xl font-semibold mb-4">
-                    Hình ảnh  
-                  </h2>
+                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 ">
+                  <h2 className="text-xl font-semibold mb-4">Hình ảnh</h2>
                   <ComUpImg
                     onChange={onChange}
                     // label={"Hình ảnh"}
@@ -253,7 +251,7 @@ export default function CreateSevice() {
                     required
                   />
                 </div>
-                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
+                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 ">
                   <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
                   <ComSelect
                     size={"large"}
@@ -274,7 +272,7 @@ export default function CreateSevice() {
                   />
                 </div>
               </div>
-              <div className="sm:col-span-1 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
+              <div className="sm:col-span-1 bg-white  rounded border-[#E0E2E7] border p-5 mt-7">
                 <h2 className="text-xl font-semibold mb-4">Giá</h2>
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-4">
                   <div className="sm:col-span-2">
