@@ -152,7 +152,9 @@ import React, {
       try {
         const response = await getAllTicket(
           pagination.current,
-          pagination.pageSize
+          pagination.pageSize,
+          table.sortField,
+          table.sortOrder === 'descend'
         );
         
         if (response && response.tickets) {
@@ -191,6 +193,7 @@ import React, {
       getAllTicket(
         newPagination.current,
         newPagination.pageSize,
+        sorter.field,
         sorter.order === 'descend'
       ).then(response => {
         if (response && response.tickets) {

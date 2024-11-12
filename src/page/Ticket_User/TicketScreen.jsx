@@ -50,6 +50,11 @@ const TicketScreen = () => {
   const fetchTickets = async (status = '', sortField = '', isDesc = false, search = '', page = 1) => {
     try {
       setLoading(true);
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        throw new Error('Không tìm thấy thông tin người dùng');
+      }
+
       const response = await getAllTicket(page, pageSize, isDesc);
       
       if (response.tickets) {
