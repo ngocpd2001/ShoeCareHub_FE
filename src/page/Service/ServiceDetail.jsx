@@ -33,6 +33,7 @@ const ServiceDetail = () => {
   const [message, setMessage] = useState("");
   const location = useLocation();
   const [businessId, setBusinessId] = useState(null);
+  const [selectedBranch, setSelectedBranch] = useState(null);
 
   // console.log("Business ID:", businessId);
 
@@ -74,13 +75,24 @@ const ServiceDetail = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (service && service.branchServices && service.branchServices.length > 0) {
+      setSelectedBranch(service.branchServices[0].branch);
+    }
+  }, [service]);
+
   if (loading) return <div>Đang tải thông tin dịch vụ...</div>;
   if (error) return <div>{error}</div>;
 
   const combinedData = service ? [
-    // Nếu có assetUrls thì map qua nó
+    // Ảnh chính
+    {
+      img: service.images?.main || '/path/to/default-image.jpg',
+      type: "image"
+    },
+    // Các ảnh phụ từ assetUrls
     ...(service.assetUrls || []).map((asset) => ({
-      img: asset.url || asset, // Tùy vào cấu trúc của assetUrl
+      img: asset.url || asset,
       type: "image"
     }))
   ] : [];
@@ -119,32 +131,27 @@ const ServiceDetail = () => {
     : false;
 
   const handleAddToCart = async () => {
-    if (!service || service.id === 0) {
-      console.error("Service not found or service ID is 0");
+    if (!service || service.id === 0 || !selectedBranch) {
+      console.error("Service not found or branch not selected");
       return;
     }
 
     // Kiểm tra đăng nhập
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
-      // Lưu URL hiện tại vào localStorage để sau khi đăng nhập có thể quay lại
       localStorage.setItem('redirectAfterLogin', location.pathname);
-      // Chuyển hướng đến trang đăng nhập
       navigate('/login');
       return;
     }
 
     try {
-      const branchId = service.branchServices[0]?.branch.id;
       const itemData = {
         serviceId: service.id,
-        branchId: branchId,
+        branchId: selectedBranch.id,
         quantity: quantity,
       };
       
-      console.log("Adding to cart:", { userId: user.id, itemData });
       await addItemToCart(user.id, itemData);
-      console.log("Item added to cart successfully");
       navigate("/cart");
     } catch (error) {
       console.error("Error adding item to cart:", error);
@@ -160,27 +167,25 @@ const ServiceDetail = () => {
   };
 
   const handleCheckout = () => {
-    // Kiểm tra đăng nhập
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.id) {
+    if (!user || !user.id || !selectedBranch) {
       localStorage.setItem('redirectAfterLogin', location.pathname);
       navigate('/login');
       return;
     }
 
     if (service) {
-      const branchId = service.branchServices[0]?.branch.id;
       const checkoutService = {
         ...service,
         quantity: quantity || 1,
-        branchId: branchId,
-        shopName: service.branchServices[0]?.branch.name,
-        shopAddress: service.branchServices[0]?.branch.address,
+        branchId: selectedBranch.id,
+        shopName: selectedBranch.name,
+        shopAddress: selectedBranch.address,
       };
       navigate("/checkout-service", {
         state: { 
           selectedItems: [{
-            branchId: branchId,
+            branchId: selectedBranch.id,
             services: [checkoutService] 
           }] 
         },
@@ -196,6 +201,14 @@ const ServiceDetail = () => {
     return rating !== undefined ? rating.toFixed(1) : "N/A";
   };
 
+  const handleBranchChange = (event) => {
+    const selectedBranchId = event.target.value;
+    const branch = service.branchServices.find(
+      bs => bs.branch.id === parseInt(selectedBranchId)
+    )?.branch;
+    setSelectedBranch(branch);
+  };
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
@@ -203,54 +216,32 @@ const ServiceDetail = () => {
           <div className="flex flex-col md:flex-row space-y-6 md:space-y-0 md:space-x-6 pt-5">
             {/* Left column - Image and thumbnails */}
             <div className="w-full md:w-1/2 p-6" ref={containerRef}>
-              <div className="relative">
-                {/* Main Image */}
-                {service.images && (
-                  <img
-                    src={service.images.main}
-                    alt={service.name}
-                    className="w-full h-[500px] object-cover rounded-lg"
-                  />
-                )}
+              {/* Main Image Display */}
+              <div className="relative w-full h-[500px] mb-4">
+                <img
+                  src={combinedData[currentImageIndex]?.img}
+                  alt="Main preview"
+                  className="w-full h-full object-cover rounded-lg"
+                />
               </div>
-              <div className="flex justify-center mt-6 space-x-2 overflow-x-auto relative">
-                {combinedData.length > 0 ? (
-                  combinedData.map((item, index) => (
-                    <div key={index} className="relative">
-                      <img
-                        src={item.img}
-                        alt={`Thumbnail ${index + 1}`}
-                        className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                          index === currentImageIndex
-                            ? "border-2 border-[#3A4980]"
-                            : ""
-                        }`}
-                        onClick={() => setCurrentImageIndex(index)}
-                      />
-                    </div>
-                  ))
-                ) : (
-                  // Hiển thị hình ảnh mặc định nếu không có hình ảnh
-                  <div className="text-center text-gray-500">
-                    Không có hình ảnh
+
+              {/* Thumbnails */}
+              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+                {combinedData.map((item, index) => (
+                  <div 
+                    key={index} 
+                    className={`relative min-w-[100px] h-[100px] cursor-pointer ${
+                      index === currentImageIndex ? 'ring-2 ring-[#3A4980]' : ''
+                    }`}
+                    onClick={() => setCurrentImageIndex(index)}
+                  >
+                    <img
+                      src={item.img}
+                      alt={`Thumbnail ${index + 1}`}
+                      className="w-full h-full object-cover rounded"
+                    />
                   </div>
-                )}
-
-                {/* Button Previous */}
-                <button
-                  onClick={prevImage}
-                  className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} size="lg" />
-                </button>
-
-                {/* Button Next */}
-                <button
-                  onClick={nextImage}
-                  className="absolute right-0 top-1/2 transform -translate-y-1/2 bg-white bg-opacity-70 rounded-full p-2 z-10 h-8 w-8"
-                >
-                  <FontAwesomeIcon icon={faChevronRight} size="lg" />
-                </button>
+                ))}
               </div>
             </div>
 
@@ -346,6 +337,21 @@ const ServiceDetail = () => {
                     {service.status === 'Hoạt Động' ? 'Đang hoạt động' : 'Ngưng hoạt động'}
                   </span>
                 </div>
+              </div>
+
+              <div className="mt-5 border-t pt-4">
+                <h2 className="text-2xl font-semibold mb-4">Chọn chi nhánh</h2>
+                <select
+                  value={selectedBranch?.id || ''}
+                  onChange={handleBranchChange}
+                  className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3A4980]"
+                >
+                  {service?.branchServices?.map((bs) => (
+                    <option key={bs.branch.id} value={bs.branch.id}>
+                      {bs.branch.name} - {bs.branch.address}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Quantity */}
