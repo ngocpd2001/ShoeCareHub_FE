@@ -75,8 +75,8 @@ code {
 }
 
 .anticon-filter {
-  background-color: #0f296d !important; /* Thay đổi màu nền header */
-  color: #ffffff !important;
+  background-color: #e0e2e7 !important; /* Thay đổi màu nền header */
+  color: #000000 !important;
 }
 .ant-table-column-sorter {
   color: #ffffff !important;
@@ -103,7 +103,6 @@ code {
   display: flex;
   justify-content: center;
 }
-.ant-tabs-nav-list {
+/* .ant-tabs-nav-list {
   width: 90%;
-   /* Mặc định là 100% chiều rộng của container */
-}
+} */

@@ -1,4 +1,9 @@
-import { Outlet, createBrowserRouter, Navigate, useLocation } from "react-router-dom";
+import {
+  Outlet,
+  createBrowserRouter,
+  Navigate,
+  useLocation,
+} from "react-router-dom";
 import React from "react";
 import LoginPage from "./page/login/LoginPage";
 import ErrorPage from "./page/404/ErrorPage";
@@ -25,7 +30,7 @@ import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";
 import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
-import { isValidToken } from './utils/jwt';
+import { isValidToken } from "./utils/jwt";
 import AddressesUser from "./page/AddressesUser/AddressesUser";
 import ResetPassword from "./page/ResetPassword/ResetPassword";
 import RegisterPage from "./page/Register/RegisterPage";
@@ -39,18 +44,22 @@ import CreateTicketOrder from "./page/Ticket_User/CreateTicketOrder";
 import TicketManager from "./page/Owner/Ticket/TicketManager";
 import TicketDetail from "./page/Owner/Ticket/TicketDetail";
 import UpdateTicket from "./page/Owner/Ticket/UpdateTicket";
+import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
+import TableFeedback from "./page/admin/FeedbackManager/TableFeedback";
+import ComHeaderModerator from './Components/ComHeaderModerator/ComHeaderModerator';
+import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailVerificationFailedScreen";
 
 // Hàm kiểm tra token hợp lệ
 const getCleanToken = () => {
   try {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     if (!token) return null;
-    
+
     // Làm sạch token
-    const cleanToken = token.replace(/^["']|["']$/g, '').trim();
-    
+    const cleanToken = token.replace(/^["']|["']$/g, "").trim();
+
     // Kiểm tra format token
-    const tokenParts = cleanToken.split('.');
+    const tokenParts = cleanToken.split(".");
     return tokenParts.length === 3 ? cleanToken : null;
   } catch (error) {
     return null;
@@ -62,7 +71,7 @@ const isAuthenticated = () => {
   try {
     const token = getCleanToken();
     if (!token) return false;
-    
+
     return isValidToken(token);
   } catch (error) {
     return false;
@@ -72,10 +81,10 @@ const isAuthenticated = () => {
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
-  
+
   if (!isAuthenticated()) {
     // Lưu đường dẫn hiện tại để redirect sau khi đăng nhập
-    localStorage.setItem('redirectAfterLogin', location.pathname);
+    localStorage.setItem("redirectAfterLogin", location.pathname);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
@@ -118,6 +127,14 @@ export const routers = createBrowserRouter([
       {
         path: "/login",
         element: <LoginPage />,
+      },
+      {
+        path: "/confirm-success",
+        element: <LoginPage />,
+      },
+      {
+        path: "/confirm-fail",
+        element: <EmailVerificationFailedScreen />,
       },
       {
         path: "/register",
@@ -282,6 +299,30 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/ticket/update/:id",
         element: <UpdateTicket />,
+      },
+    ],
+  },
+  {
+    path: "/moderator",
+    element: (
+      <RequireAuth>
+        <ComHeaderModerator>
+          <Outlet />
+        </ComHeaderModerator>
+      </RequireAuth>
+    ),
+    children: [
+      {
+        path: "/moderator/*",
+        element: <ErrorPage />,
+      },
+      {
+        path: "/moderator/Feedback",
+        element: <TableFeedback />,
+      },
+      {
+        path: "/moderator/profile",
+        element: <ProfilePage />,
       },
     ],
   },

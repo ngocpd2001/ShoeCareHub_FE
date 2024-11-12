@@ -4,12 +4,14 @@ import { getData } from "../../api/api";
 import { useStorage } from "../../hooks/useLocalStorage";
 import { Empty, Spin } from "antd";
 
-export default function ListOrderPending({ activeKey }) {
+export default function ListOrderReceived({ activeKey }) {
   const [data, setData] = useState([]);
   const [user, setUser] = useStorage("user", null);
   const [loading, setLoading] = useState(true);
-  const reloadData = () => {
-    getData(`/orders/accounts/${user.id}?status=pending&orderBy=CreateDateAsc`)
+
+  useEffect(() => {
+    setLoading(true);
+    getData(`/orders/accounts/${user.id}?status=Received&orderBy=CreateDateAsc`)
       .then((data) => {
         setData(data?.data.data);
         // console.log(data.data.data);
@@ -20,10 +22,9 @@ export default function ListOrderPending({ activeKey }) {
       .finally(() => {
         setLoading(false);
       });
-  };
-  useEffect(() => {
-    setLoading(true);
-    reloadData();
+    console.log("====================================");
+    console.log(123);
+    console.log("====================================");
   }, [activeKey]);
 
   return (
@@ -39,7 +40,7 @@ export default function ListOrderPending({ activeKey }) {
       ) : (
         data.map((order, index) => (
           <div key={order.id || index} className="mt-4">
-            <OrderCard order={order} reloadData={reloadData} />
+            <OrderCard order={order} />
           </div>
         ))
       )}

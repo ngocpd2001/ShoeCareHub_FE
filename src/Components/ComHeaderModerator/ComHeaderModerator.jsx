@@ -36,6 +36,8 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Affix } from "antd";
 import { PackageIcon, UserCircleIcon } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
+import { FaStar } from "react-icons/fa";
+import { useNotification } from "../../Notification/Notification";
 
 const navigation = [
   {
@@ -45,15 +47,10 @@ const navigation = [
     current: false,
   },
   {
-    name: "Cửa hàng",
-    icon: BuildingStorefrontIcon,
+    name: "Đánh giá",
+    href: "/moderator/Feedback",
+    icon: FaStar,
     current: false,
-    children: [
-      { name: "Dịch vụ", href: "/moderator/service" },
-      { name: "Đơn hàng", href: "/moderator/order" },
-      { name: "Chi nhánh", href: "/moderator/branch" },
-      { name: "Nhân viên", href: "/moderator/employee" },
-    ],
   },
   {
     name: "Khiếu nại",
@@ -94,15 +91,23 @@ function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function ComHeaderAdmin({ children }) {
+export default function ComHeaderModerator({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { notificationApi } = useNotification();
   const location = useLocation();
   const currentPath = location.pathname;
   const [activeCategory, setActiveCategory] = useState(null);
   const [user, setUser, loadUser] = useStorage("user", null);
   const navigate = useNavigate();
   const [token, setToken, loadToken] = useStorage("token", "");
-
+  if (user.role !== "MODERATOR") {
+    notificationApi(
+      "error",
+      "Lỗi ",
+      "Tài khoản bạn không có quyền truy cập"
+    );
+    navigate("/login");
+  }
   useEffect(() => {
     setActiveCategory(currentPath);
     window.scrollTo(0, 0);

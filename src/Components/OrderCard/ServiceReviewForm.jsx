@@ -111,7 +111,9 @@ const ServiceReviewForm = ({ data, onClose, reloadData }) => {
           <div key={value?.id} className="mb-10 border-b">
             <div className="flex items-center mb-4">
               <img
-                src={value?.service?.assetUrls?.url}
+                src={
+                  value?.service?.assetUrls && value?.service?.assetUrls[0]?.url
+                }
                 alt={value?.service?.name}
                 className="w-24 h-24 object-cover mr-4 border"
               />
