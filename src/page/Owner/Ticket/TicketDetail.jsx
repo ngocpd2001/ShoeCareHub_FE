@@ -128,6 +128,25 @@ const TicketDetail = () => {
           </div>
         </div>
 
+        {/* Attachments */}
+        <div className="mb-6">
+          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
+          <div className="flex gap-4">
+            {ticketDetails.images && ticketDetails.images.map((image, index) => (
+              <div key={index} className="w-[200px]">
+                <img
+                  src={image}
+                  alt={`Ảnh ${index + 1}`}
+                  className="w-full h-auto rounded border"
+                />
+                <a href={image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 block">
+                  Xem ảnh
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* History Section */}
         <div className="mb-6">
           <h3 className="font-medium mb-4">Lịch sử trao đổi</h3>
@@ -153,25 +172,6 @@ const TicketDetail = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-
-        {/* Attachments */}
-        <div>
-          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
-          <div className="flex gap-4">
-            {ticketDetails.images && ticketDetails.images.map((image, index) => (
-              <div key={index} className="w-[200px]">
-                <img
-                  src={image}
-                  alt={`Ảnh ${index + 1}`}
-                  className="w-full h-auto rounded border"
-                />
-                <a href={image} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline mt-1 block">
-                  Xem ảnh
-                </a>
-              </div>
-            ))}
           </div>
         </div>
 

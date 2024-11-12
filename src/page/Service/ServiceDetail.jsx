@@ -442,9 +442,9 @@ const ServiceDetail = () => {
           {/* Related Services */}
           <ServiceCard businessId={businessId} />
           <div className="text-center mt-5">
-            <button className="bg-white border-2 border-[#3A4980] text-[#3A4980] font-semibold py-2 px-4 rounded-xl flex items-center justify-center mx-auto transition-colors hover:bg-[#3A4980] hover:text-white">
+            {/* <button className="bg-white border-2 border-[#3A4980] text-[#3A4980] font-semibold py-2 px-4 rounded-xl flex items-center justify-center mx-auto transition-colors hover:bg-[#3A4980] hover:text-white">
               Xem thêm
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
