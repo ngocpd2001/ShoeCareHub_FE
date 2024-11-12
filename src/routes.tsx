@@ -277,6 +277,10 @@ export const routers = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: "/owner/reset-password",
+        element: <ResetPassword />,
+      },
+      {
         path: "/owner/employee",
         element: <EmployeeManager />,
       },
@@ -323,6 +327,10 @@ export const routers = createBrowserRouter([
       {
         path: "/moderator/profile",
         element: <ProfilePage />,
+      },
+      {
+        path: "/moderator/reset-password",
+        element: <ResetPassword />,
       },
     ],
   },

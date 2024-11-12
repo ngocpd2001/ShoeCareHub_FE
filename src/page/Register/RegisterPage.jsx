@@ -47,9 +47,17 @@ export default function RegisterPage() {
       .required("Giới tính không được để trống"),
     password: yup
       .string()
-      .min(8, "Mật khẩu phải có ít nhất 8 ký tự")
-      .max(16, "Mật khẩu không được vượt quá 16 ký tự")
-      .required("Mật khẩu không được để trống"),
+      .required("Mật khẩu không được để trống")
+      .test(
+        "password-requirements",
+        "Mật khẩu phải có ít nhất 8 ký tự, chứa ít nhất một chữ cái viết hoa và một ký tự đặc biệt",
+        (value) =>
+          value &&
+          value.length >= 8 &&
+          value.length <= 16 &&
+          /[A-Z]/.test(value) &&
+          /[^a-zA-Z0-9]/.test(value)
+      ),
     confirmPassword: yup
       .string()
       .oneOf([yup.ref("password")], "Mật khẩu nhập lại không khớp")
@@ -76,7 +84,7 @@ export default function RegisterPage() {
     postData("/auth/customer-register", data, {})
       .then((data) => {
         console.log(111111, data);
-        modal.handleOpen()
+        modal.handleOpen();
         setDisabled(false);
       })
       .catch((error) => {
@@ -218,6 +226,7 @@ export default function RegisterPage() {
                         required
                       />
                       <ComInput
+                        className="mt-5"
                         placeholder={"Nhập lại mật khẩu"}
                         label={"Mật khẩu"}
                         type="password"

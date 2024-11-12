@@ -37,15 +37,14 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
       setValue("newPrice", selectedUpgrede?.promotion?.newPrice);
     } else {
       setValue("newPrice", null);
-      
     }
- const getBranchIds = (branchesData) => {
-   return branchesData
-     .filter((item) => item.status === "Hoạt Động") // Lọc các chi nhánh có status là AVAILABLE
-     .map((item) => item.branch.id); // Sau đó lấy id của các chi nhánh đã lọc
- };
+    const getBranchIds = (branchesData) => {
+      return branchesData
+        .filter((item) => item.status === "Hoạt Động") // Lọc các chi nhánh có status là AVAILABLE
+        .map((item) => item.branch.id); // Sau đó lấy id của các chi nhánh đã lọc
+    };
     console.log(333333333333, getBranchIds(selectedUpgrede?.branchServices));
-    console.log(333333333333, (selectedUpgrede?.branchServices));
+    console.log(333333333333, selectedUpgrede?.branchServices);
 
     setValue("branchId", getBranchIds(selectedUpgrede?.branchServices));
   }, [selectedUpgrede]);
@@ -60,7 +59,6 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
     formState: { errors },
     control,
   } = methods;
-
 
   const onChange = (data) => {
     const selectedImages = data;
@@ -126,7 +124,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
             .then((response) => {
               console.log("Tạo dịch vụ thành công:", response);
               setDisabled(false);
-          tableRef();
+              tableRef();
 
               notificationApi(
                 "success",
@@ -161,7 +159,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
             label: `${branch.name} 
          ${branch.address},
           ${branch.ward},
-           ${branch.city}`,
+           ${branch.province}`,
           }))
         );
       })
@@ -201,8 +199,8 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                   <div className="mt-2.5">
                     <ComInput
                       type="text"
-                      label={"Tên bài viết"}
-                      placeholder={"Tên bài viết"}
+                      label={"Tên dịch vụ"}
+                      placeholder={"Tên dịch vụ"}
                       error={errors.title?.message}
                       required
                       {...register("name")}
@@ -210,8 +208,8 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                   </div>
                   <div className="mt-2.5">
                     <ComTextArea
-                      label={"Nội dung bài viết"}
-                      placeholder={"Vui lòng nhập nội dung bài viết"}
+                      label={"Nội dung"}
+                      placeholder={"Vui lòng nhập nội dung"}
                       {...register("description")}
                       rows={5}
                       error={errors.content?.message}
@@ -269,10 +267,8 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                     />
                   </div>
                 </div>
-                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
-                  <h2 className="text-xl font-semibold mb-4">
-                    Hình ảnh  
-                  </h2>
+                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 ">
+                  <h2 className="text-xl font-semibold mb-4">Hình ảnh</h2>
                   <ComUpImg
                     onChange={onChange}
                     // label={"Hình ảnh"}
@@ -280,7 +276,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                     required
                   />
                 </div>
-                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
+                <div className="sm:col-span-2 bg-white  rounded border-[#E0E2E7] border p-5 ">
                   <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
                   <ComSelect
                     size={"large"}
@@ -302,7 +298,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
                   />
                 </div>
               </div>
-              <div className="sm:col-span-1 bg-white  rounded border-[#E0E2E7] border p-5 mt-2.5">
+              <div className="sm:col-span-1 bg-white  rounded border-[#E0E2E7] border p-5 mt-7">
                 <h2 className="text-xl font-semibold mb-4">Giá</h2>
                 <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-4">
                   <div className="sm:col-span-2">

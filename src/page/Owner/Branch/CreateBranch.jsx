@@ -169,13 +169,12 @@ export default function CreateBranch({ onClose, tableRef }) {
                 <div className="mt-2.5 sm:col-span-2">
                   <ComSelect
                     type="text"
-                    label={"Tỉnh"}
+                    label={"Tỉnh/Thành phố"}
                     value={watch("provinceId")}
                     options={provinces}
-                    placeholder={"Tỉnh"}
+                    placeholder={"Tỉnh/Thành phố"}
                     showSearch
                     size={"large"}
-                    
                     onChangeValue={(e, value) => {
                       setValue(e, value, { shouldValidate: true });
                       console.log(55555, value);
@@ -190,7 +189,7 @@ export default function CreateBranch({ onClose, tableRef }) {
                 <div className="mt-2.5 sm:col-span-2">
                   <ComSelect
                     type="text"
-                    label={"Phường"}
+                    label={"Quận/Huyện"}
                     options={districts}
                     value={watch("districtId")}
                     size={"large"}
@@ -201,7 +200,7 @@ export default function CreateBranch({ onClose, tableRef }) {
                     onChangeValue={(e, value) => {
                       setValue(e, value);
                     }}
-                    placeholder={"Phường"}
+                    placeholder={"Quận/Huyện"}
                     required
                     {...register("districtId")}
                   />
@@ -210,7 +209,7 @@ export default function CreateBranch({ onClose, tableRef }) {
                   <ComSelect
                     type="text"
                     value={watch("wardCode")}
-                    label={"Phường"}
+                    label={"Phường/Xã"}
                     options={wards}
                     size={"large"}
                     showSearch
@@ -220,7 +219,7 @@ export default function CreateBranch({ onClose, tableRef }) {
                     onChangeValue={(e, value) => {
                       setValue(e, value);
                     }}
-                    placeholder={"Phường"}
+                    placeholder={"Phường/Xã"}
                     required
                     {...register("wardCode")}
                   />

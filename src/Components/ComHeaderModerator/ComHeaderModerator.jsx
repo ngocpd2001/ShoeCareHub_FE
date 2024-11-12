@@ -77,7 +77,7 @@ const navigation = [
     current: false,
     children: [
       { name: "Hồ sơ của tôi", href: "/moderator/profile" },
-      { name: "Đổi mật khẩu", href: "/moderator/pass" },
+      { name: "Đổi mật khẩu", href: "/moderator/reset-password" },
     ],
   },
 ];
@@ -101,11 +101,7 @@ export default function ComHeaderModerator({ children }) {
   const navigate = useNavigate();
   const [token, setToken, loadToken] = useStorage("token", "");
   if (user.role !== "MODERATOR") {
-    notificationApi(
-      "error",
-      "Lỗi ",
-      "Tài khoản bạn không có quyền truy cập"
-    );
+    notificationApi("error", "Lỗi ", "Tài khoản bạn không có quyền truy cập");
     navigate("/login");
   }
   useEffect(() => {
