@@ -125,6 +125,44 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
             <p className="text-gray-600 whitespace-pre-wrap">{ticket.content}</p>
           </div>
 
+          {/* Hiển thị assets của ticket chính */}
+          {ticket.assets && ticket.assets.length > 0 && (
+            <div className="border rounded-lg mb-6">
+              <div className="bg-gray-50 px-4 py-3 border-b">
+                <h4 className="font-medium">Tệp đính kèm</h4>
+              </div>
+              <div className="p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {ticket.assets.map((asset, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 border rounded">
+                      {asset.type === "IMAGE" ? (
+                        <img 
+                          src={asset.url} 
+                          alt="Ảnh đính kèm" 
+                          className="w-10 h-10 object-cover rounded cursor-pointer" 
+                          onClick={() => handleImageClick(asset.url)}
+                        />
+                      ) : (
+                        <>
+                          <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
+                          <a 
+                            href={asset.url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-[#002278] hover:underline truncate"
+                            title="Tải xuống tệp đính kèm"
+                          >
+                            Tải tệp
+                          </a>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Lịch sử trao đổi */}
           <div className="border rounded-lg mb-6">
             <div className="bg-gray-50 px-4 py-3 border-b">
@@ -186,40 +224,6 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
               ))}
             </div>
           </div>
-
-          {/* Hiển thị assets của ticket chính */}
-          {ticket.assets && ticket.assets.length > 0 && (
-            <div className="border-t pt-4">
-              <h4 className="font-medium mb-3">Tệp đính kèm:</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {ticket.assets.map((asset, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 border rounded">
-                    {asset.type === "IMAGE" ? (
-                      <img 
-                        src={asset.url} 
-                        alt="Ảnh đính kèm" 
-                        className="w-10 h-10 object-cover rounded cursor-pointer" 
-                        onClick={() => handleImageClick(asset.url)}
-                      />
-                    ) : (
-                      <>
-                        <FontAwesomeIcon icon={faDownload} className="text-[#002278]" />
-                        <a 
-                          href={asset.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-[#002278] hover:underline truncate"
-                          title="Tải xuống tệp đính kèm"
-                        >
-                          Tải tệp
-                        </a>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
       {/* Modal hiển thị ảnh */}

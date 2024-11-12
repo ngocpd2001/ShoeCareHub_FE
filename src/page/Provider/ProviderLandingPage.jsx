@@ -89,9 +89,9 @@ const ProviderLandingPage = () => {
               <h2 className="text-2xl font-semibold text-[#344054]">
                 GỢI Ý CHO BẠN
               </h2>
-              <button className="text-[#002278] font-semibold">
+              {/* <button className="text-[#002278] font-semibold">
                 Xem tất cả
-              </button>
+              </button> */}
             </div>
             <ServiceCard businessId={id} />
           </section>

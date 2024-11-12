@@ -231,6 +231,25 @@ const UpdateTicket = () => {
         </div>
 
         <div className="mb-6">
+          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
+          <div className="flex gap-4 flex-wrap">
+            {ticketDetails.assets &&
+              ticketDetails.assets
+                .filter((asset) => asset.isImage || asset.type === "IMAGE")
+                .map((asset, index) => (
+                  <div key={index} className="w-[200px]">
+                    <img
+                      src={asset.url}
+                      alt={`Ảnh ${index + 1}`}
+                      className="w-full h-auto rounded border cursor-pointer"
+                      onClick={() => handleImageClick(asset.url)}
+                    />
+                  </div>
+                ))}
+          </div>
+        </div>
+
+        <div className="mb-6">
           <h3 className="font-medium mb-4">Lịch sử trao đổi</h3>
           <div className="bg-gray-50 p-4 rounded space-y-4">
             {/* Main ticket */}
@@ -299,25 +318,6 @@ const UpdateTicket = () => {
                   </div>
                 </div>
               ))}
-          </div>
-        </div>
-
-        <div>
-          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
-          <div className="flex gap-4 flex-wrap">
-            {ticketDetails.assets &&
-              ticketDetails.assets
-                .filter((asset) => asset.isImage || asset.type === "IMAGE")
-                .map((asset, index) => (
-                  <div key={index} className="w-[200px]">
-                    <img
-                      src={asset.url}
-                      alt={`Ảnh ${index + 1}`}
-                      className="w-full h-auto rounded border cursor-pointer"
-                      onClick={() => handleImageClick(asset.url)}
-                    />
-                  </div>
-                ))}
           </div>
         </div>
 
