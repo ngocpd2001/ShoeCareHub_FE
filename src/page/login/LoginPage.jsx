@@ -5,12 +5,13 @@ import ComInput from "../../Components/ComInput/ComInput";
 import ComButton from "../../Components/ComButton/ComButton";
 import { ComLink } from "../../Components/ComLink/ComLink";
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FieldError } from "../../Components/FieldError/FieldError";
 import { useStorage } from "../../hooks/useLocalStorage";
 import logo2 from "../../assets/images/logo2.webp";
 
 import { getData, postData } from "../../api/api";
+import { message } from "antd";
 export default function LoginPage(props) {
   const [token, setToken] = useStorage("token", "");
   const [user, setUser] = useStorage("user", null);
@@ -20,7 +21,7 @@ export default function LoginPage(props) {
   const [LoginError, setLoginError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const navigate = useNavigate();
-
+  const location = useLocation();
   const loginMessenger = yup.object({
     email: yup.string().trim().required("Mail đăng nhập không được để trống"),
     password: yup.string().required("Mật khẩu không được để trống"),
@@ -47,7 +48,7 @@ export default function LoginPage(props) {
         console.log(111111, data);
         setToken(data.data.token);
         setUser(data.data);
-   
+
         // Chờ setToken hoàn thành trước khi navigate
         return new Promise((resolve) => {
           setTimeout(() => {
@@ -68,7 +69,6 @@ export default function LoginPage(props) {
               case "MODERATOR":
                 navigate("/MODERATOR");
                 break;
-          ;
               default:
                 setDisabled(false);
                 setLogin(true);
@@ -88,7 +88,11 @@ export default function LoginPage(props) {
         setErrorMessage("Tài khoản hoặc mật khẩu không đúng");
       });
   };
-
+  useEffect(() => {
+    if (location.pathname === "/confirm-success") {
+      message.success(`Xác nhận tài khoản thành công vui lòng đăng nhập `);
+    }
+  }, [location.pathname]);
   return (
     <>
       {/* <Header login={true} /> */}
