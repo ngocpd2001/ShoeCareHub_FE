@@ -253,9 +253,9 @@ const ServiceDetail = () => {
                   <h1 className="text-3xl font-bold text-gray-800 break-words">
                     {service.name}
                   </h1>
-                  <h2 className="text-lg text-gray-400">
+                  {/* <h2 className="text-lg text-gray-400">
                     Chi nhánh: {service.branchServices[0]?.branch.name}
-                  </h2>
+                  </h2> */}
                 </div>
                 <div className="flex items-center space-x-2">
                   <h2 className="text-lg font-semibold text-[#D46F77] bg-[#EDF0F8] rounded-xl px-4 py-1 shadow-md whitespace-nowrap">
@@ -347,8 +347,13 @@ const ServiceDetail = () => {
                   className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3A4980]"
                 >
                   {service?.branchServices?.map((bs) => (
-                    <option key={bs.branch.id} value={bs.branch.id}>
+                    <option 
+                      key={bs.branch.id} 
+                      value={bs.branch.id}
+                      disabled={bs.status === 'Ngưng Hoạt Động'}
+                    >
                       {bs.branch.name} - {bs.branch.address}
+                      {bs.status === 'Ngưng Hoạt Động' ? ' (Ngưng hoạt động)' : ''}
                     </option>
                   ))}
                 </select>
@@ -409,7 +414,7 @@ const ServiceDetail = () => {
                   }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
-                  Thêm vào giỏ hàng
+                  Thêm vào giỏ h��ng
                 </button>
                 <button
                   onClick={handleCheckout}

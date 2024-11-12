@@ -22,7 +22,8 @@ const UserCart = () => {
       return total + shop.services.reduce((serviceTotal, service) => {
         if (service.selected) {
           const price = service.promotion?.newPrice || service.price;
-          return serviceTotal + (price * service.quantity);
+          const quantity = service.quantity || 1;
+          return serviceTotal + (price * quantity);
         }
         return serviceTotal;
       }, 0);
@@ -168,19 +169,6 @@ const UserCart = () => {
 
   const handleClosePopup = () => setShowPopup(false);
 
-  const handleQuantityChange = (id, delta) => {
-    setCartItems((prevShops) =>
-      (prevShops || []).map((shop) => ({
-        ...shop,
-        services: (shop.services || []).map((service) =>
-          service.id === id
-            ? { ...service, quantity: Math.max(service.quantity + delta, 1) }
-            : service
-        ),
-      }))
-    );
-  };
-
   const handleRemove = async (serviceId) => {
     try {
       await deleteCartItem(serviceId);
@@ -273,11 +261,45 @@ const UserCart = () => {
   const calculateSavings = (items) => {
     return items.reduce((totalSavings, shop) => {
       return totalSavings + shop.services.reduce((shopSavings, service) => {
-        return shopSavings + (service.selected && service.promotion?.newPrice
-          ? (service.price - service.promotion.newPrice) * service.quantity
-          : 0);
+        if (service.selected) {
+          const originalPrice = service.price;
+          const discountedPrice = service.promotion?.newPrice || service.price;
+          const savingPerUnit = originalPrice - discountedPrice;
+          const quantity = service.quantity || 1;
+          const totalServiceSaving = savingPerUnit * quantity;
+          
+          console.log({
+            serviceName: service.name,
+            savingPerUnit,
+            quantity,
+            totalServiceSaving
+          });
+          
+          return shopSavings + totalServiceSaving;
+        }
+        return shopSavings;
       }, 0);
     }, 0);
+  };
+
+  const handleQuantityChange = (id, newQuantity) => {
+    setCartItems((prevShops) =>
+      prevShops.map((shop) => ({
+        ...shop,
+        services: shop.services.map((service) => {
+          if (service.id === id) {
+            // console.log('Service ID:', id);
+            // console.log('Previous quantity:', service.quantity);
+            // console.log('New quantity:', newQuantity);
+            return { 
+              ...service, 
+              quantity: newQuantity 
+            };
+          }
+          return service;
+        }),
+      }))
+    );
   };
 
   return (
