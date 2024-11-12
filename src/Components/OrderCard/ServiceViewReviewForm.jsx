@@ -84,23 +84,13 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
         });
     });
   };
-  console.log(data?.orderDetails[0].feedback);
+  console.log(data);
   //  const onChange1 = (data) => {
   //    const selectedImages = data;
   //    const newImages = selectedImages.map((file) => file.originFileObj);
   //    setImages1(newImages);
   //  };
-  const handleImageChange = (id, data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
 
-    // Cập nhật mảng hình ảnh cho từng dịch vụ
-    setReviews((prevReviews) =>
-      prevReviews.map((item) =>
-        item.id === id ? { ...item, images: newImages } : item
-      )
-    );
-  };
   return (
     <div className="max-w-2xl mx-auto">
       <h1 className="text-2xl font-bold mb-4">Xem đánh giá</h1>
@@ -109,7 +99,9 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
           <div key={value?.id} className="mb-10 border-b">
             <div className="flex items-center mb-4">
               <img
-                src={value?.service?.assetUrls?.url}
+                src={
+                  value?.service?.assetUrls && value?.service?.assetUrls[0]?.url
+                }
                 alt={value?.service?.name}
                 className="w-24 h-24 object-cover mr-4 border"
               />
@@ -152,7 +144,11 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
                             maskClassName="object-cover w-24 h-24 object-cover object-center flex items-center justify-center"
                             className=" w-24 h-24 object-center flex items-center justify-center"
                             src={item.url}
-                            style={{ width: "6rem", height: "6rem", padding:4 }}
+                            style={{
+                              width: "6rem",
+                              height: "6rem",
+                              padding: 4,
+                            }}
                             alt={`image-${index}`}
                             preview={{ mask: "Xem ảnh" }}
                           />
@@ -164,8 +160,6 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
             </div>
           </div>
         ))}
-
-    
     </div>
   );
 };

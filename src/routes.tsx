@@ -47,6 +47,7 @@ import UpdateTicket from "./page/Owner/Ticket/UpdateTicket";
 import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
 import TableFeedback from "./page/admin/FeedbackManager/TableFeedback";
 import ComHeaderModerator from './Components/ComHeaderModerator/ComHeaderModerator';
+import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailVerificationFailedScreen";
 
 // Hàm kiểm tra token hợp lệ
 const getCleanToken = () => {
@@ -130,6 +131,10 @@ export const routers = createBrowserRouter([
       {
         path: "/confirm-success",
         element: <LoginPage />,
+      },
+      {
+        path: "/confirm-fail",
+        element: <EmailVerificationFailedScreen />,
       },
       {
         path: "/register",
