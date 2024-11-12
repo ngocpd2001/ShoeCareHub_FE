@@ -17,7 +17,6 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
 
   const handleQuantityChange = async (e) => {
     const updatedQuantity = parseInt(e.target.value, 10);
-    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', updatedQuantity);
     if (!userId) {
       console.error('User ID is undefined for service:', service);
       return;
@@ -25,10 +24,9 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
       try {
         await updateCartItemQuantity(service.id, updatedQuantity);
-        const quantityDiff = updatedQuantity - service.quantity;
         setInputValue(updatedQuantity);
         service.quantity = updatedQuantity;
-        onQuantityChange(service.id, quantityDiff);
+        onQuantityChange(service.id, updatedQuantity);
       } catch (error) {
         console.error('Có lỗi xảy ra khi cập nhật số lượng:', error);
       }
@@ -38,23 +36,22 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
   };
 
   const handleIncrease = async () => {  
-    // console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue + 1);  
     if (!userId) {  
       console.error('User ID is undefined for service:', service);  
       return;  
     }  
+    const newQuantity = inputValue + 1;
     try {  
-      await updateCartItemQuantity(service.id, inputValue + 1);  
-      setInputValue(inputValue + 1);
-      service.quantity = inputValue + 1;
-      onQuantityChange(service.id, 1);
+      await updateCartItemQuantity(service.id, newQuantity);  
+      setInputValue(newQuantity);
+      service.quantity = newQuantity;
+      onQuantityChange(service.id, newQuantity);
     } catch (error) {  
       console.error('Có lỗi xảy ra:', error);  
     }  
   };
 
   const handleDecrease = async () => {
-    console.log('userId:', userId, 'serviceId:', service.id, 'quantity:', inputValue - 1);
     if (!userId) {
       console.error('User ID is undefined for service:', service);
       return;
@@ -65,7 +62,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
         await updateCartItemQuantity(service.id, newQuantity);
         setInputValue(newQuantity);
         service.quantity = newQuantity;
-        onQuantityChange(service.id, -1);
+        onQuantityChange(service.id, newQuantity);
       } catch (error) {
         console.error('Có lỗi xảy ra:', error);
       }
