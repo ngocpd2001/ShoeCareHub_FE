@@ -148,21 +148,37 @@ export const getCartItemById = async (id) => {
 
 // Thực hiện thanh toán giỏ hàng
 export const checkoutCart = async ({
-  cartItemIds,
+  cartItems, // Mảng các cart items được chọn
   accountId,
   addressId,
   isAutoReject = false,
-  note = '',
-  isShip
+  notes = {}, // Object chứa note cho từng cart
+  deliveryOptions = {} // Object chứa delivery option cho từng cart
 }) => {
   try {
+    // Kiểm tra và đảm bảo cartItems là mảng hợp lệ
+    if (!cartItems || !Array.isArray(cartItems)) {
+      throw new Error('CartItems không hợp lệ');
+    }
+
+    // Tạo cấu trúc carts theo format mới
+    const carts = cartItems.map(shop => {
+      // Đảm bảo shop.services tồn tại và là mảng
+      const services = shop.services || [];
+      const cartItemIds = services.map(service => service.id).filter(id => id); // Lọc bỏ các id undefined/null
+
+      return {
+        cartItemIds,
+        note: notes[shop.branchId] || '',
+        isShip: deliveryOptions[shop.branchId] === 'delivery'
+      };
+    });
+
     const requestBody = {
-      cartItemIds,
-      accountId,
-      addressId,
-      isAutoReject,
-      note,
-      isShip: Boolean(isShip)
+      carts,
+      accountId: Number(accountId),
+      addressId: Number(addressId),
+      isAutoReject: Boolean(isAutoReject)
     };
 
     console.log('Request body before API call:', requestBody);
@@ -186,7 +202,24 @@ export const checkoutCart = async ({
 // Thực hiện thanh toán dịch vụ
 export const checkoutService = async (checkoutData) => {
   try {
-    const response = await axiosInstances.login.post('/services/service/checkout', checkoutData);
+    // Đảm bảo dữ liệu đúng format trước khi gửi
+    const formattedData = {
+      items: checkoutData.items.map(item => ({
+        serviceId: Number(item.serviceId),
+        materialId: Number(item.materialId || 0),
+        branchId: Number(item.branchId),
+        quantity: Number(item.quantity)
+      })),
+      accountId: Number(checkoutData.accountId),
+      addressId: Number(checkoutData.addressId),
+      isAutoReject: Boolean(checkoutData.isAutoReject),
+      note: String(checkoutData.note || ''),
+      isShip: Boolean(checkoutData.isShip) // Đảm bảo isShip luôn là boolean
+    };
+
+    console.log('Formatted checkout data:', formattedData);
+
+    const response = await axiosInstances.login.post('/services/service/checkout', formattedData);
     return response.data;
   } catch (error) {
     if (error.response) {
@@ -205,27 +238,19 @@ export const checkoutService = async (checkoutData) => {
 // Tính phí ship dựa trên địa chỉ và số lượng
 export const calculateShippingFee = async ({ addressId, branchId, quantity }) => {
   try {
-    const requestBody = {
-      addressId,
-      branchId,
-      quantity
-    };
-
-    const response = await axiosInstances.login.get('/carts/cart/checkout/feeship', { 
-      params: requestBody 
+    console.log("Calculating shipping fee with:", { addressId, branchId, quantity });
+    const response = await axiosInstances.login.get(`/carts/cart/checkout/feeship`, {
+      params: {
+        addressId,
+        branchId,
+        quantity
+      }
     });
+    console.log("Shipping fee response:", response.data);
     return response.data;
   } catch (error) {
-    if (error.response) {
-      console.error('Lỗi từ server khi tính phí ship:', error.response.data);
-      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
-    } else if (error.request) {
-      console.error('Lỗi mạng khi tính phí ship:', error.request);
-      throw new Error('Network error: No response received');
-    } else {
-      console.error('Lỗi khi thiết lập yêu cầu tính phí ship:', error.message);
-      throw new Error(`Error: ${error.message}`);
-    }
+    console.error("Error calculating shipping fee:", error);
+    throw error;
   }
 };
 

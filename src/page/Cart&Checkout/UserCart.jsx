@@ -36,7 +36,7 @@ const UserCart = () => {
       const dataArray = Array.isArray(data) ? data : [];
       setBranches(dataArray);
 
-      console.log("Data từ API:", dataArray);
+      // console.log("Data từ API:", dataArray);
 
       const detailedItems = await Promise.all(
         dataArray.flatMap((branch) =>
@@ -60,7 +60,7 @@ const UserCart = () => {
         )
       );
 
-      console.log("Detailed Items:", detailedItems);
+      // console.log("Detailed Items:", detailedItems);
 
       const groupedItems = detailedItems.reduce((acc, item) => {
         const branch = acc.find((b) => b.branchId === item.branchId);
@@ -77,7 +77,7 @@ const UserCart = () => {
         return acc;
       }, []);
 
-      console.log("Grouped Items:", groupedItems);
+      // console.log("Grouped Items:", groupedItems);
 
       setCartItems(groupedItems);
       const newTotal = calculateTotalAmount(groupedItems);
@@ -149,7 +149,7 @@ const UserCart = () => {
   }, [cartItems]);
 
   useEffect(() => {
-    console.log("CartItems đã cập nhật:", cartItems);
+    // console.log("CartItems đã cập nhật:", cartItems);
   }, [cartItems]);
 
   const handleCheckout = () => {

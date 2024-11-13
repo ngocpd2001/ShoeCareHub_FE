@@ -11,6 +11,7 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
+import { Modal } from 'antd';
 
 const Checkout = () => {
   const location = useLocation();
@@ -26,6 +27,9 @@ const Checkout = () => {
   const [userInfo, setUserInfo] = useState({});
   const [note, setNote] = useState("");
   const [shippingFees, setShippingFees] = useState({});
+  const [deliveryOptions, setDeliveryOptions] = useState({});
+  const [isValidDelivery, setIsValidDelivery] = useState(false);
+  const [notes, setNotes] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -155,12 +159,16 @@ const Checkout = () => {
     return count;
   }, 0);
 
-  const handleDeliveryOptionChange = (option) => {
-    setDeliveryOption(option);
+  const handleDeliveryOptionChange = ({ isValid, options }) => {
+    setIsValidDelivery(isValid);
+    setDeliveryOptions(options);
   };
 
-  const handleNoteChange = (value) => {
-    setNote(value);
+  const handleNoteChange = ({ branchId, note }) => {
+    setNotes(prevNotes => ({
+      ...prevNotes,
+      [branchId]: note
+    }));
   };
 
   const handleViewOrder = () => {
@@ -188,27 +196,47 @@ const Checkout = () => {
     try {
       // Kiểm tra địa chỉ
       if (!defaultAddress) {
-        alert("Vui lòng chọn địa chỉ giao hàng");
+        Modal.confirm({
+          title: 'Thông báo',
+          content: 'Vui lòng chọn địa chỉ giao hàng',
+          okText: 'Đồng ý',
+          cancelText: 'Hủy',
+          okButtonProps: {
+            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+          },
+          centered: true,
+          className: 'custom-antd-modal'
+        });
         return;
       }
 
-      // Thêm kiểm tra phương thức giao hàng
-      if (!deliveryOption) {
-        alert("Vui lòng chọn phương thức giao hàng");
-        return;
-      }
-
-      const cartItemIds = cartItems.flatMap(shop => 
-        shop.services.map(service => service.id)
+      // Kiểm tra phương thức giao hàng
+      const allShopsHaveDeliveryOption = cartItems.every(shop => 
+        deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
       );
 
+      if (!allShopsHaveDeliveryOption) {
+        Modal.confirm({
+          title: 'Thông báo',
+          content: 'Vui lòng chọn phương thức giao hàng cho tất cả cửa hàng',
+          okText: 'Đồng ý',
+          cancelText: 'Hủy',
+          okButtonProps: {
+            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+          },
+          className: 'custom-modal mt-[-32%]',
+          centered: true
+        });
+        return;
+      }
+
       const checkoutData = {
-        cartItemIds: cartItemIds,
-        accountId: accountId,
-        addressId: defaultAddress.id,
+        cartItems, // Truyền toàn bộ cartItems
+        accountId: Number(accountId),
+        addressId: Number(defaultAddress.id),
         isAutoReject: false,
-        note: note,
-        isShip: deliveryOption === 'delivery'
+        notes, // Truyền notes object
+        deliveryOptions // Truyền deliveryOptions object
       };
 
       console.log("Dữ liệu checkout từ giỏ hàng:", checkoutData);
@@ -221,13 +249,21 @@ const Checkout = () => {
       }
     } catch (error) {
       console.error("Lỗi khi thanh toán:", error);
-      alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!");
+      Modal.error({
+        title: 'Lỗi',
+        content: 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!',
+        okText: 'Đồng ý',
+        centered: true,
+        okButtonProps: {
+          className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+        }
+      });
     }
   };
 
   const handleShippingFeesChange = (fees) => {
     setShippingFees(fees);
-    console.log("Shipping fees updated:", fees); // Debug
+    // console.log("Shipping fees updated:", fees); // Debug
   };
 
   const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
@@ -284,6 +320,7 @@ const Checkout = () => {
             onNoteChange={handleNoteChange}
             defaultAddress={defaultAddress}
             onShippingFeesChange={handleShippingFeesChange}
+            notes={notes}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">

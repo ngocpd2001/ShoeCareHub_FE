@@ -35,7 +35,7 @@ import {
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
 import { useNotification } from "../../../Notification/Notification";
-import { message, Modal } from 'antd';
+import { message, Modal } from "antd";
 
 const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
@@ -550,6 +550,12 @@ const UpdateOrder = () => {
             <div className="flex justify-between font-semibold">
               <span>Tổng thanh toán</span>
               <span>{orderData.totalPrice?.toLocaleString()}₫</span>
+            </div>
+            <div className="border-t pt-4 mt-2">
+              <p className="text-gray-600 mb-2">Ghi chú:</p>
+              <p className="text-gray-800 italic">
+                {orderData.note || "Không có ghi chú"}
+              </p>
             </div>
           </div>
         </div>

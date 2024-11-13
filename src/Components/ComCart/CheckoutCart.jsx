@@ -9,16 +9,16 @@ import {
 import { getBranchByBranchId } from "../../api/branch";
 import { calculateShippingFee } from "../../api/cart";
 
-const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, defaultAddress, onShippingFeesChange = () => {} }) => {
+const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, defaultAddress, onShippingFeesChange = () => {}, notes = {} }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   // console.log("cart", cartItems);
   const [branchDataList, setBranchDataList] = useState({});
   const location = useLocation();
   const { selectedItems } = location.state || { selectedItems: [] };
   const [deliveryOptions, setDeliveryOptions] = useState({});
-  const [notes, setNotes] = useState({});
   const [shippingFees, setShippingFees] = useState({});
   const [loadingShippingFees, setLoadingShippingFees] = useState({});
+  const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] = useState(false);
 
   useEffect(() => {
     const fetchBranchData = async () => {
@@ -61,9 +61,10 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
     if (cartItems && Array.isArray(cartItems)) {
       cartItems.forEach(shop => {
         if (deliveryOptions[shop.branchId] === "delivery" && defaultAddress?.id) {
-          const service = shop.services[0];
-          const quantity = service?.quantity || 0;
-          calculateShippingFeeForBranch(shop.branchId, quantity);
+          const totalQuantity = shop.services.reduce((total, service) => {
+            return total + (service?.quantity || 0);
+          }, 0);
+          calculateShippingFeeForBranch(shop.branchId, totalQuantity, defaultAddress.id);
         }
       });
     }
@@ -75,49 +76,81 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
     }
   }, [shippingFees, onShippingFeesChange]);
 
+  useEffect(() => {
+    if (!cartItems || !Array.isArray(cartItems) || cartItems.length === 0) {
+      setAllShopsHaveDeliveryOption(false);
+      return;
+    }
+
+    const allShopsSelected = cartItems.every(shop => 
+      deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
+    );
+    
+    setAllShopsHaveDeliveryOption(allShopsSelected);
+    onDeliveryOptionChange({ isValid: allShopsSelected, options: deliveryOptions });
+  }, [deliveryOptions, cartItems]);
+
   const handleDeliveryOptionChange = (branchId, value) => {
-    setDeliveryOptions((prevOptions) => ({
-      ...prevOptions,
-      [branchId]: value,
-    }));
+    setDeliveryOptions((prevOptions) => {
+      const newOptions = {
+        ...prevOptions,
+        [branchId]: value,
+      };
+      
+      onDeliveryOptionChange({ 
+        isValid: true, 
+        options: newOptions,
+        deliveryType: value 
+      });
+      
+      return newOptions;
+    });
 
     if (value === "delivery" && defaultAddress?.id) {
       const shop = cartItems.find(item => item.branchId === branchId);
       if (shop) {
-        const service = shop.services[0];
-        const quantity = service?.quantity || 0;
-        calculateShippingFeeForBranch(branchId, quantity);
+        const totalQuantity = shop.services.reduce((total, service) => {
+          return total + (service?.quantity || 0);
+        }, 0);
+        calculateShippingFeeForBranch(branchId, totalQuantity, defaultAddress.id);
       }
     } else {
       setShippingFees(prev => ({...prev, [branchId]: 0}));
     }
-
-    onDeliveryOptionChange(value);
   };
 
-  const handleNoteChange = (e) => {
-    onNoteChange(e.target.value);
+  const handleNoteChange = (e, branchId) => {
+    const newNote = e.target.value;
+    onNoteChange({ branchId, note: newNote });
   };
 
-  const calculateShippingFeeForBranch = async (branchId, quantity) => {
-    if (!defaultAddress?.id) {
+  const calculateShippingFeeForBranch = async (branchId, totalQuantity, selectedAddressId) => {
+    if (!selectedAddressId) {
       console.log("Không có địa chỉ!");
       return;
     }
     
     setLoadingShippingFees(prev => ({...prev, [branchId]: true}));
     try {
-      const fee = await calculateShippingFee({
-        addressId: defaultAddress.id,
+      console.log("Gửi request tính phí ship với:", {
+        addressId: selectedAddressId,
         branchId,
-        quantity
+        quantity: totalQuantity
       });
+
+      const fee = await calculateShippingFee({
+        addressId: selectedAddressId,
+        branchId,
+        quantity: totalQuantity
+      });
+      
       console.log("Kết quả tính phí ship:", {
         branchId,
         fee,
-        quantity,
-        addressId: defaultAddress.id
+        totalQuantity,
+        addressId: selectedAddressId
       });
+      
       setShippingFees(prev => ({...prev, [branchId]: fee}));
     } catch (error) {
       console.error("Lỗi khi tính phí ship:", error);
@@ -248,7 +281,8 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                 <textarea
                   className="w-full p-2 border border-gray-300 rounded h-34"
                   placeholder="Lưu ý cho cửa hàng..."
-                  onChange={handleNoteChange}
+                  onChange={(e) => handleNoteChange(e, shop.branchId)}
+                  value={notes[shop.branchId] || ''}
                 />
               </div>
 

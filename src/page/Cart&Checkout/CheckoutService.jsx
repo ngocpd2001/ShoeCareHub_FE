@@ -11,21 +11,23 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
+import { Modal } from 'antd';
 
 const CheckoutService = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedItems: initialCartItems = [] } = location.state || {};
   const [cartItems, setCartItems] = useState(initialCartItems);
-  const [deliveryOption, setDeliveryOption] = useState("delivery");
+  const [deliveryOption, setDeliveryOption] = useState(false);
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
-  const [note, setNote] = useState("");
+  const [notes, setNotes] = useState({});
   const [address, setAddress] = useState(null);
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [addresses, setAddresses] = useState({});
   const [defaultAddress, setDefaultAddress] = useState(null);
   const [userInfo, setUserInfo] = useState(null);
   const [shippingFees, setShippingFees] = useState({});
+  const [deliveryOptions, setDeliveryOptions] = useState({});
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -155,11 +157,21 @@ const CheckoutService = () => {
   }, 0);
 
   const handleDeliveryOptionChange = (option) => {
-    setDeliveryOption(option);
+    if (typeof option === 'object') {
+      if (option.hasOwnProperty('isValid')) {
+        setDeliveryOption(option.isValid);
+      }
+      if (option.hasOwnProperty('options')) {
+        setDeliveryOptions(option.options);
+      }
+    }
   };
 
-  const handleNoteChange = (value) => {
-    setNote(value);
+  const handleNoteChange = ({ branchId, note }) => {
+    setNotes(prevNotes => ({
+      ...prevNotes,
+      [branchId]: note
+    }));
   };
 
   const handleViewOrder = () => {
@@ -183,19 +195,36 @@ const CheckoutService = () => {
     setIsAddressModalOpen(false);
   };
 
-  const handleCheckout = async () => {
-    if (!defaultAddress) {
-      alert("Vui lòng chọn địa chỉ giao hàng");
-      return;
-    }
 
+  const handleCheckout = async () => {
     try {
+      // Kiểm tra xem đã chọn phương thức giao hàng chưa
+      const hasDeliveryOptions = Object.values(deliveryOptions).length > 0;
+      if (!hasDeliveryOptions) {
+        Modal.confirm({
+          title: 'Thông báo',
+          content: 'Vui lòng chọn phương thức giao hàng',
+          okText: 'Đồng ý',
+          cancelText: 'Hủy',
+          okButtonProps: {
+            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+          },
+          className: 'custom-modal mt-[-32%]',
+          centered: true
+        });
+        return;
+      }
+
+      // Xác định isShip dựa trên deliveryOptions
+      const isShip = Object.values(deliveryOptions).some(option => option === 'delivery');
+
       const checkoutItems = cartItems.flatMap(shop => 
         shop.services.map(service => ({
-          serviceId: service.id,
-          materialId: service.materialId || 0,
-          branchId: service.branchId,
-          quantity: service.quantity || 1
+          serviceId: Number(service.id),
+          materialId: Number(service.materialId || 0),
+          branchId: Number(service.branchId),
+          quantity: Number(service.quantity || 1),
+          note: notes[service.branchId] || ''
         }))
       );
 
@@ -208,13 +237,14 @@ const CheckoutService = () => {
 
       const checkoutData = {
         items: checkoutItems,
-        accountId: accountId,
-        addressId: defaultAddress.id,
+        accountId: Number(accountId),
+        addressId: Number(defaultAddress.id),
         isAutoReject: false,
-        note: note,
-        isShip: deliveryOption === "delivery"
+        notes: notes,
+        isShip: isShip
       };
 
+      // Log để debug
       console.log("Cart Items:", cartItems);
       console.log("Checkout Items:", checkoutItems);
       console.log("Full Checkout Data:", checkoutData);
@@ -229,13 +259,27 @@ const CheckoutService = () => {
       }
     } catch (error) {
       console.error("Lỗi khi thanh toán:", error);
-      alert("Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau.");
+      Modal.error({
+        title: 'Lỗi',
+        content: 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!',
+        okText: 'Đồng ý',
+        centered: true,
+        okButtonProps: {
+          style: {
+            backgroundColor: '#002278',
+            borderColor: '#002278'
+          }
+        },
+        style: {
+          top: '20px'
+        }
+      });
     }
   };
 
   const handleShippingFeesChange = (fees) => {
     setShippingFees(fees);
-    console.log("Shipping fees updated:", fees);
+    // console.log("Shipping fees updated:", fees);
   };
 
   const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
@@ -292,6 +336,7 @@ const CheckoutService = () => {
             onDeliveryOptionChange={handleDeliveryOptionChange}
             defaultAddress={defaultAddress}
             onShippingFeesChange={handleShippingFeesChange}
+            notes={notes}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">

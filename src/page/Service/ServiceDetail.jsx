@@ -17,6 +17,7 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addItemToCart, getUserCart, getCartItemById } from "../../api/cart";
+import { Select } from 'antd';
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -380,24 +381,34 @@ const ServiceDetail = () => {
 
               <div className="mt-5 border-t pt-4">
                 <h2 className="text-2xl font-semibold mb-4">Chọn chi nhánh</h2>
-                <select
+                <Select
                   value={selectedBranch?.id || ""}
-                  onChange={handleBranchChange}
-                  className="w-full p-2 border rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-[#3A4980]"
+                  onChange={(value) => {
+                    const branch = service.branchServices.find(bs => bs.branch.id === value)?.branch;
+                    setSelectedBranch(branch);
+                  }}
+                  className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none"
+                  optionLabelProp="label"
                 >
-                  {service?.branchServices?.map((bs) => (
-                    <option
-                      key={bs.branch.id}
-                      value={bs.branch.id}
-                      disabled={bs.status === "Ngưng Hoạt Động"}
-                    >
-                      {bs.branch.name} - {bs.branch.address}
-                      {bs.status === "Ngưng Hoạt Động"
-                        ? " (Ngưng hoạt động)"
-                        : ""}
-                    </option>
-                  ))}
-                </select>
+                  {service?.branchServices?.map((bs) => {
+                    const branchName = bs.branch.name + (bs.status === "Ngưng Hoạt Động" ? " (Ngưng hoạt động)" : "");
+                    const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
+                    
+                    return (
+                      <Select.Option
+                        key={bs.branch.id}
+                        value={bs.branch.id}
+                        disabled={bs.status === "Ngưng Hoạt Động"}
+                        label={branchName}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{branchName}</span>
+                          <span className="text-gray-500 text-sm">{branchAddress}</span>
+                        </div>
+                      </Select.Option>
+                    );
+                  })}
+                </Select>
               </div>
 
               {/* Quantity */}
