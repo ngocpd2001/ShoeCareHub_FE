@@ -294,7 +294,7 @@ const UpdateTicket_Mod = () => {
               <div className="flex-1">
                 <div className="font-medium">{ticketDetails.fullName}</div>
                 <p className="text-gray-600 mb-2">
-                  {ticketDetails.description}
+                  {ticketDetails.content}
                 </p>
                 {ticketDetails.assets &&
                   ticketDetails.assets
