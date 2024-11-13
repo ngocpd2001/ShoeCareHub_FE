@@ -79,6 +79,14 @@ const EditAddressPopup = ({ onClose }) => {
     }
   }, [selectedDistrictId]);
 
+  useEffect(() => {
+    document.body.classList.add("overflow-hidden");
+
+    return () => {
+      document.body.classList.remove("overflow-hidden");
+    };
+  }, []);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -113,8 +121,8 @@ const EditAddressPopup = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-      <div className="bg-white p-8 rounded-lg w-[550px] h-auto">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-[9999] overflow-y-auto">
+      <div className="bg-white p-8 rounded-lg w-[550px] h-auto my-8">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-[#002278]">Địa chỉ mới</h2>
           <button onClick={onClose} className="p-2">

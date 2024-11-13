@@ -26,9 +26,10 @@ const TicketScreen = () => {
 
   const statusOptions = [
     { value: '', label: 'Trạng thái' },
-    { value: 'OPENING', label: 'Đang chờ', className: 'text-yellow-800 bg-yellow-50' },
-    { value: 'PROCESSING', label: 'Đang xử lý', className: 'text-blue-800 bg-blue-50' },
-    { value: 'CLOSED', label: 'Đã hủy', className: 'text-red-800 bg-red-50' }
+    { value: 'OPENING', label: 'Đang chờ' },
+    { value: 'PROCESSING', label: 'Đang xử lý' },
+    { value: 'CLOSED', label: 'Đã đóng' },
+    { value: 'CANCELED', label: 'Đã hủy' }
   ];
 
   useEffect(() => {
@@ -202,20 +203,26 @@ const TicketScreen = () => {
     return tickets.map((ticket) => (
       <tr key={ticket.id} className="border-b hover:bg-gray-50">
         <td className="py-3 px-4">{ticket.id}</td>
-        <td className="py-3 px-4">{ticket.title}</td>
+        <td className="py-3 px-4 max-w-[200px]">
+          <div className="break-words">
+            {ticket.title}
+          </div>
+        </td>
         <td className="py-3 px-4">{ticket.fullName}</td>
         <td className="py-3 px-4">{ticket.categoryName}</td>
-        <td className="py-3 px-4">
+        <td className="py-3 px-4 whitespace-nowrap">
           <span className={`px-2 py-1 rounded-full text-sm ${
             ticket.status === 'OPENING' ? 'bg-yellow-100 text-yellow-800' :
             ticket.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
-            ticket.status === 'CLOSED' ? 'bg-red-100 text-red-800' :
-            'bg-red-100 text-red-800'
+            ticket.status === 'CLOSED' ? 'bg-green-100 text-green-800' :
+            ticket.status === 'CANCELED' ? 'bg-red-100 text-red-800' :
+            'bg-gray-100 text-gray-800'
           }`}>
             {ticket.status === 'OPENING' ? 'Đang chờ' :
              ticket.status === 'PROCESSING' ? 'Đang xử lý' :
-             ticket.status === 'CLOSED' ? 'Đã hủy' :
-             'Đã hủy'}
+             ticket.status === 'CLOSED' ? 'Đã đóng' :
+             ticket.status === 'CANCELED' ? 'Đã hủy' :
+             ticket.status}
           </span>
         </td>
         <td className="py-3 px-4">{new Date(ticket.createTime).toLocaleDateString('vi-VN')}</td>
@@ -328,7 +335,7 @@ const TicketScreen = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 px-2 py-6">
+    <div className="min-h-screen bg-gray-50 px-6 py-6">
       {/* Header */}
       <div className="bg-[#002278] text-white p-4 rounded-t-lg">
         <h1 className="text-xl font-semibold">Danh sách khiếu nại</h1>
@@ -346,9 +353,10 @@ const TicketScreen = () => {
               onChange={handleStatusChange}
             >
               <option value="">Trạng thái</option>
-              <option value="OPENING" className="text-yellow-800 bg-yellow-50">Đang chờ</option>
-              <option value="PROCESSING" className="text-blue-800 bg-blue-50">Đang xử lý</option>
-              <option value="CLOSED" className="text-red-800 bg-red-50">Đã hủy</option>
+              <option value="OPENING">Đang chờ</option>
+              <option value="PROCESSING">Đang xử lý</option>
+              <option value="CLOSED">Đã đóng</option>
+              <option value="CANCELED">Đã hủy</option>
             </select>
             <FontAwesomeIcon
               icon={faSort}

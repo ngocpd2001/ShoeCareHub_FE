@@ -1,6 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { notification, Breadcrumb, Select, Form, Input, Upload, Image, Modal } from "antd";
+import {
+  notification,
+  Breadcrumb,
+  Select,
+  Form,
+  Input,
+  Upload,
+  Image,
+  Modal,
+} from "antd";
 import {
   getTicketById,
   updateTicketStatus,
@@ -8,7 +17,6 @@ import {
 } from "../../../api/ticket";
 import { UploadOutlined } from "@ant-design/icons";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
-
 
 // Thêm hàm formatDate
 const formatDate = (dateString) => {
@@ -25,9 +33,9 @@ const formatDate = (dateString) => {
 
 // Thêm object để map status từ tiếng Anh sang tiếng Việt
 const STATUS_DISPLAY = {
-  'OPENING': 'Đang mở',
-  'PROCESSING': 'Đang xử lý',
-  'CLOSED': 'Đã đóng'
+  OPENING: "Đang mở",
+  PROCESSING: "Đang xử lý",
+  CLOSED: "Đóng",
 };
 
 // Sử dụng trực tiếp STATUS_DISPLAY trong component
@@ -44,40 +52,41 @@ const UpdateTicket_Mod = () => {
 
   // Sửa lại statusOptions để hiển thị tiếng Việt
   const statusOptions = [
-    { value: 'OPENING', label: STATUS_DISPLAY['OPENING'] },
-    { value: 'PROCESSING', label: STATUS_DISPLAY['PROCESSING'] },
-    { value: 'CLOSED', label: STATUS_DISPLAY['CLOSED'] }
+    { value: "OPENING", label: STATUS_DISPLAY["OPENING"] },
+    { value: "PROCESSING", label: STATUS_DISPLAY["PROCESSING"] },
+    { value: "CLOSED", label: STATUS_DISPLAY["CLOSED"] },
   ];
 
   const handleStatusChange = async (newStatus) => {
     Modal.confirm({
-      title: 'Xác nhận thay đổi',
+      title: "Xác nhận thay đổi",
       content: `Bạn có chắc chắn muốn thay đổi trạng thái thành "${STATUS_DISPLAY[newStatus]}"?`,
-      okText: 'Đồng ý',
-      cancelText: 'Hủy bỏ',
+      okText: "Đồng ý",
+      cancelText: "Hủy bỏ",
       onOk: async () => {
         try {
           setLoading(true);
           await updateTicketStatus(id, newStatus);
-          
+
           notification.success({
             message: "Thành công",
             description: "Cập nhật trạng thái thành công",
           });
-    
+
           // Refresh data
           const response = await getTicketById(id);
           setTicketDetails(response.data);
         } catch (error) {
-          console.error('Error details:', error);
+          console.error("Error details:", error);
           notification.error({
             message: "Lỗi",
-            description: error.response?.data?.message || "Không thể cập nhật trạng thái",
+            description:
+              error.response?.data?.message || "Không thể cập nhật trạng thái",
           });
         } finally {
           setLoading(false);
         }
-      }
+      },
     });
   };
 
@@ -120,20 +129,22 @@ const UpdateTicket_Mod = () => {
       setSubmitting(true);
 
       let assets = [];
-      const files = attachments.filter(att => att.file).map(att => att.file);
-      
+      const files = attachments
+        .filter((att) => att.file)
+        .map((att) => att.file);
+
       if (files.length > 0) {
         const uploadedUrls = await firebaseImgs(files);
-        assets = uploadedUrls.map(url => ({
+        assets = uploadedUrls.map((url) => ({
           url: url,
-          type: url.includes('mp4') ? 'VIDEO' : 'IMAGE'
+          type: url.includes("mp4") ? "VIDEO" : "IMAGE",
         }));
       }
 
       const requestData = {
         title: ticketDetails.title,
         content: values.content,
-        assets: assets
+        assets: assets,
       };
 
       await createChildTicket(id, requestData);
@@ -176,30 +187,38 @@ const UpdateTicket_Mod = () => {
 
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
-    
-    const validFiles = files.filter(file => 
-      allowedTypes.includes(file.type) && file.size <= 10 * 1024 * 1024
+    const allowedTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/gif",
+      "video/mp4",
+      "video/quicktime",
+    ];
+
+    const validFiles = files.filter(
+      (file) =>
+        allowedTypes.includes(file.type) && file.size <= 10 * 1024 * 1024
     );
 
     if (validFiles.length !== files.length) {
       notification.warning({
-        message: 'Cảnh báo',
-        description: 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF) hoặc video (MP4, MOV) và dung lượng dưới 10MB'
+        message: "Cảnh báo",
+        description:
+          "Chỉ chấp nhận file ảnh (JPG, PNG, GIF) hoặc video (MP4, MOV) và dung lượng dưới 10MB",
       });
     }
 
-    const newAttachments = validFiles.map(file => ({
+    const newAttachments = validFiles.map((file) => ({
       url: URL.createObjectURL(file),
-      type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-      file: file
+      type: file.type.startsWith("image/") ? "IMAGE" : "VIDEO",
+      file: file,
     }));
 
-    setAttachments(prev => [...prev, ...newAttachments]);
+    setAttachments((prev) => [...prev, ...newAttachments]);
   };
 
   const removeAttachment = (index) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
+    setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
   if (!ticketDetails) {
@@ -265,19 +284,20 @@ const UpdateTicket_Mod = () => {
         </div>
 
         <div className="mb-6">
-          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
+          <h3 className="font-medium mb-4">Ảnh đính kèm:</h3>
           <div className="flex gap-4 flex-wrap">
-            {ticketDetails.assets && ticketDetails.assets.map((asset, index) => (
-              <div key={index} className="w-[200px]">
-                <Image.PreviewGroup>
-                  <Image
-                    src={asset.url}
-                    alt={`Ảnh ${index + 1}`}
-                    className="w-full h-auto rounded border"
-                  />
-                </Image.PreviewGroup>
-              </div>
-            ))}
+            {ticketDetails.assets &&
+              ticketDetails.assets.map((asset, index) => (
+                <div key={index} className="w-[200px]">
+                  <Image.PreviewGroup>
+                    <Image
+                      src={asset.url}
+                      alt={`Ảnh ${index + 1}`}
+                      className="w-full h-auto rounded border"
+                    />
+                  </Image.PreviewGroup>
+                </div>
+              ))}
           </div>
         </div>
 
@@ -293,21 +313,22 @@ const UpdateTicket_Mod = () => {
               </div>
               <div className="flex-1">
                 <div className="font-medium">{ticketDetails.fullName}</div>
-                <p className="text-gray-600 mb-2">
-                  {ticketDetails.content}
-                </p>
-                {ticketDetails.assets &&
-                  ticketDetails.assets
-                    .filter((asset) => asset.isImage || asset.type === "IMAGE")
-                    .map((asset, index) => (
-                      <div key={index} className="mb-2">
-                        <img
-                          src={asset.url}
-                          alt={`Ảnh ${index + 1}`}
-                          className="max-w-[200px] rounded border"
-                        />
+                <p className="text-gray-600 mb-2">{ticketDetails.content}</p>
+                {ticketDetails.assets && (
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {ticketDetails.assets.map((asset, index) => (
+                      <div key={index} className="w-[150px]">
+                        <Image.PreviewGroup>
+                          <Image
+                            src={asset.url}
+                            alt={`Ảnh ${index + 1}`}
+                            className="w-full h-[150px] object-cover rounded border"
+                          />
+                        </Image.PreviewGroup>
                       </div>
                     ))}
+                  </div>
+                )}
                 <div className="text-sm text-gray-500">
                   {formatDate(ticketDetails.createTime)}
                 </div>
@@ -327,23 +348,30 @@ const UpdateTicket_Mod = () => {
                     <div className="font-medium">
                       {reply.fullName || "Admin"}
                     </div>
-                    <p className="text-gray-600 mb-2">{reply.content}</p>
-                    {reply.assets &&
-                      reply.assets
-                        .filter(
-                          (asset) => asset.isImage || asset.type === "IMAGE"
-                        )
-                        .map((asset, assetIndex) => (
-                          <div key={assetIndex} className="mb-2">
-                            <img
-                              src={asset.url}
-                              alt={`nh phản hồi ${index + 1}-${
-                                assetIndex + 1
-                              }`}
-                              className="max-w-[200px] rounded border"
-                            />
-                          </div>
-                        ))}
+                    <p className="text-gray-600 mb-2 text-lg">
+                      {reply.content}
+                    </p>
+                    {reply.assets && (
+                      <div className="flex flex-wrap gap-2 mb-2">
+                        {reply.assets
+                          .filter(
+                            (asset) => asset.isImage || asset.type === "IMAGE"
+                          )
+                          .map((asset, assetIndex) => (
+                            <div key={assetIndex} className="w-[150px]">
+                              <Image.PreviewGroup>
+                                <Image
+                                  src={asset.url}
+                                  alt={`Ảnh phản hồi ${index + 1}-${
+                                    assetIndex + 1
+                                  }`}
+                                  className="w-full h-[150px] object-cover rounded border"
+                                />
+                              </Image.PreviewGroup>
+                            </div>
+                          ))}
+                      </div>
+                    )}
                     <div className="text-sm text-gray-500">
                       {formatDate(reply.createTime)}
                     </div>
@@ -373,105 +401,120 @@ const UpdateTicket_Mod = () => {
         {/* Form phản hồi mới */}
         <div className="mb-6 border-t pt-6">
           <h3 className="font-medium mb-4">Thêm phản hồi</h3>
-          <Form
-            form={form}
-            onFinish={handleSubmit}
-            layout="vertical"
-            initialValues={{
-              parentTicketId: parseInt(id),
-              title: ticketDetails?.title || "",
-            }}
-          >
-            {/* Hidden fields */}
-            <Form.Item name="parentTicketId" hidden>
-              <Input />
-            </Form.Item>
-
-            <Form.Item name="title" hidden>
-              <Input />
-            </Form.Item>
-
-            {/* Content field */}
-            <Form.Item
-              label="Nội dung phản hồi"
-              name="content"
-              rules={[
-                { required: true, message: "Vui lòng nhập nội dung phản hồi" },
-              ]}
-            >
-              <Input.TextArea
-                rows={4}
-                placeholder="Nhập nội dung phản hồi..."
-              />
-            </Form.Item>
-
-            {/* Assets field */}
-            <Form.Item label="Tệp đính kèm" name="assets">
-              <div className="space-y-4">
-                <div className="flex gap-3">
-                  <label className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2 cursor-pointer relative">
-                    <UploadOutlined />
-                    <span>Tải ảnh lên</span>
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*,video/*"
-                      onChange={handleFileUpload}
-                      className="hidden [&::file-selector-button]:hidden absolute w-0 p-0 border-0 text-transparent"
-                    />
-                  </label>
-                </div>
-
-                {/* Preview Attachments */}
-                {attachments.length > 0 && (
-                  <div className="mt-4 space-y-2">
-                    <h3 className="text-sm font-medium text-gray-700">Tệp đính kèm:</h3>
-                    <div className="flex flex-wrap gap-4">
-                      {attachments.map((attachment, index) => (
-                        <div key={index} className="relative group">
-                          {attachment.type === 'IMAGE' ? (
-                            <Image
-                              src={attachment.url}
-                              alt={`Attachment ${index + 1}`}
-                              className="w-24 h-24 object-cover rounded-lg"
-                            />
-                          ) : (
-                            <video
-                              src={attachment.url}
-                              className="w-24 h-24 object-cover rounded-lg"
-                            />
-                          )}
-                          <button
-                            onClick={() => removeAttachment(index)}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                          >
-                            X
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </Form.Item>
-
-            <div className="flex justify-center gap-4 mt-6">
-              <button
-                type="button"
-                onClick={() => navigate("/owner/ticket")}
-                className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
-              >
-                Hủy bỏ
-              </button>
-              <button
-                type="submit"
-                disabled={submitting}
-                className="px-6 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 disabled:opacity-50"
-              >
-                {submitting ? "Đang gửi..." : "Gửi phản hồi"}
-              </button>
+          {ticketDetails.status === "CLOSED" ? (
+            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
+              Phiếu hỗ trợ đã đóng. Không thể thêm phản hồi mới.
             </div>
-          </Form>
+          ) : (
+            <Form
+              form={form}
+              onFinish={handleSubmit}
+              layout="vertical"
+              initialValues={{
+                parentTicketId: parseInt(id),
+                title: ticketDetails?.title || "",
+              }}
+            >
+              {/* Hidden fields */}
+              <Form.Item name="parentTicketId" hidden>
+                <Input />
+              </Form.Item>
+
+              <Form.Item name="title" hidden>
+                <Input />
+              </Form.Item>
+
+              {/* Content field */}
+              <Form.Item
+                label="Nội dung phản hồi"
+                name="content"
+                rules={[
+                  {
+                    required: true,
+                    message: "Vui lòng nhập nội dung phản hồi",
+                  },
+                ]}
+              >
+                <Input.TextArea
+                  rows={4}
+                  placeholder="Nhập nội dung phản hồi..."
+                  maxLength={undefined}
+                  showCount={false}
+                  autoSize={{ minRows: 4, maxRows: 10 }}
+                />
+              </Form.Item>
+
+              {/* Assets field */}
+              <Form.Item label="Ảnh đính kèm" name="assets">
+                <div className="space-y-4">
+                  <div className="flex gap-3">
+                    <label className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2 cursor-pointer relative">
+                      <UploadOutlined />
+                      <span>Tải ảnh lên</span>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*,video/*"
+                        onChange={handleFileUpload}
+                        className="hidden [&::file-selector-button]:hidden absolute w-0 p-0 border-0 text-transparent"
+                      />
+                    </label>
+                  </div>
+
+                  {/* Preview Attachments */}
+                  {attachments.length > 0 && (
+                    <div className="mt-4 space-y-2">
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Ảnh đính kèm:
+                      </h3>
+                      <div className="flex flex-wrap gap-4">
+                        {attachments.map((attachment, index) => (
+                          <div key={index} className="relative group w-24 h-24">
+                            {attachment.type === "IMAGE" ? (
+                              <Image
+                                src={attachment.url}
+                                alt={`Attachment ${index + 1}`}
+                                className="max-w-[200px] max-h-[200px] w-auto h-auto object-contain rounded-lg"
+                              />
+                            ) : (
+                              <video
+                                src={attachment.url}
+                                className="max-w-[200px] max-h-[200px] w-auto h-auto object-contain rounded-lg"
+                                controls
+                              />
+                            )}
+                            <button
+                              onClick={() => removeAttachment(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-600"
+                            >
+                              X
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </Form.Item>
+
+              <div className="flex justify-center gap-4 mt-6">
+                <button
+                  type="button"
+                  onClick={() => navigate("/owner/ticket")}
+                  className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2 bg-blue-900 text-white rounded hover:bg-blue-800 disabled:opacity-50"
+                >
+                  {submitting ? "Đang gửi..." : "Gửi phản hồi"}
+                </button>
+              </div>
+            </Form>
+          )}
         </div>
       </div>
     </div>

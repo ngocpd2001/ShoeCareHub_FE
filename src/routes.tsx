@@ -51,41 +51,12 @@ import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailV
 import TicketManager_Mod from "./page/admin/Ticket_Mod/TicketManager_Mod";
 import UpdateTicket_Mod from "./page/admin/Ticket_Mod/UpdateTicket_Mod";
 
-// Hàm kiểm tra token hợp lệ
-const getCleanToken = () => {
-  try {
-    const token = localStorage.getItem("token");
-    if (!token) return null;
-
-    // Làm sạch token
-    const cleanToken = token.replace(/^["']|["']$/g, "").trim();
-
-    // Kiểm tra format token
-    const tokenParts = cleanToken.split(".");
-    return tokenParts.length === 3 ? cleanToken : null;
-  } catch (error) {
-    return null;
-  }
-};
-
-// Hàm kiểm tra trạng thái đăng nhập
-const isAuthenticated = () => {
-  try {
-    const token = getCleanToken();
-    if (!token) return false;
-
-    return isValidToken(token);
-  } catch (error) {
-    return false;
-  }
-};
-
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const location = useLocation();
+  const token = localStorage.getItem("token")?.replace(/^["']|["']$/g, "").trim();
 
-  if (!isAuthenticated()) {
-    // Lưu đường dẫn hiện tại để redirect sau khi đăng nhập
+  if (!token || !isValidToken(token)) {
     localStorage.setItem("redirectAfterLogin", location.pathname);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

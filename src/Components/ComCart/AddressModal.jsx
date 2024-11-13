@@ -23,10 +23,16 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
   };
 
   useEffect(() => {
-    if (isOpen) {
-      fetchAddresses();
+    if (isOpen || isEditPopupOpen) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
     }
-  }, [isOpen, accountId]);
+    
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, [isOpen, isEditPopupOpen]);
 
   const handleAddressSelect = (address) => {
     setSelectedAddress(address);
@@ -40,8 +46,8 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-8 rounded-lg w-[32rem]">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+      <div className="bg-white p-8 rounded-lg w-[32rem] relative z-50">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-[#002278]">Địa Chỉ Của Tôi</h2>
           <button onClick={onClose}>
@@ -90,10 +96,13 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
         </div>
       </div>
       {isEditPopupOpen && (
-        <EditAddressPopup onClose={() => {
-          setIsEditPopupOpen(false);
-          fetchAddresses();
-        }} />
+        <EditAddressPopup 
+          onClose={() => {
+            setIsEditPopupOpen(false);
+            fetchAddresses();
+          }} 
+          className="z-[60]"
+        />
       )}
     </div>
   );

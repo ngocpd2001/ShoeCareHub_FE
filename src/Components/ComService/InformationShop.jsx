@@ -103,7 +103,7 @@ const InformationShop = ({ businessId }) => {
               </div>
             ) : (
               <button
-                onClick={() => navigate(`/service-detail/${business.id}`, { state: { businessId: business.id } })}
+                onClick={() => navigate(`/provider-landingpage/${business.id}`, { state: { businessId: business.id } })}
                 className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3"
               >
                 Xem Shop

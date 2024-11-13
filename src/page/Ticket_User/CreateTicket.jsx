@@ -153,20 +153,20 @@ const CreateTicket = () => {
 
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     
     const validFiles = files.filter(file => 
       allowedTypes.includes(file.type) && file.size <= 10 * 1024 * 1024
     );
 
     if (validFiles.length !== files.length) {
-      notificationApi('warning', 'Cảnh báo', 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF) hoặc video (MP4, MOV) và dung lượng dưới 10MB');
+      notificationApi('warning', 'Cảnh báo', 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF) và dung lượng dưới 10MB');
     }
 
     const newAttachments = validFiles.map(file => ({
       url: URL.createObjectURL(file),
-      type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO',
-      file: file // Lưu lại file để upload lên Firebase sau
+      type: 'IMAGE',
+      file: file
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
@@ -333,7 +333,7 @@ const CreateTicket = () => {
           {/* Notice Box */}
           <div className="bg-orange-50 border border-orange-100 rounded-md p-4 mb-6">
             <p className="text-orange-800">
-              ShoeCare Hub rất cần quý khách gởi kèm <span className="font-semibold">hình ảnh/video liên quan đến vấn đề khiếu nại</span>, để ShoeCare Hub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách xử lý nhanh nhất có thể.
+              ShoeCare Hub rất cần quý khách gửi kèm <span className="font-semibold">hình ảnh liên quan đến vấn đề khiếu nại</span>, để ShoeCare Hub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách xử lý nhanh nhất có thể.
             </p>
             <p className="text-orange-800 mt-2">Cảm ơn quý khách.</p>
           </div>
@@ -343,22 +343,15 @@ const CreateTicket = () => {
             <div className="flex gap-3 mb-4">
               <label className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2 cursor-pointer">
                 <FontAwesomeIcon icon={faUpload} />
-                <span>Tải lên ảnh/video</span>
+                <span>Tải lên ảnh</span>
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
               </label>
-              {/* <button
-                className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2"
-                onClick={() => setShowLinkInput(!showLinkInput)}
-              >
-                <FontAwesomeIcon icon={faLink} />
-                <span>Thêm link</span>
-              </button> */}
             </div>
 
             {/* Link Input */}

@@ -17,10 +17,10 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addItemToCart, getUserCart, getCartItemById } from "../../api/cart";
-import { Select } from 'antd';
+import { Select } from "antd";
 
 const ServiceDetail = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [service, setService] = useState(null);
@@ -64,21 +64,21 @@ const ServiceDetail = () => {
     fetchServiceData();
   }, [serviceId]);
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (
-        containerRef.current &&
-        !containerRef.current.contains(event.target)
-      ) {
-        setCurrentImageIndex(-1);
-      }
-    };
+  // useEffect(() => {
+  //   const handleClickOutside = (event) => {
+  //     if (
+  //       containerRef.current &&
+  //       !containerRef.current.contains(event.target)
+  //     ) {
+  //       setCurrentImageIndex(-1);
+  //     }
+  //   };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
+  //   document.addEventListener("mousedown", handleClickOutside);
+  //   return () => {
+  //     document.removeEventListener("mousedown", handleClickOutside);
+  //   };
+  // }, []);
 
   useEffect(() => {
     if (
@@ -108,15 +108,15 @@ const ServiceDetail = () => {
       ]
     : [];
 
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
-  };
+  // const nextImage = () => {
+  //   setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
+  // };
 
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
-    );
-  };
+  // const prevImage = () => {
+  //   setCurrentImageIndex(
+  //     (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
+  //   );
+  // };
 
   const toggleDescription = () => {
     setIsExpanded(!isExpanded);
@@ -232,6 +232,15 @@ const ServiceDetail = () => {
               {/* Main Image Display */}
               <div className="relative w-full h-[500px] mb-4">
                 <img
+                  src={
+                    service.assetUrls?.[0]?.url || "/path/to/default-image.jpg"
+                  }
+                  alt="Main preview"
+                  className="w-full h-full object-cover rounded-lg"
+                />
+              </div>
+              {/* <div className="relative w-full h-[500px] mb-4">
+                <img
                   src={combinedData[currentImageIndex]?.img}
                   alt="Main preview"
                   className="w-full h-full object-cover rounded-lg"
@@ -252,10 +261,10 @@ const ServiceDetail = () => {
                     </button>
                   </>
                 )}
-              </div>
+              </div> */}
 
               {/* Thumbnails */}
-              <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+              {/* <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
                 {combinedData.map((item, index) => (
                   <div
                     key={index}
@@ -271,7 +280,7 @@ const ServiceDetail = () => {
                     />
                   </div>
                 ))}
-              </div>
+              </div> */}
             </div>
 
             {/* Right column - Content */}
@@ -384,26 +393,38 @@ const ServiceDetail = () => {
                 <Select
                   value={selectedBranch?.id || ""}
                   onChange={(value) => {
-                    const branch = service.branchServices.find(bs => bs.branch.id === value)?.branch;
+                    const branch = service.branchServices.find(
+                      (bs) => bs.branch.id === value
+                    )?.branch;
                     setSelectedBranch(branch);
                   }}
-                  className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none"
+                  className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400"
                   optionLabelProp="label"
+                  listItemHeight={10}
+                  listHeight={250}
                 >
                   {service?.branchServices?.map((bs) => {
-                    const branchName = bs.branch.name + (bs.status === "Ngưng Hoạt Động" ? " (Ngưng hoạt động)" : "");
+                    const branchName =
+                      bs.branch.name +
+                      (bs.status === "Ngưng Hoạt Động"
+                        ? " (Ngưng hoạt động)"
+                        : "");
                     const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
-                    
+
                     return (
                       <Select.Option
                         key={bs.branch.id}
                         value={bs.branch.id}
                         disabled={bs.status === "Ngưng Hoạt Động"}
-                        label={branchName}
+                        label={<span className="text-lg">{branchName}</span>}
                       >
-                        <div className="flex flex-col">
-                          <span className="font-medium">{branchName}</span>
-                          <span className="text-gray-500 text-sm">{branchAddress}</span>
+                        <div className="flex flex-col py-2">
+                          <span className="text-lg text-[#3A4980]">
+                            {branchName}
+                          </span>
+                          <span className="text-base text-gray-400 break-words whitespace-normal max-w-full">
+                            {branchAddress}
+                          </span>
                         </div>
                       </Select.Option>
                     );
@@ -412,7 +433,7 @@ const ServiceDetail = () => {
               </div>
 
               {/* Quantity */}
-              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6">
+              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6"></div>
                 <span className="text-gray-500 text-xl font-semibold">
                   Số lợng giày:
                 </span>

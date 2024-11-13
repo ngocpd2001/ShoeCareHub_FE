@@ -34,6 +34,17 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
     }
   }, [ticketId]);
 
+  // Thêm useEffect để xử lý việc cuộn trang
+  useEffect(() => {
+    // Khi modal mở, thêm class để ngăn cuộn
+    document.body.classList.add('overflow-hidden');
+    
+    // Cleanup function khi component unmount
+    return () => {
+      document.body.classList.remove('overflow-hidden');
+    };
+  }, []);
+
   if (loading) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -56,6 +67,8 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
       case "PROCESSING":
         return "bg-blue-100 text-blue-800";
       case "CLOSED":
+        return "bg-green-100 text-green-800";
+      case "CANCELED":
         return "bg-red-100 text-red-800";
       default:
         return "bg-gray-100 text-gray-800";
@@ -69,6 +82,8 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
       case "PROCESSING":
         return "Đang xử lý";
       case "CLOSED":
+        return "Đã đóng";
+      case "CANCELED":
         return "Đã hủy";
       default:
         return status;
@@ -95,17 +110,17 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
   return (
     <>
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
-          {/* Header */}
-          <div className="bg-[#002278] text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
+        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] relative flex flex-col">
+          {/* Header - Thêm sticky */}
+          <div className="bg-[#002278] text-white px-6 py-4 rounded-t-lg flex justify-between items-center sticky top-0 z-10">
             <h2 className="text-xl font-semibold">Chi tiết khiếu nại</h2>
             <button onClick={onClose} className="hover:opacity-80">
               <FontAwesomeIcon icon={faTimes} className="text-xl" />
             </button>
           </div>
 
-          {/* Content */}
-          <div className="p-6">
+          {/* Content - Thêm overflow-y-auto */}
+          <div className="p-6 overflow-y-auto">
             {/* Thông tin cơ bản */}
             <div className="grid grid-cols-2 gap-6 mb-6">
               <div>
