@@ -23,14 +23,24 @@ const AddressModal = ({ isOpen, onClose, accountId, onSelectAddress }) => {
   };
 
   useEffect(() => {
-    if (isOpen || isEditPopupOpen) {
+    if (isOpen && accountId) {
+      fetchAddresses();
+    }
+  }, [isOpen, accountId]);
+
+  useEffect(() => {
+    if (isOpen) {
       document.body.classList.add('overflow-hidden');
     } else {
-      document.body.classList.remove('overflow-hidden');
+      if (!isEditPopupOpen) {
+        document.body.classList.remove('overflow-hidden');
+      }
     }
     
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      if (!isOpen && !isEditPopupOpen) {
+        document.body.classList.remove('overflow-hidden');
+      }
     };
   }, [isOpen, isEditPopupOpen]);
 
