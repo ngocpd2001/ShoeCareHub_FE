@@ -150,13 +150,7 @@ import React, {
     const reloadData = async () => {
       table.handleOpenLoading();
       try {
-        const response = await getAllTicketsMod(
-          pagination.current,
-          pagination.pageSize,
-          table.sortField,
-          table.sortOrder === 'descend'
-        );
-        
+        const response = await getAllTicketsMod();
         if (response && response.tickets) {
           setData(response.tickets);
           setPagination(prev => ({
@@ -165,6 +159,9 @@ import React, {
             pageSize: response.pagination.pageSize,
             total: response.pagination.totalItems
           }));
+        } else {
+          console.error("Dữ liệu không đúng định dạng:", response);
+          setData([]);
         }
       } catch (error) {
         console.error("Chi tiết lỗi:", error);
@@ -175,18 +172,9 @@ import React, {
       }
     };
   
-    useImperativeHandle(ref, () => ({
-      reloadData,
-    }));
-  
-    useEffect(() => {
-      reloadData();
-    }, [location.state]);
-  
     const handleTableChange = (newPagination, filters, sorter) => {
-      table.setSortField(sorter.field);
-      table.setSortOrder(sorter.order);
-      table.setFilters(filters);
+      table.sortField = sorter.field;
+      table.sortOrder = sorter.order;
       
       setPagination(newPagination);
       
@@ -210,6 +198,14 @@ import React, {
       });
     };
   
+    useImperativeHandle(ref, () => ({
+      reloadData,
+    }));
+  
+    useEffect(() => {
+      reloadData();
+    }, [location.state]);
+  
     return (
       <div>
         <ComTable
@@ -220,6 +216,12 @@ import React, {
           loading={table.loading}
           rowKey="id"
           onChange={handleTableChange}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            // showTotal: (total) => `Tổng ${total} mục`
+          }}
           bordered
           className="w-full"
         />

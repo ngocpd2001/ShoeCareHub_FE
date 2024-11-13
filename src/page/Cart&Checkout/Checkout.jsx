@@ -186,8 +186,15 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     try {
+      // Kiểm tra địa chỉ
       if (!defaultAddress) {
         alert("Vui lòng chọn địa chỉ giao hàng");
+        return;
+      }
+
+      // Thêm kiểm tra phương thức giao hàng
+      if (!deliveryOption) {
+        alert("Vui lòng chọn phương thức giao hàng");
         return;
       }
 
