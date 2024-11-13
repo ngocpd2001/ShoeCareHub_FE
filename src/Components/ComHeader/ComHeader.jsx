@@ -36,6 +36,7 @@ export default function ComHeader({ children }) {
   const [token, setToken, loadToken] = useStorage("token", "");
   const [user, setUser, loadUser] = useStorage("user", null);
   const currentPath = location.pathname;
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const methods = useForm({
     resolver: yupResolver(),
@@ -69,7 +70,18 @@ export default function ComHeader({ children }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [currentPath]);
+  const handleSearch = (e) => {
+    if (e.key === "Enter") {
+      setSearchTerm("")
+      navigate(`/service?search=${encodeURIComponent(searchTerm)}`);
+    }
+  };
 
+  // Hàm xử lý khi người dùng nhấn nút tìm kiếm
+  const handleSearchClick = () => {
+    setSearchTerm('')
+    navigate(`/service?search=${encodeURIComponent(searchTerm)}`);
+  };
   return (
     <>
       <div className="min-h-full">
@@ -123,9 +135,15 @@ export default function ComHeader({ children }) {
                       <input
                         type="text"
                         placeholder="Search"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onKeyDown={handleSearch}
                         className="w-full py-1 px-4 pr-10 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
-                      <button className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500">
+                      <button
+                        onClick={handleSearchClick}
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-blue-500"
+                      >
                         <FaSearch />
                       </button>
                     </div>
