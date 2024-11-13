@@ -337,6 +337,8 @@ export const routers = createBrowserRouter([
       {
         path: "/moderator/ticket/update/:id",
         element: <UpdateTicket_Mod />,
+      },
+      {
         path: "/moderator/reset-password",
         element: <ResetPassword />,
       },
