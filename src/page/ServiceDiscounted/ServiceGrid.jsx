@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Star } from "lucide-react";
 import { getData } from "../../api/api";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Alert, Pagination, Spin } from "antd";
 
 const ServiceCard = ({ item, navigate }) => (
@@ -20,7 +20,7 @@ const ServiceCard = ({ item, navigate }) => (
     )}
     <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
     <div className="flex items-center mb-1">
-      <span className="text-yellow-400 mr-1">{item.rating}</span>
+      <span className="text-yellow-400 mr-1">{item.rating || 0}</span>
       <Star className="w-4 h-4 fill-current text-yellow-400" />
     </div>
     {item.promotion && item.promotion.newPrice ? (
@@ -54,36 +54,106 @@ const ServiceCard = ({ item, navigate }) => (
 
 export default function ServiceGrid({ name, api }) {
   const [services, setServices] = useState([]);
+  const [filteredServices, setFilteredServices] = useState([]);
+  const [paginatedServices, setPaginatedServices] = useState([]);
   const [pageIndex, setPageIndex] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
+  const pageSize = 12; // Số lượng sản phẩm mỗi trang
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOption, setSortOption] = useState("");
   const navigate = useNavigate();
-  const pageSize = 12; // Cố định số lượng sản phẩm mỗi lần gọi API
 
   // Hàm fetch dữ liệu
-  const fetchServices = (page) => {
+  const fetchServices = () => {
     setLoading(true);
-    getData(`/${api}?PageIndex=${page}&PageSize=${pageSize}`)
+    getData(`/${api}?PageIndex=1&PageSize=99999`) // Lấy tất cả sản phẩm
       .then((data) => {
         const items = data?.data?.data?.items || [];
-        const pages = data?.data?.data?.totalPages || 0; // Lấy số lượng trang từ API
         setServices(items);
-        setTotalPages(pages);
       })
       .catch((error) => {
         console.error("Error fetching services:", error);
-        setError("Failed to fetch services.");
+        setError("Không thể tải danh sách dịch vụ.");
       })
       .finally(() => {
         setLoading(false);
       });
   };
 
-  // Gọi fetchServices mỗi khi pageIndex thay đổi
+   const location = useLocation();
+
+   // Lấy search term từ query parameter
+   useEffect(() => {
+     const params = new URLSearchParams(location.search);
+     const search = params.get("search") || "";
+     setSearchTerm(search);
+   }, [location.search]);
+  
+  // Gọi fetchServices khi component được mount
   useEffect(() => {
-    fetchServices(pageIndex);
-  }, [pageIndex, api]);
+    fetchServices();
+  }, [api]);
+
+  // Hàm xử lý lọc, sắp xếp và phân trang
+  useEffect(() => {
+    let filtered = [...services];
+
+    // Tìm kiếm
+    if (searchTerm) {
+      filtered = filtered.filter((service) =>
+        service.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    // Sắp xếp
+    if (sortOption) {
+      if (sortOption === "priceAsc") {
+        filtered.sort((a, b) => {
+          const priceA =
+            a.promotion && a.promotion.newPrice
+              ? a.promotion.newPrice
+              : a.price;
+          const priceB =
+            b.promotion && b.promotion.newPrice
+              ? b.promotion.newPrice
+              : b.price;
+          return priceA - priceB;
+        });
+      } else if (sortOption === "priceDesc") {
+        filtered.sort((a, b) => {
+          const priceA =
+            a.promotion && a.promotion.newPrice
+              ? a.promotion.newPrice
+              : a.price;
+          const priceB =
+            b.promotion && b.promotion.newPrice
+              ? b.promotion.newPrice
+              : b.price;
+          return priceB - priceA;
+        });
+      } else if (sortOption === "rating") {
+        filtered.sort((a, b) => {
+          const ratingA = a.rating || 0;
+          const ratingB = b.rating || 0;
+          return ratingB - ratingA;
+        });
+      }
+    }
+
+    setFilteredServices(filtered);
+
+    // Phân trang
+    const totalItems = filtered.length;
+    const totalPages = Math.ceil(totalItems / pageSize);
+    if (pageIndex > totalPages) {
+      setPageIndex(1);
+    }
+    const startIndex = (pageIndex - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    const paginated = filtered.slice(startIndex, endIndex);
+    setPaginatedServices(paginated);
+  }, [services, searchTerm, sortOption, pageIndex]);
 
   // Hàm xử lý khi thay đổi trang
   const handlePageChange = (page) => {
@@ -92,8 +162,29 @@ export default function ServiceGrid({ name, api }) {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 rounded-md shadow-lg p-8 border-[#D9D9D9] border bg-white">
+    <div className="container mx-auto px-4 py-8 rounded-md shadow-lg border-[#D9D9D9] border bg-white">
       <h2 className="text-2xl font-bold mb-6">{name}</h2>
+
+      {/* Thanh tìm kiếm và sắp xếp */}
+      <div className="flex flex-col md:flex-row items-center mb-6 gap-4 px-7">
+        <input
+          type="text"
+          placeholder="Tìm kiếm dịch vụ..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full  p-2 border border-gray-300 rounded"
+        />
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+          className="w-full md:w-1/4 p-2 border border-gray-300 rounded"
+        >
+          <option value="">Sắp xếp theo</option>
+          <option value="priceAsc">Giá: Thấp đến Cao</option>
+          <option value="priceDesc">Giá: Cao đến Thấp</option>
+          <option value="rating">Đánh giá</option>
+        </select>
+      </div>
 
       {/* Hiển thị loading và error */}
       {loading ? (
@@ -105,8 +196,8 @@ export default function ServiceGrid({ name, api }) {
       ) : (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 px-6">
-            {services.length > 0 ? (
-              services.map((service) => (
+            {paginatedServices.length > 0 ? (
+              paginatedServices.map((service) => (
                 <ServiceCard
                   key={service.id}
                   item={service}
@@ -115,20 +206,19 @@ export default function ServiceGrid({ name, api }) {
               ))
             ) : (
               <div className="text-center col-span-full">
-                No services found.
+                Không tìm thấy dịch vụ nào.
               </div>
             )}
           </div>
 
-          {/* Phần phân trang sử dụng Ant Design */}
+          {/* Phần phân trang */}
           <div className="flex justify-center items-center mt-6">
             <Pagination
               current={pageIndex}
               pageSize={pageSize}
-              total={totalPages * pageSize} // Sử dụng totalPages từ API
+              total={filteredServices.length}
               onChange={handlePageChange}
-              showSizeChanger={false} // Không cho phép thay đổi số lượng sản phẩm mỗi trang
-              // showTotal={(total) => `Total ${totalPages} pages`}
+              showSizeChanger={false}
             />
           </div>
         </>
