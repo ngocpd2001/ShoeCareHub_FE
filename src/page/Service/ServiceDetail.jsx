@@ -81,12 +81,14 @@ const ServiceDetail = () => {
   // }, []);
 
   useEffect(() => {
-    if (
-      service &&
-      service.branchServices &&
-      service.branchServices.length > 0
-    ) {
-      setSelectedBranch(service.branchServices[0].branch);
+    if (service && service.branchServices && service.branchServices.length > 0) {
+      // Tìm chi nhánh đầu tiên đang hoạt động
+      const activeBranch = service.branchServices.find(bs => bs.status === "Hoạt Động");
+      if (activeBranch) {
+        setSelectedBranch(activeBranch.branch);
+      } else {
+        setSelectedBranch(null); // Không có chi nhánh nào hoạt động
+      }
     }
   }, [service]);
 
@@ -179,12 +181,28 @@ const ServiceDetail = () => {
 
   const handleCheckout = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || !user.id || !selectedBranch) {
+    if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
       navigate("/login");
       return;
     }
 
+    // Thêm kiểm tra chi nhánh
+    if (!selectedBranch) {
+      setMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      return;
+    }
+
+    // Kiểm tra trạng thái chi nhánh
+    const selectedBranchService = service.branchServices.find(
+      bs => bs.branch.id === selectedBranch.id
+    );
+    if (!selectedBranchService || selectedBranchService.status !== "Hoạt Động") {
+      setMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      return;
+    }
+
+    // Tiếp tục xử lý checkout...
     if (service) {
       const checkoutService = {
         ...service,

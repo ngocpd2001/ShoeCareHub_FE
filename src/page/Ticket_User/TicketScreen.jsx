@@ -14,7 +14,6 @@ const TicketScreen = () => {
   const [tickets, setTickets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [sortBy, setSortBy] = useState('');
   const [isDescending, setIsDescending] = useState(false);
   const [searchKey, setSearchKey] = useState('');
   const [selectedTicketId, setSelectedTicketId] = useState(null);
@@ -48,19 +47,19 @@ const TicketScreen = () => {
     }
   };
 
-  const fetchTickets = async (status = '', sortField = '', isDesc = false, search = '', page = 1) => {
+  const fetchTickets = async (status = '', isDesc = false, search = '', page = 1) => {
     try {
       setLoading(true);
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (!user) {
-        throw new Error('Không tìm thấy thông tin người dùng');
-      }
-
-      const response = await getAllTicket(page, pageSize, isDesc);
+      const response = await getAllTicket(
+        page,
+        pageSize,
+        isDesc,
+        search,
+        status
+      );
       
       if (response.tickets) {
         setTickets(response.tickets);
-        setSortBy(sortField);
         setIsDescending(isDesc);
         if (response.pagination) {
           setTotalPages(response.pagination.totalPages);
@@ -112,36 +111,29 @@ const TicketScreen = () => {
       await cancelTicket(ticketToCancel);
       setShowCancelConfirm(false);
       setTicketToCancel(null);
-      fetchTickets(selectedStatus, sortBy, isDescending, searchKey, currentPage);
+      fetchTickets(selectedStatus, isDescending, searchKey, currentPage);
     } catch (error) {
       console.error("Lỗi khi hủy ticket:", error);
-    }
-  };
-
-  const handleSort = () => {
-    if (sortBy === 'STATUS') {
-      setIsDescending(!isDescending);
-      fetchTickets(selectedStatus, 'STATUS', !isDescending, searchKey, currentPage);
-    } else {
-      setSortBy('STATUS');
-      setIsDescending(false);
-      fetchTickets(selectedStatus, 'STATUS', false, searchKey, currentPage);
     }
   };
 
   const handleStatusChange = (event) => {
     const newStatus = event.target.value;
     setSelectedStatus(newStatus);
-    fetchTickets(newStatus, sortBy, isDescending, searchKey, 1);
+    fetchTickets(newStatus, isDescending, searchKey, 1);
   };
 
   const handleSearch = (event) => {
     const value = event.target.value;
     setSearchKey(value);
-    const timeoutId = setTimeout(() => {
-      fetchTickets(selectedStatus, sortBy, isDescending, value, 1);
+    
+    if (window.searchTimeout) {
+      clearTimeout(window.searchTimeout);
+    }
+    
+    window.searchTimeout = setTimeout(() => {
+      fetchTickets(selectedStatus, isDescending, value, 1);
     }, 500);
-    return () => clearTimeout(timeoutId);
   };
 
   const handleViewTicket = (id) => {
@@ -249,7 +241,7 @@ const TicketScreen = () => {
   };
 
   const handlePageChange = (page) => {
-    fetchTickets(selectedStatus, sortBy, isDescending, searchKey, page);
+    fetchTickets(selectedStatus, isDescending, searchKey, page);
   };
 
   const Pagination = () => {
@@ -372,7 +364,7 @@ const TicketScreen = () => {
                 type="text"
                 value={searchKey}
                 onChange={handleSearch}
-                placeholder="Tìm kiếm hỗ trợ"
+                placeholder="Tìm kiếm khiếu nại"
                 className="border rounded-md pl-10 pr-4 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-[#002278]"
               />
               <FontAwesomeIcon
@@ -403,16 +395,11 @@ const TicketScreen = () => {
               <th className="py-3 px-4 text-gray-600">Tiêu đề</th>
               <th className="py-3 px-4 text-gray-600">Người gửi</th>
               <th className="py-3 px-4 text-gray-600">Dịch vụ</th>
-              <th className="py-3 px-4 text-gray-600 cursor-pointer" onClick={handleSort}>
+              <th className="py-3 px-4 text-gray-600">
                 Trạng thái
-                {/* <FontAwesomeIcon 
-                  icon={faSort} 
-                  className={`ml-2 ${sortBy === 'STATUS' ? (isDescending ? 'rotate-180' : '') : ''}`} 
-                /> */}
               </th>
               <th className="py-3 px-4 text-gray-600">
                 Cập nhật
-                {/* <FontAwesomeIcon icon={faSort} className="ml-2" /> */}
               </th>
               <th className="py-3 px-4 text-gray-600"></th>
             </tr>

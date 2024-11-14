@@ -60,7 +60,7 @@ export const createTicketOrder = async (ticketData) => {
   }
 };
 
-export const getAllTicket = async (pageNum = 1, pageSize = 10, isDescending = false) => {
+export const getAllTicket = async (pageNum = 1, pageSize = 10, isDescending = false, searchKey = '', status = '') => {
   try {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user'));
@@ -68,16 +68,20 @@ export const getAllTicket = async (pageNum = 1, pageSize = 10, isDescending = fa
       throw new Error('Không tìm thấy thông tin đăng nhập');
     }
 
+    const params = {
+      AccountId: user.id,
+      SearchKey: searchKey,
+      Status: status,
+      IsDecsending: isDescending,
+      PageSize: pageSize,
+      PageNum: pageNum
+    };
+
     const response = await axiosInstances.login.get('/support-tickets', {
       headers: {
         Authorization: `Bearer ${token}`
       },
-      params: {
-        AccountId: user.id,
-        IsDecsending: isDescending,
-        PageSize: pageSize,
-        PageNum: pageNum
-      }
+      params: params
     });
 
     return {
