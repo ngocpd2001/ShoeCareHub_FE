@@ -15,12 +15,14 @@ import ServiceDetail from "../../assets/videos/Service/servicedetail.mp4";
 import { FaStar } from "react-icons/fa";
 import { getServiceFeedback, getServiceById } from "../../api/service";
 import { useParams } from "react-router-dom";
+import { getAccountById } from "../../api/user";
 
 const FeedbackService = () => {
   const { id } = useParams();
   const [feedbacks, setFeedbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [serviceRating, setServiceRating] = useState(0);
+  const [customerInfo, setCustomerInfo] = useState({});
 
   const ratings = [
     { stars: 5, percentage: 70 },
@@ -89,7 +91,7 @@ const FeedbackService = () => {
     );
     setCurrentImageIndex(updatedImageIndex);
 
-    // Đặt lại chỉ số video hiện tại cho feedback được chọn
+    // Đặt lại chỉ số video hiện tại cho feedback được ch��n
     const updatedVideoIndex = currentVideoIndex.map(() => null); // Đặt tất cả các video về null
     setCurrentVideoIndex(updatedVideoIndex);
   };
@@ -117,16 +119,33 @@ const FeedbackService = () => {
           getServiceById(id)
         ]);
         
-        // Lọc feedback hợp lệ
         const validFeedbacks = feedbackData.filter(feedback => 
           feedback.isValidContent === true && 
           feedback.isValidAsset === true && 
           feedback.status !== 'SUSPENDED'
         );
         
-        console.log('Tất cả feedback:', feedbackData);
-        console.log('Feedback hợp lệ:', validFeedbacks);
+        // Lấy thông tin khách hàng cho mỗi feedback
+        const customerData = {};
+        await Promise.all(
+          validFeedbacks.map(async (feedback) => {
+            try {
+              const response = await getAccountById(feedback.order.accountId);
+              customerData[feedback.id] = {
+                fullName: response.data.fullName,
+                imageUrl: response.data.imageUrl
+              };
+            } catch (error) {
+              console.error("Lỗi khi lấy thông tin khách hàng:", error);
+              customerData[feedback.id] = {
+                fullName: "Khách hàng",
+                imageUrl: ShopAvatar // Sử dụng ảnh mặc định nếu không lấy được
+              };
+            }
+          })
+        );
         
+        setCustomerInfo(customerData);
         setFeedbacks(validFeedbacks);
         setServiceRating(serviceData.rating);
       } catch (error) {
@@ -285,13 +304,15 @@ const FeedbackService = () => {
               className="border-b pb-4 mb-4 flex items-start"
             >
               <img
-                src={ShopAvatar}
-                alt="ShopAvatar"
+                src={customerInfo[feedback.id]?.imageUrl || ShopAvatar}
+                alt="Customer Avatar"
                 className="rounded-full w-10 h-10 mr-4"
               />
               <div className="flex-1">
                 <div className="flex items-center mb-2">
-                  <span className="font-semibold pr-10">Khách hàng</span>
+                  <span className="font-semibold pr-10">
+                    {customerInfo[feedback.id]?.fullName || "Khách hàng"}
+                  </span>
                   <span className="text-gray-500 ml-2">
                     {new Date(feedback.createdTime).toLocaleDateString("vi-VN")}
                   </span>
