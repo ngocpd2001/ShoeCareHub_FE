@@ -50,6 +50,8 @@ import ComHeaderModerator from './Components/ComHeaderModerator/ComHeaderModerat
 import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailVerificationFailedScreen";
 import TicketManager_Mod from "./page/admin/Ticket_Mod/TicketManager_Mod";
 import UpdateTicket_Mod from "./page/admin/Ticket_Mod/UpdateTicket_Mod";
+import ErrorPage_Owner from "./page/404/ErrorPage_Owner";
+import ErrorPage_Mod from "./page/404/ErrorPage_Mod";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -66,14 +68,6 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
 
 export const routers = createBrowserRouter([
   {
-    path: "*",
-    element: (
-      <ComHeader>
-        <ErrorPage />
-      </ComHeader>
-    ),
-  },
-  {
     path: "/",
     element: (
       <ComHeader>
@@ -81,6 +75,10 @@ export const routers = createBrowserRouter([
       </ComHeader>
     ),
     children: [
+      {
+        path: "*",
+        element: <ErrorPage />,
+      },
       {
         path: "/",
         element: <Home />,
@@ -207,7 +205,7 @@ export const routers = createBrowserRouter([
     children: [
       {
         path: "/owner/*",
-        element: <ErrorPage />,
+        element: <ErrorPage_Owner />,
       },
       {
         path: "/owner/service",
@@ -291,7 +289,7 @@ export const routers = createBrowserRouter([
     children: [
       {
         path: "/moderator/*",
-        element: <ErrorPage />,
+        element: <ErrorPage_Mod />,
       },
       {
         path: "/moderator/Feedback",
