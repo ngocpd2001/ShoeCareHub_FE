@@ -194,11 +194,16 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     try {
-      // Kiểm tra địa chỉ
-      if (!defaultAddress) {
+      // Kiểm tra xem có cửa hàng nào chọn giao hàng không
+      const shopsWithDelivery = cartItems.filter(shop => 
+        deliveryOptions[shop.branchId] === 'delivery'
+      );
+
+      // Nếu có cửa hàng chọn giao hàng và không có địa chỉ
+      if (shopsWithDelivery.length > 0 && !defaultAddress) {
         Modal.confirm({
           title: 'Thông báo',
-          content: 'Vui lòng chọn địa chỉ giao hàng',
+          content: 'Vui lòng chọn địa chỉ giao hàng cho đơn hàng giao tận nơi',
           okText: 'Đồng ý',
           cancelText: 'Hủy',
           okButtonProps: {
@@ -210,7 +215,7 @@ const Checkout = () => {
         return;
       }
 
-      // Kiểm tra phương thức giao hàng
+      // Kiểm tra xem tất cả cửa hàng đã chọn phương thức giao hàng chưa
       const allShopsHaveDeliveryOption = cartItems.every(shop => 
         deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
       );
@@ -218,7 +223,7 @@ const Checkout = () => {
       if (!allShopsHaveDeliveryOption) {
         Modal.confirm({
           title: 'Thông báo',
-          content: 'Vui lòng chọn phương thức giao hàng cho tất cả cửa hàng',
+          content: 'Vui lòng chọn phương thức giao hàng cho cửa hàng',
           okText: 'Đồng ý',
           cancelText: 'Hủy',
           okButtonProps: {
@@ -230,14 +235,19 @@ const Checkout = () => {
         return;
       }
 
-      const checkoutData = {
-        cartItems, // Truyền toàn bộ cartItems
+      // Chuẩn bị dữ liệu checkout cơ bản
+      let checkoutData = {
+        cartItems,
         accountId: Number(accountId),
-        addressId: Number(defaultAddress.id),
         isAutoReject: false,
-        notes, // Truyền notes object
-        deliveryOptions // Truyền deliveryOptions object
+        notes,
+        deliveryOptions
       };
+
+      // Thêm addressId chỉ khi có giao hàng và có địa chỉ
+      if (shopsWithDelivery.length > 0 && defaultAddress?.id) {
+        checkoutData.addressId = Number(defaultAddress.id);
+      }
 
       console.log("Dữ liệu checkout từ giỏ hàng:", checkoutData);
       const response = await checkoutCart(checkoutData);

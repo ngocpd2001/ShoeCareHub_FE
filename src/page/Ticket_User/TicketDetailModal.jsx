@@ -16,6 +16,7 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(null);
   const [showReplyModal, setShowReplyModal] = useState(false);
+  const [showMainModal, setShowMainModal] = useState(true);
 
   const fetchTicketData = async () => {
     try {
@@ -36,12 +37,16 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
 
   // Thêm useEffect để xử lý việc cuộn trang
   useEffect(() => {
-    // Khi modal mở, thêm class để ngăn cuộn
-    document.body.classList.add('overflow-hidden');
+    // Khi modal mở, thêm các styles để ngăn cuộn và cố định body
+    document.body.style.overflow = 'hidden';
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
     
     // Cleanup function khi component unmount
     return () => {
-      document.body.classList.remove('overflow-hidden');
+      document.body.style.overflow = 'unset';
+      document.body.style.position = 'static';
+      document.body.style.width = 'auto';
     };
   }, []);
 
@@ -100,230 +105,242 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
 
   const handleReplyClick = () => {
     console.log("Current ticketId:", ticketId);
+    setShowMainModal(false);
     setShowReplyModal(true);
+  };
+
+  const handleReplyClose = () => {
+    setShowReplyModal(false);
+    setShowMainModal(true);
   };
 
   const handleReplySuccess = () => {
     fetchTicketData();
+    setShowReplyModal(false);
+    setShowMainModal(true);
   };
 
   return (
     <>
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] relative flex flex-col">
-          {/* Header - Thêm sticky */}
-          <div className="bg-[#002278] text-white px-6 py-4 rounded-t-lg flex justify-between items-center sticky top-0 z-10">
-            <h2 className="text-xl font-semibold">Chi tiết khiếu nại</h2>
-            <button onClick={onClose} className="hover:opacity-80">
-              <FontAwesomeIcon icon={faTimes} className="text-xl" />
-            </button>
-          </div>
-
-          {/* Content - Thêm overflow-y-auto */}
-          <div className="p-6 overflow-y-auto">
-            {/* Thông tin cơ bản */}
-            <div className="grid grid-cols-2 gap-6 mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FontAwesomeIcon icon={faUser} className="text-[#002278]" />
-                  <span className="text-gray-600">Người gửi:</span>
-                  <span className="font-medium">{ticket.fullName}</span>
-                </div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FontAwesomeIcon icon={faTag} className="text-[#002278]" />
-                  <span className="text-gray-600">Dịch vụ:</span>
-                  <span className="font-medium">{ticket.categoryName}</span>
-                </div>
-              </div>
-              <div>
-                <div className="flex items-center gap-2 mb-4">
-                  <FontAwesomeIcon
-                    icon={faCalendar}
-                    className="text-[#002278]"
-                  />
-                  <span className="text-gray-600">Ngày tạo:</span>
-                  <span className="font-medium">
-                    {new Date(ticket.createTime).toLocaleDateString("vi-VN")}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600">Trạng thái:</span>
-                  <span
-                    className={`px-3 py-1 rounded-full text-sm ${getStatusStyle(
-                      ticket.status
-                    )}`}
-                  >
-                    {getStatusText(ticket.status)}
-                  </span>
-                </div>
-              </div>
+      {showMainModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] relative flex flex-col">
+            {/* Header - Thêm sticky */}
+            <div className="bg-[#002278] text-white px-6 py-4 rounded-t-lg flex justify-between items-center sticky top-0 z-10">
+              <h2 className="text-xl font-semibold">Chi tiết khiếu nại</h2>
+              <button onClick={onClose} className="hover:opacity-80">
+                <FontAwesomeIcon icon={faTimes} className="text-xl" />
+              </button>
             </div>
 
-            {/* Nội dung khiếu nại ban đầu */}
-            <div className="mb-6">
-              <div className="font-medium mb-2">Tiêu đề:</div>
-              <p className="text-gray-600 mb-2">{ticket.title}</p>
-              <div className="font-medium mb-2">Nội dung:</div>
-              <p className="text-gray-600 whitespace-pre-wrap">
-                {ticket.content}
-              </p>
-            </div>
+            {/* Content - Thêm overflow-y-auto */}
+            <div className="p-6 overflow-y-auto">
+              {/* Thông tin cơ bản */}
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FontAwesomeIcon icon={faUser} className="text-[#002278]" />
+                    <span className="text-gray-600">Người gửi:</span>
+                    <span className="font-medium">{ticket.fullName}</span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FontAwesomeIcon icon={faTag} className="text-[#002278]" />
+                    <span className="text-gray-600">Dịch vụ:</span>
+                    <span className="font-medium">{ticket.categoryName}</span>
+                  </div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-4">
+                    <FontAwesomeIcon
+                      icon={faCalendar}
+                      className="text-[#002278]"
+                    />
+                    <span className="text-gray-600">Ngày tạo:</span>
+                    <span className="font-medium">
+                      {new Date(ticket.createTime).toLocaleDateString("vi-VN")}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-gray-600">Trạng thái:</span>
+                    <span
+                      className={`px-3 py-1 rounded-full text-sm ${getStatusStyle(
+                        ticket.status
+                      )}`}
+                    >
+                      {getStatusText(ticket.status)}
+                    </span>
+                  </div>
+                </div>
+              </div>
 
-            {/* Hiển thị assets của ticket chính */}
-            {ticket.assets && ticket.assets.length > 0 && (
+              {/* Nội dung khiếu nại ban đầu */}
+              <div className="mb-6">
+                <div className="font-medium mb-2">Tiêu đề:</div>
+                <p className="text-gray-600 mb-2">{ticket.title}</p>
+                <div className="font-medium mb-2">Nội dung:</div>
+                <p className="text-gray-600 whitespace-pre-wrap">
+                  {ticket.content}
+                </p>
+              </div>
+
+              {/* Hiển thị assets của ticket chính */}
+              {ticket.assets && ticket.assets.length > 0 && (
+                <div className="border rounded-lg mb-6">
+                  <div className="bg-gray-50 px-4 py-3 border-b">
+                    <h4 className="font-medium">Tệp đính kèm</h4>
+                  </div>
+                  <div className="p-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      {ticket.assets.map((asset, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center gap-2 p-2 border rounded"
+                        >
+                          {asset.type === "IMAGE" ? (
+                            <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
+                              <Image.PreviewGroup items={[asset.url]}>
+                                <Image
+                                  src={asset.url}
+                                  alt="Ảnh đính kèm"
+                                  className="object-cover w-full h-full"
+                                  preview={{ mask: "Xem ảnh" }}
+                                />
+                              </Image.PreviewGroup>
+                            </div>
+                          ) : (
+                            <>
+                              <FontAwesomeIcon
+                                icon={faDownload}
+                                className="text-[#002278]"
+                              />
+                              <a
+                                href={asset.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[#002278] hover:underline truncate"
+                                title="Tải xuống tệp đính kèm"
+                              >
+                                Tải tệp
+                              </a>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Lịch sử trao đổi */}
               <div className="border rounded-lg mb-6">
                 <div className="bg-gray-50 px-4 py-3 border-b">
-                  <h4 className="font-medium">Tệp đính kèm</h4>
+                  <h4 className="font-medium">Lịch sử trao đổi</h4>
                 </div>
-                <div className="p-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    {ticket.assets.map((asset, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center gap-2 p-2 border rounded"
-                      >
-                        {asset.type === "IMAGE" ? (
-                          <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
-                            <Image.PreviewGroup items={[asset.url]}>
-                              <Image
-                                src={asset.url}
-                                alt="Ảnh đính kèm"
-                                className="object-cover w-full h-full"
-                                preview={{ mask: "Xem ảnh" }}
-                              />
-                            </Image.PreviewGroup>
-                          </div>
-                        ) : (
-                          <>
-                            <FontAwesomeIcon
-                              icon={faDownload}
-                              className="text-[#002278]"
-                            />
-                            <a
-                              href={asset.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-[#002278] hover:underline truncate"
-                              title="Tải xuống tệp đính kèm"
-                            >
-                              Tải tệp
-                            </a>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Lịch sử trao đổi */}
-            <div className="border rounded-lg mb-6">
-              <div className="bg-gray-50 px-4 py-3 border-b">
-                <h4 className="font-medium">Lịch sử trao đổi</h4>
-              </div>
-              <div className="p-4 max-h-[400px] overflow-y-auto">
-                {ticket.childTicket?.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`flex gap-4 mb-4 ${
-                      message.moderatorId ? "flex-row-reverse" : ""
-                    }`}
-                  >
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                        <FontAwesomeIcon
-                          icon={faUser}
-                          className={
-                            message.moderatorId
-                              ? "text-blue-600"
-                              : "text-gray-600"
-                          }
-                        />
-                      </div>
-                    </div>
+                <div className="p-4 max-h-[400px] overflow-y-auto">
+                  {ticket.childTicket?.map((message, index) => (
                     <div
-                      className={`flex-1 max-w-[70%] ${
-                        message.moderatorId ? "text-right" : ""
+                      key={index}
+                      className={`flex gap-4 mb-4 ${
+                        message.moderatorId ? "flex-row-reverse" : ""
                       }`}
                     >
-                      <div className="font-medium mb-1">
-                        {message.moderatorId
-                          ? message.moderatorName
-                          : message.fullName}
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                          <FontAwesomeIcon
+                            icon={faUser}
+                            className={
+                              message.moderatorId
+                                ? "text-blue-600"
+                                : "text-gray-600"
+                            }
+                          />
+                        </div>
                       </div>
                       <div
-                        className={`rounded-lg p-3 ${
-                          message.moderatorId ? "bg-blue-50" : "bg-gray-100"
+                        className={`flex-1 max-w-[70%] ${
+                          message.moderatorId ? "text-right" : ""
                         }`}
                       >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
-                        {/* Hiển thị assets trong tin nhắn */}
-                        {message.assets && message.assets.length > 0 && (
-                          <div className="mt-2 grid grid-cols-2 gap-2">
-                            {message.assets.map((asset, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center gap-2 p-2 border rounded bg-white"
-                              >
-                                {asset.type === "IMAGE" ? (
-                                  <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
-                                    <Image.PreviewGroup items={[asset.url]}>
-                                      <Image
-                                        src={asset.url}
-                                        alt="Ảnh đính kèm"
-                                        className="object-cover w-full h-full"
-                                        preview={{ mask: "Xem ảnh" }}
+                        <div className="font-medium mb-1">
+                          {message.moderatorId
+                            ? message.moderatorName
+                            : message.fullName}
+                        </div>
+                        <div
+                          className={`rounded-lg p-3 ${
+                            message.moderatorId ? "bg-blue-50" : "bg-gray-100"
+                          }`}
+                        >
+                          <p className="whitespace-pre-wrap">{message.content}</p>
+                          {/* Hiển thị assets trong tin nhắn */}
+                          {message.assets && message.assets.length > 0 && (
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                              {message.assets.map((asset, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-2 p-2 border rounded bg-white"
+                                >
+                                  {asset.type === "IMAGE" ? (
+                                    <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
+                                      <Image.PreviewGroup items={[asset.url]}>
+                                        <Image
+                                          src={asset.url}
+                                          alt="Ảnh đính kèm"
+                                          className="object-cover w-full h-full"
+                                          preview={{ mask: "Xem ảnh" }}
+                                        />
+                                      </Image.PreviewGroup>
+                                    </div>
+                                  ) : (
+                                    <>
+                                      <FontAwesomeIcon
+                                        icon={faDownload}
+                                        className="text-[#002278]"
                                       />
-                                    </Image.PreviewGroup>
-                                  </div>
-                                ) : (
-                                  <>
-                                    <FontAwesomeIcon
-                                      icon={faDownload}
-                                      className="text-[#002278]"
-                                    />
-                                    <a
-                                      href={asset.url}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-[#002278] hover:underline truncate"
-                                      title="Tải xuống tệp đính kèm"
-                                    >
-                                      Tải tệp
-                                    </a>
-                                  </>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-sm text-gray-500 mt-1">
-                        {new Date(message.createTime).toLocaleString("vi-VN")}
+                                      <a
+                                        href={asset.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="text-[#002278] hover:underline truncate"
+                                        title="Tải xuống tệp đính kèm"
+                                      >
+                                        Tải tệp
+                                      </a>
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500 mt-1">
+                          {new Date(message.createTime).toLocaleString("vi-VN")}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
-            </div>
 
-            {/* Thêm button phản hồi */}
-            {/* <button
-              onClick={handleReplyClick}
-              className="mb-6 px-4 py-2 bg-[#002278] text-white rounded-lg hover:bg-opacity-90"
-            >
-              Phản hồi
-            </button> */}
+              {/* Thêm button phản hồi - chỉ hiển thị khi status không phải CLOSED */}
+              {ticket.status !== "CLOSED" && (
+                <button
+                  onClick={handleReplyClick}
+                  className="mb-6 px-4 py-2 bg-[#002278] text-white rounded-lg hover:bg-opacity-90"
+                >
+                  Phản hồi
+                </button>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Add ReplyTicketModal */}
       {showReplyModal && (
         <ReplyTicketModal
           ticketId={Number(ticketId)}
-          onClose={() => setShowReplyModal(false)}
+          onClose={handleReplyClose}
           onSuccess={handleReplySuccess}
         />
       )}
