@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTimes, faUpload, faLink } from "@fortawesome/free-solid-svg-icons";
 import { createChildTicket } from "../../api/ticket";
+import { Image, notification } from "antd";
+import { firebaseImgs } from "../../upImgFirebase/firebaseImgs";
 
 const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
   const [content, setContent] = useState("");
@@ -11,17 +13,32 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
   const [showLinkInput, setShowLinkInput] = useState(false);
   const [title, setTitle] = useState("");
 
+  React.useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleFileUpload = (event) => {
     const files = Array.from(event.target.files);
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'video/mp4', 'video/quicktime'];
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif'];
     
     const validFiles = files.filter(file => 
       allowedTypes.includes(file.type) && file.size <= 10 * 1024 * 1024
     );
 
+    if (validFiles.length !== files.length) {
+      notification.warning({
+        message: "Cảnh báo",
+        description: "Chỉ chấp nhận file ảnh (JPG, PNG, GIF) và dung lượng dưới 10MB",
+      });
+    }
+
     const newAttachments = validFiles.map(file => ({
       url: URL.createObjectURL(file),
-      type: file.type.startsWith('image/') ? 'IMAGE' : 'VIDEO'
+      type: 'IMAGE',
+      file: file
     }));
 
     setAttachments(prev => [...prev, ...newAttachments]);
@@ -53,30 +70,49 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
     setLoading(true);
     
     try {
-      console.log("ParentTicketId before submit:", ticketId);
-      
-      const data = {
-        parentTicketId: Number(ticketId),
-        content: content,
+      let assets = [];
+      const files = attachments
+        .filter(att => att.file)
+        .map(att => att.file);
+
+      if (files.length > 0) {
+        const uploadedUrls = await firebaseImgs(files);
+        assets = uploadedUrls.map(url => ({
+          url: url,
+          type: url.includes('mp4') ? 'VIDEO' : 'IMAGE'
+        }));
+      }
+
+      // Tạo payload JSON thay vì FormData
+      const payload = {
         title: title,
-        assets: attachments
+        content: content,
+        assets: assets
       };
+
+      // Gọi API với payload JSON
+      await createChildTicket(ticketId, payload);
       
-      console.log("Data being sent:", data);
-      const response = await createChildTicket(data);
-      console.log("API Response:", response);
+      notification.success({
+        message: "Thành công",
+        description: "Đã gửi phản hồi thành công",
+      });
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Chi tiết lỗi:", error);
+      notification.error({
+        message: "Lỗi",
+        description: error.response?.data?.message || "Không thể gửi phản hồi",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg w-full max-w-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 overflow-y-auto">
+      <div className="bg-white rounded-lg w-full max-w-2xl my-8">
         <div className="bg-[#002278] text-white px-6 py-4 rounded-t-lg flex justify-between items-center">
           <h2 className="text-xl font-semibold">Phản hồi khiếu nại</h2>
           <button onClick={onClose} className="hover:opacity-80">
@@ -112,11 +148,11 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
             <div className="flex gap-3 mb-4">
               <label className="text-[#002278] border border-[#002278] px-4 py-2 rounded-md hover:bg-[#002278] hover:text-white flex items-center gap-2 cursor-pointer">
                 <FontAwesomeIcon icon={faUpload} />
-                <span>Tải lên ảnh/video</span>
+                <span>Tải lên ảnh</span>
                 <input
                   type="file"
                   multiple
-                  accept="image/*,video/*"
+                  accept="image/*"
                   onChange={handleFileUpload}
                   className="hidden"
                 />
@@ -154,26 +190,19 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
             {/* Preview Attachments */}
             {attachments.length > 0 && (
               <div className="mt-4 space-y-2">
-                <h3 className="text-sm font-medium text-gray-700">Tệp đính kèm:</h3>
+                <h3 className="text-sm font-medium text-gray-700">Ảnh đính kèm:</h3>
                 <div className="flex flex-wrap gap-4">
                   {attachments.map((attachment, index) => (
-                    <div key={index} className="relative group">
-                      {attachment.type === 'IMAGE' ? (
-                        <img
-                          src={attachment.url}
-                          alt={`Attachment ${index + 1}`}
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
-                      ) : (
-                        <video
-                          src={attachment.url}
-                          className="w-24 h-24 object-cover rounded-lg"
-                        />
-                      )}
+                    <div key={index} className="relative group w-24 h-24">
+                      <Image
+                        src={attachment.url}
+                        alt={`Attachment ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
                       <button
                         type="button"
                         onClick={() => removeAttachment(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100"
+                        className="absolute -top-2 -right-2 bg-red-500 text-white w-6 h-6 flex items-center justify-center rounded-full hover:bg-red-600"
                       >
                         ×
                       </button>

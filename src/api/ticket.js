@@ -241,3 +241,28 @@ export const getAllTicketsMod = async (pageNum = 1, pageSize = 10, sortField = '
     throw error;
   }
 };
+
+export const notifyCustomerForTicket = async (userId) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Không tìm thấy token');
+    }
+
+    const response = await axiosInstances.login.post(
+      `/support-tickets/${userId}/notify-for-customer`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi gửi thông báo cho khách hàng:', error);
+    throw new Error(error.response?.data?.message || 'Không thể gửi thông báo cho khách hàng');
+  }
+};

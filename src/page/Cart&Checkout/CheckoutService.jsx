@@ -218,6 +218,22 @@ const CheckoutService = () => {
       // Xác định isShip dựa trên deliveryOptions
       const isShip = Object.values(deliveryOptions).some(option => option === 'delivery');
 
+      // Kiểm tra nếu có giao hàng nhưng không có địa chỉ
+      if (isShip && !defaultAddress) {
+        Modal.confirm({
+          title: 'Thông báo',
+          content: 'Vui lòng chọn địa chỉ giao hàng cho đơn hàng giao tận nơi',
+          okText: 'Đồng ý',
+          cancelText: 'Hủy',
+          okButtonProps: {
+            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+          },
+          centered: true,
+          className: 'custom-antd-modal'
+        });
+        return;
+      }
+
       const checkoutItems = cartItems.flatMap(shop => 
         shop.services.map(service => ({
           serviceId: Number(service.id),
@@ -235,14 +251,19 @@ const CheckoutService = () => {
         return;
       }
 
-      const checkoutData = {
+      // Tạo checkoutData cơ bản
+      let checkoutData = {
         items: checkoutItems,
         accountId: Number(accountId),
-        addressId: Number(defaultAddress.id),
         isAutoReject: false,
         notes: notes,
         isShip: isShip
       };
+
+      // Chỉ thêm addressId khi có giao hàng và có địa chỉ
+      if (isShip && defaultAddress?.id) {
+        checkoutData.addressId = Number(defaultAddress.id);
+      }
 
       // Log để debug
       console.log("Cart Items:", cartItems);

@@ -14,9 +14,14 @@ import {
   getTicketById,
   updateTicketStatus,
   createChildTicket,
+  notifyCustomerForTicket
 } from "../../../api/ticket";
 import { UploadOutlined } from "@ant-design/icons";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faBell
+} from "@fortawesome/free-solid-svg-icons";
 
 // Thêm hàm formatDate
 const formatDate = (dateString) => {
@@ -49,6 +54,7 @@ const UpdateTicket_Mod = () => {
   const [fileList, setFileList] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [attachments, setAttachments] = useState([]);
+  const [userId, setUserId] = useState(null);
 
   // Sửa lại statusOptions để hiển thị tiếng Việt
   const statusOptions = [
@@ -103,10 +109,11 @@ const UpdateTicket_Mod = () => {
 
         if (id) {
           const response = await getTicketById(id);
-          console.log("API Response:", response);
+          // console.log("API Response:", response);
 
           if (response && response.data) {
             setTicketDetails(response.data);
+            setUserId(response.data.userId);
           } else {
             console.error("Không có dữ liệu trong response:", response);
           }
@@ -221,6 +228,34 @@ const UpdateTicket_Mod = () => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
   };
 
+  // Thêm hàm xử lý thông báo
+  const handleNotifyCustomer = async () => {
+    try {
+      if (!userId) {
+        notification.error({
+          message: "Lỗi",
+          description: "Không tìm thấy thông tin người dùng",
+          duration: 3,
+        });
+        return;
+      }
+
+      await notifyCustomerForTicket(userId);
+      notification.success({
+        message: "Thành công",
+        description: "Đã gửi thông báo cho khách hàng",
+        duration: 3,
+      });
+    } catch (error) {
+      console.error("Lỗi khi gửi thông báo:", error);
+      notification.error({
+        message: "Lỗi",
+        description: error.message || "Không thể gửi thông báo cho khách hàng",
+        duration: 3,
+      });
+    }
+  };
+
   if (!ticketDetails) {
     return <div>Loading...</div>;
   }
@@ -259,14 +294,25 @@ const UpdateTicket_Mod = () => {
           </div>
           <div className="flex items-center gap-2">
             <span className="font-medium">Trạng thái:</span>
-            <Select
-              value={ticketDetails.status}
-              onChange={handleStatusChange}
-              options={statusOptions}
-              loading={loading}
-              disabled={loading}
-              style={{ width: 150 }}
-            />
+            <div className="flex items-center gap-2">
+              <Select
+                value={ticketDetails.status}
+                onChange={handleStatusChange}
+                options={statusOptions}
+                loading={loading}
+                disabled={loading}
+                style={{ width: 150 }}
+              />
+              {ticketDetails.status === "CLOSED" && (
+                <button
+                  onClick={handleNotifyCustomer}
+                  className="ml-2 px-4 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                >
+                  <FontAwesomeIcon icon={faBell} className="text-sm" />
+                  <span>Thông báo khách hàng</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
 

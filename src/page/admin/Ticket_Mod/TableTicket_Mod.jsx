@@ -33,6 +33,11 @@ import React, {
           text: "Đã đóng",
           className: "bg-green-100 text-green-600"
         };
+      case "CANCELED":
+        return {
+          text: "Đã hủy",
+          className: "bg-red-100 text-red-600"
+        };
       default:
         return {
           text: status,
