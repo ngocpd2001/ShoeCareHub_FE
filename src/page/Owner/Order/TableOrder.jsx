@@ -181,7 +181,7 @@ export const TableOrder = forwardRef((props, ref) => {
       ),
     },
     {
-      title: "Action",
+      title: "",
       key: "operation",
       fixed: "right",
       width: 80,
@@ -197,7 +197,7 @@ export const TableOrder = forwardRef((props, ref) => {
               const orderId = record.id;
               navigate(`/owner/order/update/${orderId}`);
             }}
-            excludeDefaultItems={["reject", "accept", "delete", "details"]} 
+            excludeDefaultItems={["delete", "details"]} 
           />
         </div>
       ),

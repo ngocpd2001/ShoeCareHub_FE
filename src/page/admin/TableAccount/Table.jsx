@@ -108,7 +108,7 @@ export const Tables = forwardRef((props, ref) => {
         ...getColumnSearchProps("address", "Ghi chú"),
       },
       {
-        title: "Thao tác",
+        title: "",
         key: "operation",
         fixed: "right",
         width: 50,

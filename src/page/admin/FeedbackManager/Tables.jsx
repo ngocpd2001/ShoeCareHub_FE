@@ -170,7 +170,7 @@ export const Tables = forwardRef((props, ref) => {
     //   render: (_, record) => <div>{record.isValidAsset ? "có" : "không"}</div>,
     // },
     {
-      title: "Thao tác",
+      title: "",
       key: "operation",
       fixed: "right",
       width: 50,

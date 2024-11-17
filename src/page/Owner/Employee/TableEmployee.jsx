@@ -115,7 +115,7 @@ export const TableEmployee = forwardRef((props, ref) => {
       ...getColumnSearchProps("status", "Trạng thái"),
     },
     {
-      title: "Action",
+      title: "",
       key: "operation",
       fixed: "right",
       width: 50,

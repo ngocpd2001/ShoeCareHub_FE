@@ -115,7 +115,7 @@ export const TableBranch = forwardRef((props, ref) => {
       ),
     },
     {
-      title: "Action",
+      title: "",
       key: "operation",
       fixed: "right",
       align: "center",

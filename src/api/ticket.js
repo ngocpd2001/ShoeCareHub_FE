@@ -104,44 +104,35 @@ export const cancelTicket = async (id) => {
   }
 };
 
-export const getTicketByBranch = async ({
-  id,
-  searchKey = '',
-  sortBy = '',
-  status = '',
+export const getTicketByBranch = async ({ 
+  id, 
+  pageSize, 
+  pageNum, 
+  sortField, 
   isDescending = false,
-  pageSize = 10,
-  pageNum = 1
+  searchKey = '',
+  status = ''
 }) => {
   try {
-    const response = await axiosInstances.login.get(`/support-tickets/branch/${id}`, {
-      params: {
-        searchKey,
-        sortBy,
-        status,
-        isDescending,
-        pageSize,
-        pageNum
-      }
-    });
-
-    if (response.data.status === 'error') {
-      throw new Error(response.data.message || 'Có lỗi xảy ra');
-    }
-
-    return {
-      tickets: response.data.data || [],
-      pagination: response.data.pagination || {
-        totalItems: 0,
-        pageSize: pageSize,
-        currentPage: pageNum,
-        totalPages: 0
-      }
+    const params = {
+      SearchKey: searchKey,
+      SortBy: sortField || '',
+      Status: status,
+      IsDecsending: isDescending,
+      PageSize: pageSize,
+      PageNum: pageNum
     };
+    
+    console.log('API params:', params);
 
+    const response = await axiosInstances.login.get(
+      `/support-tickets/branch/${id}`,
+      { params }
+    );
+    return response.data;
   } catch (error) {
-    console.error('Lỗi khi lấy danh sách phiếu hỗ trợ theo chi nhánh:', error);
-    throw new Error(error.response?.data?.message || 'Không thể lấy danh sách phiếu hỗ trợ theo chi nhánh');
+    console.error('API Error:', error.response || error);
+    throw error;
   }
 };
 

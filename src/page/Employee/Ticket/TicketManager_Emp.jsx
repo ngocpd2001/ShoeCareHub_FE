@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import { useModalState } from "../../../hooks/useModalState";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { TableTicket_Mod } from './TableTicket_Mod';
+import { TableTicket_Emp } from './TableTicket_Emp';
 import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 
-export default function TicketManager_Mod() {
+export default function TicketManager_Emp() {
   const modal = useModalState();
   const tableRef = useRef(null);
   const navigate = useNavigate();
@@ -23,12 +23,12 @@ export default function TicketManager_Mod() {
           /> */}
         </div>
         {/* <div>
-          <ComButton onClick={() => navigate("/moderator/ticket/create")}>
+          <ComButton onClick={() => navigate("/employee/ticket/create")}>
             + Thêm vé
           </ComButton>
         </div> */}
       </div>
-      <TableTicket_Mod ref={tableRef} />
+      <TableTicket_Emp ref={tableRef} />
     </>
   );
 }

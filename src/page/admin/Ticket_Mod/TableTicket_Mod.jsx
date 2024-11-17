@@ -127,7 +127,7 @@ import React, {
         },
       },
       {
-        title: "Action",
+        title: "",
         key: "operation",
         fixed: "right",
         width: 50,

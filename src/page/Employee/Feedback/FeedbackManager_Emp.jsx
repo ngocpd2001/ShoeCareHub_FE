@@ -1,34 +1,35 @@
 import React, { useRef } from "react";
 import { useModalState } from "../../../hooks/useModalState";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { TableTicket_Mod } from './TableTicket_Mod';
+import { TableFeedback_Emp } from './TableFeedback_Emp';
 import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 
-export default function TicketManager_Mod() {
+export default function FeedbackManager_Emp() {
   const modal = useModalState();
   const tableRef = useRef(null);
   const navigate = useNavigate();
+  
   return (
     <>
       <div className="flex justify-between items-end pb-2 px-4 ">
         <div>
-          <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Khiếu nại</h3>
-          {/* <Breadcrumb
+          <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Phản hồi khách hàng</h3>
+          <Breadcrumb
             items={[
               {
-                title: <span className="text-lg">Khiếu nại</span>,
+                title: <span className="text-lg">Phản hồi</span>,
               },
             ]}
-          /> */}
+          />
         </div>
         {/* <div>
-          <ComButton onClick={() => navigate("/moderator/ticket/create")}>
-            + Thêm vé
+          <ComButton onClick={() => navigate("/employee/feedback/create")}>
+            + Thêm phản hồi
           </ComButton>
         </div> */}
       </div>
-      <TableTicket_Mod ref={tableRef} />
+      <TableFeedback_Emp ref={tableRef} />
     </>
   );
 }
