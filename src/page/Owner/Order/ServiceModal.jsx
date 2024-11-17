@@ -12,7 +12,8 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
   const fetchServices = async (branchId) => {
     try {
       const response = await getServiceByBranchId(branchId);
-      setServices(response.data.items);
+      const activeServices = response.data.items.filter(service => service.status !== "INACTIVE");
+      setServices(activeServices);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách dịch vụ:", error);
     }

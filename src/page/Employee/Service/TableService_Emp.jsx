@@ -1,16 +1,10 @@
-import React, {
-  forwardRef,
-  useEffect,
-  useImperativeHandle,
-  useState,
-} from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
 import { useTableState } from "../../../hooks/useTableState";
 import { useModalState } from "../../../hooks/useModalState";
-import { Image, Tooltip } from "antd";
+import { Image } from "antd";
 import { useNotification } from "../../../Notification/Notification";
+import { useNavigate } from "react-router-dom";
 
-import DetailService from "./DetailService";
-import EditUpgrede from "./EditService";
 import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import ComConfirmDeleteModal from "../../../Components/ComConfirmDeleteModal/ComConfirmDeleteModal";
@@ -18,8 +12,9 @@ import { getData } from "../../../api/api";
 import ComTable from "../../../Components/ComTable/ComTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
 import { useStorage } from "../../../hooks/useLocalStorage";
+import { getServiceByBranchId } from "../../../api/branch";
+
 function formatCurrency(number) {
-  // Sử dụng hàm toLocaleString() để định dạng số thành chuỗi với ngăn cách hàng nghìn và mặc định là USD.
   if (typeof number === "number") {
     return number.toLocaleString("vi-VN", {
       style: "currency",
@@ -27,11 +22,13 @@ function formatCurrency(number) {
     });
   }
 }
-export const TableService = forwardRef((props, ref) => {
+
+export const TableService_Emp = forwardRef((props, ref) => {
+  const navigate = useNavigate();
+  const { employeeId } = props;
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState({});
   const table = useTableState();
-  const modal = useModalState();
   const modalDetail = useModalState();
   const modalEdit = useModalState();
   const { notificationApi } = useNotification();
@@ -40,10 +37,14 @@ export const TableService = forwardRef((props, ref) => {
   const {
     getColumnSearchProps,
     getColumnPriceRangeProps,
-    getUniqueValues,
-    getColumnFilterProps,
     getColumnApprox,
   } = useColumnFilters();
+
+  const statusColors = {
+    "Hoạt Động": "text-green-600 bg-green-50 rounded-full px-3 py-1",
+    "Ngưng Hoạt Động": "text-red-600 bg-red-50 rounded-full px-3 py-1"
+  };
+
   const columns = [
     {
       title: "Dịch vụ",
@@ -51,23 +52,16 @@ export const TableService = forwardRef((props, ref) => {
       fixed: "left",
       dataIndex: "name",
       key: "name",
-      sorter: (a, b) => a?.name?.localeCompare(b?.title),
-      ...getColumnSearchProps("name", "Dich vụ"),
+      sorter: (a, b) => a?.name?.localeCompare(b?.name),
+      ...getColumnSearchProps("name", "Dịch vụ"),
     },
-
     {
       title: "Hình ảnh",
       dataIndex: "assetUrls",
       key: "assetUrls",
       width: 150,
-      render: (data, record) => {
-        // Chuyển đổi dữ liệu ảnh từ mảng đối tượng sang mảng URL
-
-        console.log(1111, data);
-
+      render: (data) => {
         const imageUrls = data?.map((image) => image?.url);
-        // image?.type === "video"
-
         return (
           <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
             <Image.PreviewGroup items={imageUrls}>
@@ -107,7 +101,6 @@ export const TableService = forwardRef((props, ref) => {
       dataIndex: "promotion",
       key: "promotion.newPrice",
       width: 150,
-      // sorter: (a, b) => a.promotion?.newPrice - b.promotion?.newPrice || 0,
       ...getColumnPriceRangeProps("promotion.newPrice", "giá"),
       render: (e, record) => (
         <div>
@@ -133,14 +126,22 @@ export const TableService = forwardRef((props, ref) => {
       key: "orderedNum",
       sorter: (a, b) => a.orderedNum - b.orderedNum,
       width: 150,
-      // ...getColumnApprox("createTime", "Ngày tạo"),
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       width: 150,
-      // ...getColumnApprox("status", "Trạng thái"),
+      filters: [
+        { text: "Hoạt Động", value: "Hoạt Động" },
+        { text: "Ngưng Hoạt Động", value: "Ngưng Hoạt Động" }
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (status) => (
+        <div className={`inline-block ${statusColors[status]}`}>
+          {status === "Hoạt Động" ? "Hoạt động" : "Ngưng hoạt động"}
+        </div>
+      )
     },
     {
       title: "",
@@ -149,7 +150,7 @@ export const TableService = forwardRef((props, ref) => {
       width: 100,
       render: (_, record) => (
         <div className="flex items-center flex-col">
-          <ComMenuButonTable
+          {/* <ComMenuButonTable
             record={record}
             showModalDetails={() => {
               modalDetail.handleOpen();
@@ -161,49 +162,66 @@ export const TableService = forwardRef((props, ref) => {
             }}
             showModalDelete={() => {
               ComConfirmDeleteModal(
-                `/services`,
+                `/employee-services`,
                 record.id,
-                `Bạn có chắc chắn muốn xóa?`,
+                `Bạn có chắc chắn muốn xóa dịch vụ này?`,
                 reloadData,
                 notificationSuccess,
                 notificationError
               );
             }}
-            // extraMenuItems={extraMenuItems}
-            excludeDefaultItems={["details", "reject", "accept"]}
+            excludeDefaultItems={["eidt", "delete"]}
+          /> */}
+                <ComMenuButonTable
+            record={record}
+            showModalDetails={() => {
+              const serviceId = record.id;
+              navigate(`/employee/service/${serviceId}`);
+            }}
+            excludeDefaultItems={["delete", "edit"]} 
           />
         </div>
       ),
     },
   ];
+
   const notificationSuccess = () => {
-    notificationApi("success", "Thành công", "Đã xóa ");
+    notificationApi("success", "Thành công", "Đã xóa dịch vụ");
   };
+
   const notificationError = () => {
-    notificationApi("error", "Lỗi", "Lỗi");
+    notificationApi("error", "Lỗi", "Không thể xóa dịch vụ");
   };
+
   useImperativeHandle(ref, () => ({
     reloadData,
   }));
+
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(
-      `services/business?BusinessId=${user?.businessId}&IsDecsending=false&PageSize=99999999&PageNum=1`
-    )
-      .then((e) => {
-        setData(e?.data?.data.sort((a, b) => b.id - a.id));
-        console.log("====================================");
-        console.log(e?.data);
-        console.log("====================================");
+    console.log("Đang gọi API với branchId:", user?.branchId);
+    
+    getServiceByBranchId(user?.branchId)
+      .then((response) => {
+        const items = response?.data?.items || [];
+        console.log("Dữ liệu API trả về:", response?.data);
+        setData(items.sort((a, b) => b.id - a.id));
+        console.log("Dữ liệu sau khi set:", items);
         table.handleCloseLoading();
       })
       .catch((error) => {
-        console.error("Error fetching items:", error);
+        console.error("Lỗi khi lấy dữ liệu:", error);
+        table.handleCloseLoading();
       });
   };
+
   useEffect(() => {
-    reloadData();
-  }, []);
+    console.log("user?.branchId changed:", user?.branchId);
+    if (user?.branchId) {
+      reloadData();
+    }
+  }, [user?.branchId]);
+
   return (
     <div>
       <ComTable
@@ -214,24 +232,25 @@ export const TableService = forwardRef((props, ref) => {
         loading={table.loading}
       />
 
-      <ComModal
+      {/* <ComModal
         isOpen={modalDetail?.isModalOpen}
         onClose={modalDetail?.handleClose}
         width={800}
       >
         <DetailService selectedUpgrede={selectedData} />
       </ComModal>
+
       <ComModal
         isOpen={modalEdit?.isModalOpen}
         onClose={modalEdit?.handleClose}
         width={1000}
       >
-        <EditUpgrede
+        <EditService
           selectedUpgrede={selectedData}
           tableRef={reloadData}
           onClose={modalEdit?.handleClose}
         />
-      </ComModal>
+      </ComModal> */}
     </div>
   );
 });

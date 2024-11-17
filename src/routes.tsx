@@ -52,6 +52,15 @@ import TicketManager_Mod from "./page/admin/Ticket_Mod/TicketManager_Mod";
 import UpdateTicket_Mod from "./page/admin/Ticket_Mod/UpdateTicket_Mod";
 import ErrorPage_Owner from "./page/404/ErrorPage_Owner";
 import ErrorPage_Mod from "./page/404/ErrorPage_Mod";
+import ErrorPage_Emp from "./page/404/ErrorPage_Emp";
+import ComHeaderEmployee from "./Components/ComHeaderEmployee/ComHeaderEmployee";
+import Dashboard_Emp from "./page/Employee/Dashboard_Emp";
+import ServiceManager_Emp from "./page/Employee/Service/ServiceManager_Emp";
+import DetailService_Emp from "./page/Employee/Service/DetailService_Emp";
+import OrderManager_Emp from "./page/Employee/Order/OrderManager_Emp";
+import FeedbackManager_Emp from "./page/Employee/Feedback/FeedbackManager_Emp";
+import DetailFeedback_Emp from "./page/Employee/Feedback/DetailFeedback_Emp";
+import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -310,6 +319,66 @@ export const routers = createBrowserRouter([
       {
         path: "/moderator/reset-password",
         element: <ResetPassword />,
+      },
+    ],
+  },
+  {
+    path: "/employee",
+    element: (
+      <RequireAuth>
+        <ComHeaderEmployee>
+          <Outlet />
+        </ComHeaderEmployee>
+      </RequireAuth>
+    ),
+    children: [
+      {
+        path: "/employee/*",
+        element: <ErrorPage_Emp />,
+      },
+      {
+        path: "/employee/service",
+        element: <ServiceManager_Emp />,
+      },
+      {
+        path: "/employee/service/:id",
+        element: <DetailService_Emp />,
+      },
+      {
+        path: "/employee/feedback",
+        element: <FeedbackManager_Emp />,
+      },
+      // {
+      //   path: "/employee/feedback/:id",
+      //   element: <DetailFeedback_Emp />,
+      // },
+      {
+        path: "/employee/dashboard",
+        element: <Dashboard_Emp />,
+      },
+      {
+        path: "/employee/profile",
+        element: <ProfilePage />,
+      },
+      {
+        path: "/employee/ticket",
+        element: <TicketManager_Emp />,
+      },
+      {
+        path: "/employee/ticket/update/:id",
+        element: <UpdateTicket/>,
+      },
+      {
+        path: "/employee/reset-password",
+        element: <ResetPassword />,
+      },
+      {
+        path: "/employee/order",
+        element: <OrderManager_Emp />,
+      },
+      {
+        path: "/employee/order/update/:id",
+        element: <UpdateOrder />,
       },
     ],
   },

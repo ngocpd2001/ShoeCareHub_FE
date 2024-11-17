@@ -52,6 +52,13 @@ const UpdateTicket = () => {
   const [form] = Form.useForm();
   const [submitting, setSubmitting] = useState(false);
   const [attachments, setAttachments] = useState([]);
+  const [userRole, setUserRole] = useState('');
+
+  // Thêm useEffect để lấy role từ localStorage
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem('user'));
+    setUserRole(user?.role || '');
+  }, []);
 
   // Thêm useEffect để fetch dữ liệu
   useEffect(() => {
@@ -123,7 +130,6 @@ const UpdateTicket = () => {
     try {
       setSubmitting(true);
 
-      // Upload files lên Firebase
       let assets = [];
       const files = attachments
         .filter((att) => att.file)
@@ -143,24 +149,20 @@ const UpdateTicket = () => {
         assets: assets,
       };
 
-      console.log("Request data:", requestData);
+      await createChildTicket(id, requestData);
 
-      const response = await createChildTicket(id, requestData);
+      notification.success({
+        message: "Thành công",
+        description: "Đã thêm ph��n hồi mới",
+      });
 
-      if (response.status === "success") {
-        notification.success({
-          message: "Thành công",
-          description: "Đã thêm phản hồi mới",
-        });
+      // Refresh data
+      const response = await getTicketById(id);
+      setTicketDetails(response.data);
 
-        // Refresh data
-        const newData = await getTicketById(id);
-        setTicketDetails(newData.data);
-
-        // Reset form và attachments
-        form.resetFields();
-        setAttachments([]);
-      }
+      // Reset form và attachments
+      form.resetFields();
+      setAttachments([]);
     } catch (error) {
       console.error("Submit error:", error);
       notification.error({
@@ -174,6 +176,12 @@ const UpdateTicket = () => {
 
   const removeAttachment = (index) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // Cập nhật phần xử lý upload
+  const handleUpload = ({ fileList }) => {
+    console.log("New file list:", fileList);
+    setAttachments(fileList);
   };
 
   if (!ticketDetails) {
@@ -191,7 +199,11 @@ const UpdateTicket = () => {
             separator=">"
             items={[
               { title: "Cửa hàng" },
-              { title: <Link to="/owner/ticket">Khiếu nại</Link> },
+              { title: 
+                <Link to={userRole === 'EMPLOYEE' ? "/employee/ticket" : "/owner/ticket"}>
+                  Khiếu nại
+                </Link> 
+              },
               { title: "Cập nhật khiếu nại" },
             ]}
           />
@@ -243,7 +255,7 @@ const UpdateTicket = () => {
         </div>
 
         <div className="mb-6">
-          <h3 className="font-medium mb-4">Tệp đính kèm:</h3>
+          <h3 className="font-medium mb-4">Ảnh đính kèm:</h3>
           <div className="flex gap-4 flex-wrap">
             {ticketDetails.assets &&
               ticketDetails.assets.map((asset, index) => (
@@ -272,9 +284,7 @@ const UpdateTicket = () => {
               </div>
               <div className="flex-1">
                 <div className="font-medium">{ticketDetails.fullName}</div>
-                <p className="text-gray-600 mb-2 text-lg">
-                  {ticketDetails.content}
-                </p>
+                <p className="text-gray-600 mb-2">{ticketDetails.content}</p>
                 {ticketDetails.assets && (
                   <div className="flex flex-wrap gap-2 mb-2">
                     {ticketDetails.assets.map((asset, index) => (
@@ -309,7 +319,9 @@ const UpdateTicket = () => {
                     <div className="font-medium">
                       {reply.fullName || "Admin"}
                     </div>
-                    <p className="text-gray-600 mb-2">{reply.content}</p>
+                    <p className="text-gray-600 mb-2 text-lg">
+                      {reply.content}
+                    </p>
                     {reply.assets && (
                       <div className="flex flex-wrap gap-2 mb-2">
                         {reply.assets
@@ -387,6 +399,21 @@ const UpdateTicket = () => {
               </Form.Item>
 
               {/* Assets field */}
+              {/* <Form.Item label="Ảnh đính kèm">
+                <Upload
+                  listType="picture-card"
+                  fileList={attachments}
+                  onChange={handleUpload}
+                  beforeUpload={() => false} // Ngăn upload tự động
+                  multiple
+                  accept="image/*,video/*"
+                >
+                  <div>
+                    <UploadOutlined />
+                    <div style={{ marginTop: 8 }}>Tải ảnh lên</div>
+                  </div>
+                </Upload>
+              </Form.Item> */}
               <Form.Item label="Ảnh đính kèm" name="assets">
                 <div className="space-y-4">
                   <div className="flex gap-3">

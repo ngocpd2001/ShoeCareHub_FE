@@ -225,6 +225,18 @@ const UpdateOrder = () => {
   };
 
   const handleUpdateOrder = async () => {
+    // Lấy user từ localStorage và parse thành object
+    const userStr = localStorage.getItem("user");
+    let userRole = "";
+
+    try {
+      const user = JSON.parse(userStr);
+      userRole = user?.role; // Lấy role từ object user
+      console.log("User role:", userRole); // Debug log
+    } catch (error) {
+      console.error("Error parsing user data:", error);
+    }
+
     Modal.confirm({
       title: "Xác nhận cập nhật",
       content: "Bạn có chắc chắn muốn cập nhật thông tin đơn hàng không?",
@@ -235,22 +247,40 @@ const UpdateOrder = () => {
       },
       async onOk() {
         try {
+          const deliveredFee = parseFloat(formData.deliveredFee) || 0;
+
           const updatedOrderData = {
             ...orderData,
-            deliveredFee: formData.deliveredFee,
+            deliveredFee: deliveredFee,
             shippingCode: formData.shippingCode,
             shippingUnit: formData.shippingUnit,
             status: orderData.status,
+            totalPrice: (orderData.orderPrice || 0) + deliveredFee,
           };
 
-          await updateOrder(id, updatedOrderData);
-          await fetchOrderData();
+          const response = await updateOrder(id, updatedOrderData);
 
-          message.success("Cập nhật đơn hàng thành công!");
-          navigate("/owner/order", { state: { refresh: true } });
+          if (response) {
+            await fetchOrderData();
+            message.success("Cập nhật đơn hàng thành công!");
+
+            // Điều hướng dựa trên role
+            if (userRole === "OWNER") {
+              navigate("/owner/order");
+            } else if (userRole === "EMPLOYEE") {
+              navigate("/employee/order");
+            } else {
+              console.error("Invalid role:", userRole);
+              message.error("Không thể xác định quyền người dùng!");
+            }
+          }
         } catch (error) {
-          console.error("Lỗi cập nhật:", error);
-          message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
+          console.error("Chi tiết lỗi:", error);
+          if (error.response?.status === 401) {
+            message.error("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại!");
+          } else {
+            message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
+          }
         }
       },
     });
@@ -421,8 +451,17 @@ const UpdateOrder = () => {
       ...prev,
       [name]: value,
     }));
-  };
 
+    // Cập nhật lại tổng tiền khi thay đổi phí giao hàng
+    if (name === "deliveredFee") {
+      const newDeliveredFee = parseFloat(value) || 0;
+      setOrderData((prev) => ({
+        ...prev,
+        deliveredFee: newDeliveredFee,
+        totalPrice: (prev.orderPrice || 0) + newDeliveredFee,
+      }));
+    }
+  };
   if (!orderData) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -545,7 +584,7 @@ const UpdateOrder = () => {
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Phí giao hàng</span>
-              <span>{orderData.deliveredFee?.toLocaleString()}đ</span>
+              <span>{formData.deliveredFee?.toLocaleString()}đ</span>
             </div>
             <div className="flex justify-between font-semibold">
               <span>Tổng thanh toán</span>
