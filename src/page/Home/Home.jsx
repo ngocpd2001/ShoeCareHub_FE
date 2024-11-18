@@ -135,7 +135,7 @@ const SupplierCard = ({ item, navigate }) => (
   <>
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center py-2">
       <img
-        src="https://down-vn.img.susercontent.com/file/dee1682bb885c7465b94e1f064221127"
+        src={item.imageUrl}
         className="text-gray-400 h-40 w-full object-cover"
         alt={item.name}
       />
@@ -144,11 +144,14 @@ const SupplierCard = ({ item, navigate }) => (
     <div className="flex items-center mb-1">
       <span className="text-yellow-400 mr-1">{item.rating}</span>
       <Star className="w-4 h-4 fill-current text-yellow-400" />
+      <div className="text-end w-full text-sm text-gray-600">
+        Có {item.toTalServiceNum} dịch vụ
+      </div>
     </div>
-    <div className="text-sm text-gray-600">
-      Đã bán {item.orderCount ? item.orderCount.toLocaleString() : '0'} trong năm
+    <div className="text-end  text-gray-950">
+      Đã làm {item.totalOrder} dịch vụ
     </div>
-    <button 
+    <button
       onClick={() => navigate(`/provider-landingpage/${item.id}`)}
       className="mt-2 w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition-colors"
     >
@@ -193,12 +196,16 @@ export default function CarouselsSection() {
         console.log(error);
       });
 
-    getAllBusiness()
+    getData(
+      "/businesses-by-ranking?SortBy=RANK&Status=ACTIVE&IsDecsending=false&PageSize=10&PageNum=1"
+    )
       .then((data) => {
-        setBusiness(data);
+        console.log(22222, data);
+
+        setBusiness(data?.data?.data);
       })
       .catch((error) => {
-        console.error('Lỗi khi lấy danh sách nhà cung cấp:', error);
+        console.log(error);
       });
   }, []);
 

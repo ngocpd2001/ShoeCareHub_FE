@@ -1,7 +1,7 @@
 import React from "react";
 import moment from "moment";
 
-function ComDateConverter({ children, formatData = "YYYY-MM-DD" }) {
+function ComDateConverter({ children, formatData = "YYYY-MM-DD", time }) {
   const handleDate = () => {
     try {
       // Check if the date is in ISO 8601 format
@@ -9,7 +9,15 @@ function ComDateConverter({ children, formatData = "YYYY-MM-DD" }) {
         ? moment(children)
         : moment(children, formatData, true);
 
-      const formattedDate = date.isValid() ? date.format("DD-MM-YYYY") : "Không có"; // Return empty string if invalid
+      if (!date.isValid()) {
+        return "Không có";
+      }
+
+      // Format date with or without time
+      const formattedDate = time
+        ? date.format("HH:mm / DD-MM-YYYY") // Return date with time if `time` is true
+        : date.format("DD-MM-YYYY"); // Return only date if `time` is false
+
       return formattedDate;
     } catch (error) {
       return "";

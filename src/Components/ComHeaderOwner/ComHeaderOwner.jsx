@@ -68,6 +68,12 @@ const navigation = [
     current: true,
   },
   {
+    name: "Đánh giá",
+    href: "/owner/feedback",
+    icon: ChatBubbleBottomCenterTextIcon,
+    current: false,
+  },
+  {
     name: "Tin nhắn",
     href: "/owner/photo",
     icon: ChatBubbleBottomCenterTextIcon,
