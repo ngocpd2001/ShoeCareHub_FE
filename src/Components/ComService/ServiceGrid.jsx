@@ -4,11 +4,12 @@ import { faHeart as faHeartRegular } from "@fortawesome/free-regular-svg-icons";
 import { faHeart as faHeartSolid } from "@fortawesome/free-solid-svg-icons";
 import { Button, Dropdown, Menu, Pagination } from "antd";
 import { DownOutlined } from "@ant-design/icons";
-import { getServiceByBusinessId } from "../../api/service"; // Cập nhật import
+import { getServiceByBusinessId } from "../../api/service";
+import { getServiceByBranchId } from "../../api/branch";
 import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 
-const ServiceGrid = ({ businessId }) => {
+const ServiceGrid = ({ businessId, branchId }) => {
   const navigate = useNavigate(); // Sử dụng useNavigate
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
@@ -18,16 +19,22 @@ const ServiceGrid = ({ businessId }) => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getServiceByBusinessId(businessId); // Gọi API với BusinessId
-        console.log(response); // Kiểm tra response từ API
-        setServices(response); // Cập nhật danh sách dịch vụ từ response
+        let response;
+        if (branchId) {
+          response = await getServiceByBranchId(branchId);
+          setServices(response.data.items || []);
+        } else {
+          response = await getServiceByBusinessId(businessId);
+          setServices(response || []);
+        }
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
+        setServices([]);
       }
     };
 
-    fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
-  }, [businessId]); // Chỉ chạy một lần khi component được mount
+    fetchServices();
+  }, [businessId, branchId]); // Thêm branchId vào dependencies
 
   const handleFocus = () => {
     setSelected(true);
@@ -62,6 +69,13 @@ const ServiceGrid = ({ businessId }) => {
     navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
   };
 
+  // Tính toán các dịch vụ sẽ hiển thị cho trang hiện tại
+  const getCurrentPageData = () => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return services.slice(startIndex, endIndex);
+  };
+
   return (
     <div className="container mx-auto p-4">
       <div className="flex flex-row items-center mb-4 bg-white p-4">
@@ -82,7 +96,7 @@ const ServiceGrid = ({ businessId }) => {
         </Dropdown>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 shadow-md">
-        {services.map((service) => (
+        {getCurrentPageData().map((service) => (
           <div
             key={service.id}
             className="bg-white p-2 rounded-lg shadow-md transition-transform transform hover:scale-105 min-h-[350px] relative"
@@ -159,7 +173,7 @@ const ServiceGrid = ({ businessId }) => {
       <div className="flex justify-center mt-4">
         <Pagination
           current={currentPage}
-          total={totalPages * pageSize} // Cập nhật tổng số trang
+          total={services.length} // Sửa lại total để sử dụng tổng số services
           pageSize={pageSize}
           onChange={onPageChange}
           showSizeChanger={false}

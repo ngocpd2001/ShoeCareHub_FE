@@ -213,6 +213,10 @@ export const routers = createBrowserRouter([
     ),
     children: [
       {
+        path: "/owner/dashboard",
+        element: <Dashboard />,
+      },
+      {
         path: "/owner/*",
         element: <ErrorPage_Owner />,
       },
@@ -248,10 +252,6 @@ export const routers = createBrowserRouter([
       //   path: "/owner/branch/create",
       //   element: <CreateBranch />,
       // },
-      {
-        path: "/owner/dashboard",
-        element: <Dashboard />,
-      },
       {
         path: "/owner/profile",
         element: <ProfilePage />,

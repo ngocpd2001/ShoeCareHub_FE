@@ -7,7 +7,7 @@ import { FaStar } from "react-icons/fa";
 import { getBusinessById } from "../../api/businesses";
 import { getBranchByBusinessId } from "../../api/branch";
 
-const InformationShop = ({ businessId }) => {
+const InformationShop = ({ businessId, onBranchSelect }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [business, setBusiness] = useState(null);
   const [branches, setBranches] = useState([]);
@@ -37,12 +37,20 @@ const InformationShop = ({ businessId }) => {
         }
         const businessData = await getBusinessById(businessId);
         setBusiness(businessData);
+        
+        const branchData = await getBranchByBusinessId(businessId);
+        setBranches(Array.isArray(branchData.data) ? branchData.data : []);
       } catch (error) {
-        console.error("Lỗi khi lấy thông tin doanh nghiệp:", error.errors || error);
+        console.error("Lỗi khi lấy thông tin:", error.errors || error);
       }
     };
     fetchBusiness();
   }, [businessId]);
+
+  const handleBranchClick = (branchId = null) => {
+    onBranchSelect(branchId);
+    setDropdownOpen(false);
+  };
 
   if (!business) {
     return <div>Đang tải thông tin doanh nghiệp...</div>;
@@ -87,17 +95,25 @@ const InformationShop = ({ businessId }) => {
                 >
                   Chi nhánh
                 </button>
-                {isDropdownOpen && branches.length > 0 && (
-                  <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-auto">
-                    {branches.map((branch) => (
-                      <a
-                        key={branch.id}
-                        href="#"
-                        className="block px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white whitespace-nowrap"
-                      >
-                        {branch.name}
-                      </a>
-                    ))}
+                {isDropdownOpen && (
+                  <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-auto z-50">
+                    <button
+                      onClick={() => handleBranchClick(null)}
+                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white whitespace-nowrap font-semibold"
+                    >
+                      Toàn cửa hàng
+                    </button>
+                    <div className="max-h-60 overflow-y-auto">
+                      {branches.map((branch) => (
+                        <button
+                          key={branch.id}
+                          onClick={() => handleBranchClick(branch.id)}
+                          className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white whitespace-nowrap"
+                        >
+                          {branch.name}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
