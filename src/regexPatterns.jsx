@@ -1,5 +1,5 @@
 
-export const cccdRegex = /^(?:\d{9}|\d{12})$/;
+export const cccdRegex = /^(?:\d{12})$/;
 export const addressRegex = /^.*$/;
 export const nameRegex = /^[^\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]*$/;
 export const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;

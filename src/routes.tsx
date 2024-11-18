@@ -61,6 +61,7 @@ import OrderManager_Emp from "./page/Employee/Order/OrderManager_Emp";
 import FeedbackManager_Emp from "./page/Employee/Feedback/FeedbackManager_Emp";
 import DetailFeedback_Emp from "./page/Employee/Feedback/DetailFeedback_Emp";
 import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
+import FeedbackManager from "./page/Owner/Feedback/FeedbackManager";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -225,6 +226,10 @@ export const routers = createBrowserRouter([
         element: <ServiceManager />,
       },
       {
+        path: "/owner/feedback",
+        element: <FeedbackManager />,
+      },
+      {
         path: "/owner/service/create",
         element: <CreateSevice />,
       },
@@ -366,7 +371,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/employee/ticket/update/:id",
-        element: <UpdateTicket/>,
+        element: <UpdateTicket />,
       },
       {
         path: "/employee/reset-password",

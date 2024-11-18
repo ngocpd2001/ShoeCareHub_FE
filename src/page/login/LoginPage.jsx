@@ -161,7 +161,7 @@ export default function LoginPage(props) {
                       <Link to="/register" className=" text-sky-600">
                         Đăng ký
                       </Link>
-                      <Link to="#" className=" text-sky-600">
+                      <Link to="/register-owner" className=" text-sky-600">
                         Trở thành nhà cung cấp
                       </Link>
                     </div>

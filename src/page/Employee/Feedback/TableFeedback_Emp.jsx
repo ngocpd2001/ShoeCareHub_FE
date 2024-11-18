@@ -36,7 +36,11 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
       console.log("Đang tải dữ liệu với branchId:", branchId);
       const response = await getFeedbackByBranchId(branchId);
       console.log("Phản hồi từ API:", response);
-      setData(response?.data?.items || []);
+      const activeItems = response?.data?.items
+        ?.filter((item) => item.status === "ACTIVE") // Lọc những item có status là ACTIVE
+        ?.sort((a, b) => b.id - a.id); // Sắp xếp theo id giảm dần
+
+      setData(activeItems || []);
       console.log("Dữ liệu đã được cập nhật:", response?.data?.items);
       table.handleCloseLoading();
     } catch (error) {
@@ -58,6 +62,16 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
   };
 
   const columns = [
+    {
+      title: "Dịch vụ",
+      width: 200,
+      fixed: "left",
+      dataIndex: "orderItem.service.name",
+      key: "orderItem.service.name",
+      sorter: (a, b) =>
+        a?.orderItem.service.name?.localeCompare(b?.orderItem.service.name),
+      ...getColumnSearchProps("orderItem.service.name", "Dich vụ"),
+    },
     {
       title: "Nội dung",
       dataIndex: "content",
@@ -89,17 +103,6 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
       },
     },
     {
-      title: "Thời gian bình luận",
-      width: 100,
-      dataIndex: "createdTime",
-      key: "createdTime",
-      render: (_, record) => (
-        <ComDateConverter>{record?.createdTime}</ComDateConverter>
-      ),
-      sorter: (a, b) => new Date(a.createdTime) - new Date(b.createdTime),
-      ...getColumnApprox("createdTime"),
-    },
-    {
       title: "Đánh giá",
       width: 100,
       dataIndex: "rating",
@@ -111,28 +114,41 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
         { text: "4", value: 4 },
         { text: "5", value: 5 },
       ],
-      onFilter: (value, record) => record.rating === value,
       sorter: (a, b) => a.rating - b.rating,
+      onFilter: (value, record) => record.rating === value,
     },
     {
-      title: "Trạng thái",
+      title: "Thời gian bình luận",
       width: 100,
-      dataIndex: "status",
-      key: "status",
-      filters: [
-        { text: "Đã duyệt", value: "ACTIVE" },
-        { text: "Từ chối", value: "SUSPENDED" },
-        { text: "Chờ duyệt", value: "PENDING" },
-      ],
-      onFilter: (value, record) => record.status === value,
+      dataIndex: "createdTime",
+      key: "createdTime",
+
+      sorter: (a, b) => new Date(a.createdTime) - new Date(b.createdTime),
+      ...getColumnApprox("createdTime"),
       render: (_, record) => (
-        <div>
-          {record.status === "ACTIVE" && "Đã duyệt"}
-          {record.status === "SUSPENDED" && "Từ chối"}
-          {record.status === "PENDING" && "Chờ duyệt"}
-        </div>
+        <ComDateConverter time>{record?.createdTime}</ComDateConverter>
       ),
     },
+
+    // {
+    //   title: "Trạng thái",
+    //   width: 100,
+    //   dataIndex: "status",
+    //   key: "status",
+    //   filters: [
+    //     { text: "Đã duyệt", value: "ACTIVE" },
+    //     { text: "Từ chối", value: "SUSPENDED" },
+    //     { text: "Chờ duyệt", value: "PENDING" },
+    //   ],
+    //   onFilter: (value, record) => record.status === value,
+    //   render: (_, record) => (
+    //     <div>
+    //       {record.status === "ACTIVE" && "Đã duyệt"}
+    //       {record.status === "SUSPENDED" && "Từ chối"}
+    //       {record.status === "PENDING" && "Chờ duyệt"}
+    //     </div>
+    //   ),
+    // },
     {
       title: "",
       key: "operation",
