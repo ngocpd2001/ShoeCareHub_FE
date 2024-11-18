@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getServiceByBusinessId } from "../../api/service";
+import { getServiceByBranchId } from "../../api/branch";
 import { FaStar } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate thay vì useHistory
 
-const ServiceCard = ({ businessId }) => {
+const ServiceCard = ({ businessId, branchId }) => {
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [favorites, setFavorites] = useState([]); // State để quản lý yêu thích
   const navigate = useNavigate(); // Sử dụng useNavigate để điều hướng
@@ -12,16 +13,22 @@ const ServiceCard = ({ businessId }) => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await getServiceByBusinessId(businessId); // Gọi API với BusinessId
-        console.log(response); // Kiểm tra response từ API
-        setServices(response); // Cập nhật danh sách dịch vụ từ response
+        let response;
+        if (branchId) {
+          response = await getServiceByBranchId(branchId);
+          setServices(response.data.items || []); // Lấy data.items từ response
+        } else {
+          response = await getServiceByBusinessId(businessId);
+          setServices(response || []); // Giữ nguyên logic cũ cho getServiceByBusinessId
+        }
       } catch (error) {
         console.error("Lỗi khi gọi API", error);
+        setServices([]); // Đặt services là mảng rỗng nếu có lỗi
       }
     };
 
-    fetchServices(); // Gọi hàm fetchServices để lấy dữ liệu
-  }, [businessId]); // Chỉ chạy một lần khi component được mount
+    fetchServices();
+  }, [businessId, branchId]); // Thêm branchId vào dependencies
 
   const handleCardClick = (serviceId) => {
     navigate(`/servicedetail/${serviceId}`, { state: { businessId } }); // Điều hướng đến trang chi tiết dịch vụ
@@ -44,10 +51,7 @@ const ServiceCard = ({ businessId }) => {
             {service.promotion && service.promotion.newPrice && (
               <div className="bg-red-500 text-white rounded-lg px-2 py-1">
                 <span className="text-sm font-bold">
-                  -{Math.round(
-                    ((service.price - service.promotion.newPrice) / service.price) * 100
-                  )}
-                  %
+                  -{Math.floor(((service.price - service.promotion.newPrice) / service.price) * 100)}%
                 </span>
               </div>
             )}

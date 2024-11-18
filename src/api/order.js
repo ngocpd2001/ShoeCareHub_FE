@@ -57,6 +57,7 @@ export const updateOrder = async (id, orderData) => {
       shippingCode,
       deliveredFee,
       status,
+      isShip,
       ...timeFields
     } = orderData;
 
@@ -71,6 +72,7 @@ export const updateOrder = async (id, orderData) => {
       FINISHED: 'finishedTime',
       ABANDONED: 'abandonedTime'
     };
+    
 
     const now = new Date();
     const offset = 7;
@@ -83,13 +85,22 @@ export const updateOrder = async (id, orderData) => {
       timeFields[currentTimeField] = currentTime;
     }
 
-    const response = await axiosInstances.login.patch(`/orders/${id}`, {
-      shippingUnit,
-      shippingCode,
-      deliveredFee,
-      status,
-      ...timeFields
-    });
+    const requestBody = {
+      ...timeFields,
+      isShip: isShip
+    };
+
+    if (isShip === false) {
+      requestBody.deliveredFee = 0;
+    } else if (isShip === true) {
+      requestBody.deliveredFee = deliveredFee;
+    }
+
+    if (shippingUnit !== undefined) requestBody.shippingUnit = shippingUnit;
+    if (shippingCode !== undefined) requestBody.shippingCode = shippingCode;
+    if (status !== undefined) requestBody.status = status;
+
+    const response = await axiosInstances.login.patch(`/orders/${id}`, requestBody);
 
     return response.data.message;
   } catch (error) {

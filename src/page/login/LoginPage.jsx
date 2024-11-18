@@ -55,13 +55,13 @@ export default function LoginPage(props) {
             console.log(data);
             switch (data.data?.role) {
               case "OWNER":
-                navigate("/owner/dashboard");
+                navigate("/owner/order");
                 break;
               case "CUSTOMER":
                 navigate("/");
                 break;
               case "EMPLOYEE":
-                navigate("/EMPLOYEE");
+                navigate("/employee/order");
                 break;
               case "ADMIN":
                 navigate("/ADMIN");

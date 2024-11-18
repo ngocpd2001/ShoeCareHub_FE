@@ -235,16 +235,19 @@ const Checkout = () => {
         return;
       }
 
-      // Chuẩn bị dữ liệu checkout cơ bản
+      // Chuẩn bị dữ liệu checkout
       let checkoutData = {
         cartItems,
         accountId: Number(accountId),
         isAutoReject: false,
         notes,
-        deliveryOptions
+        deliveryOptions,
+        // Thêm các trường liên quan đến shipping
+        isShip: shopsWithDelivery.length > 0, // true nếu có shop chọn giao hàng
+        deliveredFee: totalShippingFee, // Thêm phí ship tổng
       };
 
-      // Thêm addressId chỉ khi có giao hàng và có địa chỉ
+      // Thêm addressId nếu có giao hàng
       if (shopsWithDelivery.length > 0 && defaultAddress?.id) {
         checkoutData.addressId = Number(defaultAddress.id);
       }

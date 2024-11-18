@@ -169,12 +169,23 @@ const UpdateOrder = () => {
   const { notificationApi } = useNotification();
   const [statusHistory, setStatusHistory] = useState([]);
   const [newStatus, setNewStatus] = useState(null);
+  const [isShip, setIsShip] = useState(true);
+
+  useEffect(() => {
+    if (orderData) {
+      setFormData({
+        deliveredFee: orderData.deliveredFee || 0,
+        shippingCode: orderData.shippingCode || "",
+        shippingUnit: orderData.shippingUnit || "",
+      });
+    }
+  }, [orderData]);
 
   const fetchOrderData = async () => {
     try {
       const data = await getOrderById(id);
 
-      // Kiểm tra nếu đơn hàng đã quá 7 ngày và vẫn ở trạng thái PENDING
+      // Kiểm tra đơn hàng hết hạn
       if (checkOrderExpiration(data.createTime, data.status)) {
         // Tự động cập nhật trạng thái thành CANCELED
         await updateOrderStatus(id, "CANCELED");
@@ -188,17 +199,34 @@ const UpdateOrder = () => {
           "Thông báo",
           "Đơn hàng đã tự động hủy do quá 7 ngày không được xác nhận"
         );
+
+        // Cập nhật formData với giá trị từ updatedData
+        setFormData({
+          deliveredFee: updatedData.deliveredFee || 0,
+          shippingCode: updatedData.shippingCode || "",
+          shippingUnit: updatedData.shippingUnit || "",
+        });
+
+        // Cập nhật isShip
+        setIsShip(updatedData.deliveredFee > 0);
       } else {
+        // Xác định isShip dựa vào deliveredFee
+        const isShipValue = data.deliveredFee > 0;
+
         setOrderData(data);
         const displayStatus = ENUM_TO_STATUS[data.status];
         setOrderStatus(displayStatus || data.status);
-      }
 
-      setFormData({
-        deliveredFee: data.deliveredFee || 0,
-        shippingCode: data.shippingCode || "",
-        shippingUnit: data.shippingUnit || "",
-      });
+        // Cập nhật formData với giá trị từ API
+        setFormData({
+          deliveredFee: data.deliveredFee || 0,
+          shippingCode: data.shippingCode || "",
+          shippingUnit: data.shippingUnit || "",
+        });
+
+        // Cập nhật isShip
+        setIsShip(isShipValue);
+      }
 
       if (data.addressId) {
         const address = await getAddressById(data.addressId);
@@ -208,6 +236,7 @@ const UpdateOrder = () => {
       const history = getStatusHistory(data);
       setStatusHistory(history);
     } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
       notificationApi("error", "Lỗi", "Không thể tải dữ liệu đơn hàng");
     }
   };
@@ -225,65 +254,65 @@ const UpdateOrder = () => {
   };
 
   const handleUpdateOrder = async () => {
-    // Lấy user từ localStorage và parse thành object
     const userStr = localStorage.getItem("user");
     let userRole = "";
 
     try {
       const user = JSON.parse(userStr);
-      userRole = user?.role; // Lấy role từ object user
-      console.log("User role:", userRole); // Debug log
+      userRole = user?.role;
+
+      Modal.confirm({
+        title: "Xác nhận cập nhật",
+        content: "Bạn có chắc chắn muốn cập nhật thông tin đơn hàng không?",
+        okText: "Đồng ý",
+        cancelText: "Hủy",
+        okButtonProps: {
+          className: "bg-blue-500 hover:bg-blue-600 text-white",
+        },
+        async onOk() {
+          try {
+            const deliveredFee = parseFloat(formData.deliveredFee) || 0;
+            const newIsShip = deliveredFee > 0;
+
+            const updatedOrderData = {
+              ...orderData,
+              isShip: newIsShip,
+              deliveredFee: deliveredFee,
+              shippingCode: formData.shippingCode,
+              shippingUnit: formData.shippingUnit,
+              status: orderData.status,
+              totalPrice: (orderData.orderPrice || 0) + deliveredFee,
+            };
+
+            console.log("Dữ liệu cập nhật:", updatedOrderData); // Thêm log để kiểm tra
+
+            const response = await updateOrder(id, updatedOrderData);
+
+            if (response) {
+              await fetchOrderData();
+              message.success("Cập nhật đơn hàng thành công!");
+
+              if (userRole === "OWNER") {
+                navigate("/owner/order");
+              } else if (userRole === "EMPLOYEE") {
+                navigate("/employee/order");
+              }
+            }
+          } catch (error) {
+            console.error("Chi tiết lỗi:", error);
+            if (error.response?.status === 401) {
+              message.error(
+                "Phiên làm việc đã hết hạn, vui lòng đăng nhập lại!"
+              );
+            } else {
+              message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
+            }
+          }
+        },
+      });
     } catch (error) {
       console.error("Error parsing user data:", error);
     }
-
-    Modal.confirm({
-      title: "Xác nhận cập nhật",
-      content: "Bạn có chắc chắn muốn cập nhật thông tin đơn hàng không?",
-      okText: "Đồng ý",
-      cancelText: "Hủy",
-      okButtonProps: {
-        className: "bg-blue-500 hover:bg-blue-600 text-white",
-      },
-      async onOk() {
-        try {
-          const deliveredFee = parseFloat(formData.deliveredFee) || 0;
-
-          const updatedOrderData = {
-            ...orderData,
-            deliveredFee: deliveredFee,
-            shippingCode: formData.shippingCode,
-            shippingUnit: formData.shippingUnit,
-            status: orderData.status,
-            totalPrice: (orderData.orderPrice || 0) + deliveredFee,
-          };
-
-          const response = await updateOrder(id, updatedOrderData);
-
-          if (response) {
-            await fetchOrderData();
-            message.success("Cập nhật đơn hàng thành công!");
-
-            // Điều hướng dựa trên role
-            if (userRole === "OWNER") {
-              navigate("/owner/order");
-            } else if (userRole === "EMPLOYEE") {
-              navigate("/employee/order");
-            } else {
-              console.error("Invalid role:", userRole);
-              message.error("Không thể xác định quyền người dùng!");
-            }
-          }
-        } catch (error) {
-          console.error("Chi tiết lỗi:", error);
-          if (error.response?.status === 401) {
-            message.error("Phiên làm việc đã hết hạn, vui lòng đăng nhập lại!");
-          } else {
-            message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
-          }
-        }
-      },
-    });
   };
 
   const handleButtonClick = () => {
@@ -447,21 +476,40 @@ const UpdateOrder = () => {
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
 
-    // Cập nhật lại tổng tiền khi thay đổi phí giao hàng
+    if (!isShip && (name === 'deliveredFee' || name === 'shippingCode' || name === 'shippingUnit')) {
+      notificationApi("error", "Lỗi", "Không thể cập nhật thông tin vận chuyển khi không chọn giao hàng");
+      return;
+    }
+
     if (name === "deliveredFee") {
-      const newDeliveredFee = parseFloat(value) || 0;
-      setOrderData((prev) => ({
+      // Loại bỏ các ký tự không phải số và số 0 ở đầu
+      const numericValue = value.replace(/^0+|[^0-9]/g, '');
+      
+      // Nếu chuỗi rỗng thì gán giá trị 0
+      const displayValue = numericValue === '' ? '0' : numericValue;
+      
+      setFormData(prev => ({
         ...prev,
-        deliveredFee: newDeliveredFee,
-        totalPrice: (prev.orderPrice || 0) + newDeliveredFee,
+        [name]: displayValue
+      }));
+
+      // Cập nhật orderData với giá trị đã parse
+      const parsedValue = parseInt(displayValue, 10);
+      setOrderData(prev => ({
+        ...prev,
+        deliveredFee: parsedValue,
+        isShip: parsedValue > 0,
+        totalPrice: (prev.orderPrice || 0) + parsedValue
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
       }));
     }
   };
+
   if (!orderData) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -584,7 +632,9 @@ const UpdateOrder = () => {
             </div>
             <div className="flex justify-between mb-2">
               <span className="text-gray-600">Phí giao hàng</span>
-              <span>{formData.deliveredFee?.toLocaleString()}đ</span>
+              <span>
+                {parseInt(formData.deliveredFee || 0).toLocaleString()}đ
+              </span>
             </div>
             <div className="flex justify-between font-semibold">
               <span>Tổng thanh toán</span>
@@ -784,50 +834,65 @@ const UpdateOrder = () => {
             <div className="mt-4 space-y-4">
               <div>
                 <label className="block text-gray-700 mb-2">
-                  Phí giao hàng (VNĐ)
+                  Hình thức giao hàng
                 </label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    name="deliveredFee"
-                    value={formData.deliveredFee}
-                    onChange={handleFormChange}
-                    className="w-full p-2 border rounded pr-12"
-                    min="0"
-                    step="1000"
-                    placeholder="0"
-                  />
-                  <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    VNĐ
-                  </span>
+                <div className="p-2 bg-gray-50 border rounded text-gray-700">
+                  {formData.deliveredFee > 0
+                    ? "Giao hàng tận nơi"
+                    : "Lấy tại cửa hàng"}
                 </div>
               </div>
+              {isShip && (
+                <>
+                  <div>
+                    <label className="block text-gray-700 mb-2">
+                      Phí giao hàng (VNĐ)
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        name="deliveredFee"
+                        value={formData.deliveredFee}
+                        onChange={handleFormChange}
+                        className="w-full p-2 border rounded pr-12"
+                        placeholder="0"
+                        disabled={!isShip}
+                      />
+                      <span className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">
+                        VNĐ
+                      </span>
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-gray-700 mb-2">
-                  Mã vận chuyển
-                </label>
-                <input
-                  type="text"
-                  name="shippingCode"
-                  value={formData.shippingCode}
-                  onChange={handleFormChange}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
+                  <div>
+                    <label className="block text-gray-700 mb-2">
+                      Mã vận chuyển
+                    </label>
+                    <input
+                      type="text"
+                      name="shippingCode"
+                      value={formData.shippingCode}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                      disabled={!isShip}
+                    />
+                  </div>
 
-              <div>
-                <label className="block text-gray-700 mb-2">
-                  Đơn vị vận chuyển
-                </label>
-                <input
-                  type="text"
-                  name="shippingUnit"
-                  value={formData.shippingUnit}
-                  onChange={handleFormChange}
-                  className="w-full p-2 border rounded"
-                />
-              </div>
+                  <div>
+                    <label className="block text-gray-700 mb-2">
+                      Đơn vị vận chuyển
+                    </label>
+                    <input
+                      type="text"
+                      name="shippingUnit"
+                      value={formData.shippingUnit}
+                      onChange={handleFormChange}
+                      className="w-full p-2 border rounded"
+                      disabled={!isShip}
+                    />
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

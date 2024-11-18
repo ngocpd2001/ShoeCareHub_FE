@@ -9,6 +9,11 @@ import ImageSlider from "../../Components/ComService/ImageSlider";
 
 const ProviderLandingPage = () => {
   const { id } = useParams();
+  const [selectedBranchId, setSelectedBranchId] = useState(null);
+
+  const handleBranchSelect = (branchId) => {
+    setSelectedBranchId(branchId);
+  };
 
   const featuredServices = [
     {
@@ -78,7 +83,7 @@ const ProviderLandingPage = () => {
     <div className="bg-gray-100 min-h-screen">
       <div className="bg-white w-full">
         <div className="max-w-7xl mx-auto p-6">
-          <InformationShop businessId={id} />
+          <InformationShop businessId={id} onBranchSelect={handleBranchSelect} />
         </div>
       </div>
 
@@ -89,11 +94,8 @@ const ProviderLandingPage = () => {
               <h2 className="text-2xl font-semibold text-[#344054]">
                 GỢI Ý CHO BẠN
               </h2>
-              {/* <button className="text-[#002278] font-semibold">
-                Xem tất cả
-              </button> */}
             </div>
-            <ServiceCard businessId={id} />
+            <ServiceCard businessId={id} branchId={selectedBranchId} />
           </section>
 
           <ImageSlider images={images} />
@@ -175,7 +177,7 @@ const ProviderLandingPage = () => {
             </div>
           </div>
 
-          <ServiceGrid businessId={id} />
+          <ServiceGrid businessId={id} branchId={selectedBranchId} />
         </div>
       </div>
     </div>
