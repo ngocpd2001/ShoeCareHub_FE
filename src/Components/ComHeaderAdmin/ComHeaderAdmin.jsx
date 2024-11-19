@@ -24,6 +24,8 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
+  BuildingOffice2Icon,
+  BuildingOfficeIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
@@ -34,59 +36,87 @@ import {
 import { ChevronRightIcon } from "@heroicons/react/20/solid";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Affix } from "antd";
-import { PackageIcon, UserCircleIcon } from "lucide-react";
+import { PackageIcon, UserCircleIcon, ImageIcon, Network } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
+import { FaStar } from "react-icons/fa";
+import ticketIcon from "../../assets/report.png";
+import { TicketIcon } from "@heroicons/react/24/outline";
 
 const navigation = [
   {
     name: "Trang chủ",
-    href: "/moderator/dashboard",
+    href: "/admin/dashboard",
     icon: HomeIcon,
     current: false,
   },
   {
+    name: "Người dùng",
+    href: "/admin/user",
+    icon: UsersIcon,
+    current: false,
+  },
+  {
     name: "Cửa hàng",
+    href: "/admin/store",
     icon: BuildingStorefrontIcon,
     current: false,
-    children: [
-      { name: "Dịch vụ", href: "/moderator/service" },
-      { name: "Đơn hàng", href: "/moderator/order" },
-      { name: "Chi nhánh", href: "/moderator/branch" },
-      { name: "Nhân viên", href: "/moderator/employee" },
-    ],
+  },
+  {
+    name: "Chi nhánh",
+    href: "/admin/branch",
+    icon: Network,
+    current: false,
+  },
+  {
+    name: "Gói",
+    href: "/admin/package",
+    icon: PackageIcon,
+    current: false,
+  },
+  {
+    name: "Đánh giá",
+    href: "/admin/feedback",
+    icon: FaStar,
+    current: false,
+  },
+  {
+    name: "Danh mục dịch vụ",
+    href: "/admin/service-category",
+    icon: FolderIcon,
+    current: false,
+  },
+  {
+    name: "Danh mục khiếu nại",
+    href: "/admin/ticket-category",
+    icon: ExclamationTriangleIcon,
+    current: false,
   },
   {
     name: "Khiếu nại",
-    href: "/moderator/ticket",
-    icon: ExclamationTriangleIcon,
-    current: true,
+    href: "/admin/ticket",
+    icon: TicketIcon,
+    current: false,
   },
   {
-    name: "Gói ",
-    href: "/moderator/package",
-    icon: PackageIcon,
-    current: true,
-  },
-  {
-    name: "Tin nhắn",
-    href: "/moderator/photo",
-    icon: ChatBubbleBottomCenterTextIcon,
+    name: "Giao dịch",
+    href: "/admin/transaction",
+    icon: ChartPieIcon,
     current: false,
   },
   {
     name: "Profile",
-    href: "/moderator/profile",
+    href: "/admin/profile",
     icon: UserCircleIcon,
     current: false,
     children: [
-      { name: "Hồ sơ của tôi", href: "/moderator/profile" },
-      { name: "Đổi mật khẩu", href: "/moderator/pass" },
+      { name: "Hồ sơ của tôi", href: "/admin/profile" },
+      { name: "Đổi mật khẩu", href: "/admin/reset-password" },
     ],
   },
 ];
 
 const userNavigation = [
-  { name: "Hồ sơ của tôi", href: "/owner/profile" },
+  { name: "Hồ sơ của tôi", href: "/admin/profile" },
   { name: "Đăng xuất", href: "/login" },
 ];
 
