@@ -421,7 +421,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/admin/reset-password",
-        element: <ResetPassword />,
+        element: <ChangePassword />,
       },
       {
         path: "/admin/user",
