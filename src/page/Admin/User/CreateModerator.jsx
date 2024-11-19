@@ -141,7 +141,7 @@ export default function CreateModerator() {
           <div className="mt-10 flex justify-end gap-6">
             <div>
               <ComButton
-                onClick={() => navigate('/admin/moderators')}
+                onClick={() => navigate('/admin/user')}
                 type="button"
                 className="block w-full rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm"
               >

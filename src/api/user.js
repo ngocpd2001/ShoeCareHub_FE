@@ -41,3 +41,20 @@ export const createModerator = async (moderatorData) => {
   }
 };
 
+export const updateStatusUser = async (id, status) => {
+  try {
+    const currentUser = await getAccountById(id);
+    if (currentUser.data.status === status) {
+      throw new Error('Trạng thái tài khoản không thay đổi');
+    }
+
+    const response = await axiosInstances.login.put(`/accounts/${id}/status`, {
+      status: status
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái tài khoản:', error);
+    throw error;
+  }
+};
+

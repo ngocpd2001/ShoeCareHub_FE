@@ -64,6 +64,7 @@ import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
 import ErrorPage_Admin from "./page/404/ErrorPage_Admin";
 import UserManager from "./page/Admin/User/UserManager";
 import CreateModerator from "./page/Admin/User/CreateModerator";
+import UpdateUser from "./page/Admin/User/UpdateUser";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -414,6 +415,10 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/moderator/create",
         element: <CreateModerator />,
+      },
+      {
+        path: "/admin/user/update/:id",
+        element: <UpdateUser/>,
       },
     ],
   },

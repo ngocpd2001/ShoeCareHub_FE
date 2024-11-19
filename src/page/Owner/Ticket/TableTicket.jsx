@@ -145,7 +145,7 @@ import React, {
                 console.log("Navigating to update ticket:", ticketId);
                 navigate(`/owner/ticket/update/${ticketId}`);
               }}
-              excludeDefaultItems={["reject", "accept", "delete", "details"]}
+              excludeDefaultItems={["delete", "details"]}
             />
           </div>
         ),

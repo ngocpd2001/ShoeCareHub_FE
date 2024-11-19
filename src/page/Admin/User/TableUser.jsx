@@ -6,6 +6,7 @@ import ComTable from "../../../Components/ComTable/ComTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
 import { getAllAccount } from "../../../api/user";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
+import { useNavigate } from 'react-router-dom';
 
 export const TableUser = () => {
   const [data, setData] = useState([]);
@@ -17,6 +18,7 @@ export const TableUser = () => {
   const table = useTableState();
   const { notificationApi } = useNotification();
   const { getColumnSearchProps } = useColumnFilters();
+  const navigate = useNavigate();
 
   const getRoleColor = (role) => {
     const roleColors = {
@@ -109,12 +111,14 @@ export const TableUser = () => {
       key: "status",
       width: 120,
       filters: [
-        { text: 'Hoạt động', value: 'ACTIVE' },
-        { text: 'Không hoạt động', value: 'INACTIVE' },
+        { text: <Tag color="success">Hoạt động</Tag>, value: 'ACTIVE' },
+        { text: <Tag color="error">Ngưng hoạt động</Tag>, value: 'INACTIVE' },
       ],
       onFilter: (value, record) => record.status === value,
       render: (status) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
+        <Tag color={getStatusColor(status)}>
+          {status === 'ACTIVE' ? 'Hoạt động' : 'Ngưng hoạt động'}
+        </Tag>
       ),
     },
     {
@@ -125,13 +129,11 @@ export const TableUser = () => {
       render: (_, record) => (
         <ComMenuButonTable
           record={record}
-          showModalDetails={() => {
-            // Xử lý xem chi tiết
-          }}
           showModalEdit={() => {
-            // Xử lý chỉnh sửa
+            const userId = record.id;
+            navigate(`/admin/user/update/${userId}`);
           }}
-          excludeDefaultItems={["delete"]}
+          excludeDefaultItems={["delete", "details"]}
         />
       ),
     },
