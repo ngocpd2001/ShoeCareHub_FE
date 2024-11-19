@@ -19,11 +19,11 @@ import {
   ChatBubbleBottomCenterTextIcon,
   Cog6ToothIcon,
   DocumentDuplicateIcon,
-  ExclamationTriangleIcon,
   FolderIcon,
   HomeIcon,
   UsersIcon,
   XMarkIcon,
+  TicketIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
@@ -55,7 +55,7 @@ const navigation = [
   {
     name: "Khiếu nại",
     href: "/moderator/ticket",
-    icon: ExclamationTriangleIcon,
+    icon: TicketIcon,
     current: true,
   },
   {

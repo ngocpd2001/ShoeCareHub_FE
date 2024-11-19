@@ -45,11 +45,11 @@ import TicketManager from "./page/Owner/Ticket/TicketManager";
 import TicketDetail from "./page/Owner/Ticket/TicketDetail";
 import UpdateTicket from "./page/Owner/Ticket/UpdateTicket";
 import ComHeaderAdmin from "./Components/ComHeaderAdmin/ComHeaderAdmin";
-import TableFeedback from "./page/admin/FeedbackManager/TableFeedback";
+import TableFeedback from "./page/Moderator/FeedbackManager/TableFeedback";
 import ComHeaderModerator from './Components/ComHeaderModerator/ComHeaderModerator';
 import EmailVerificationFailedScreen from "./page/EmailVerificationFailed/EmailVerificationFailedScreen";
-import TicketManager_Mod from "./page/admin/Ticket_Mod/TicketManager_Mod";
-import UpdateTicket_Mod from "./page/admin/Ticket_Mod/UpdateTicket_Mod";
+import TicketManager_Mod from "./page/Moderator/Ticket_Mod/TicketManager_Mod";
+import UpdateTicket_Mod from "./page/Moderator/Ticket_Mod/UpdateTicket_Mod";
 import ErrorPage_Owner from "./page/404/ErrorPage_Owner";
 import ErrorPage_Mod from "./page/404/ErrorPage_Mod";
 import ErrorPage_Emp from "./page/404/ErrorPage_Emp";
@@ -61,6 +61,7 @@ import OrderManager_Emp from "./page/Employee/Order/OrderManager_Emp";
 import FeedbackManager_Emp from "./page/Employee/Feedback/FeedbackManager_Emp";
 import DetailFeedback_Emp from "./page/Employee/Feedback/DetailFeedback_Emp";
 import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
+import ErrorPage_Admin from "./page/404/ErrorPage_Admin";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -379,6 +380,30 @@ export const routers = createBrowserRouter([
       {
         path: "/employee/order/update/:id",
         element: <UpdateOrder />,
+      },
+    ],
+  },
+  {
+    path: "/admin",
+    element: (
+      <RequireAuth>
+        <ComHeaderAdmin>
+          <Outlet />
+        </ComHeaderAdmin>
+      </RequireAuth>
+    ),
+    children: [
+      {
+        path: "/admin/*",
+        element: <ErrorPage_Admin />,
+      },
+      {
+        path: "/admin/profile",
+        element: <ProfilePage />,
+      },
+      {
+        path: "/admin/reset-password",
+        element: <ResetPassword />,
       },
     ],
   },

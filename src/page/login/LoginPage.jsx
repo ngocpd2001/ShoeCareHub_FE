@@ -64,7 +64,7 @@ export default function LoginPage(props) {
                 navigate("/employee/order");
                 break;
               case "ADMIN":
-                navigate("/ADMIN");
+                navigate("/admin/dashboard");
                 break;
               case "MODERATOR":
                 navigate("/MODERATOR");

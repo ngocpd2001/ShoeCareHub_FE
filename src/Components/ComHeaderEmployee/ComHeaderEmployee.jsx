@@ -25,6 +25,7 @@ import {
   UsersIcon,
   XMarkIcon,
   StarIcon,
+  TicketIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
@@ -39,6 +40,7 @@ import { PackageIcon, UserCircleIcon } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
 import { FaStar } from "react-icons/fa";
 import { useNotification } from "../../Notification/Notification";
+
 
 function classNames(...classes) {
   return classes.filter(Boolean).join(' ')
@@ -69,7 +71,7 @@ const navigation = [
   {
     name: "Khiếu nại",
     href: "/employee/ticket",
-    icon: ExclamationTriangleIcon,
+    icon: TicketIcon,
     current: false,
   },
   {
