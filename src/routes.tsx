@@ -62,6 +62,8 @@ import FeedbackManager_Emp from "./page/Employee/Feedback/FeedbackManager_Emp";
 import DetailFeedback_Emp from "./page/Employee/Feedback/DetailFeedback_Emp";
 import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
 import ErrorPage_Admin from "./page/404/ErrorPage_Admin";
+import UserManager from "./page/Admin/User/UserManager";
+import CreateModerator from "./page/Admin/User/CreateModerator";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -404,6 +406,14 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/reset-password",
         element: <ResetPassword />,
+      },
+      {
+        path: "/admin/user",
+        element: <UserManager />,
+      },
+      {
+        path: "/admin/moderator/create",
+        element: <CreateModerator />,
       },
     ],
   },

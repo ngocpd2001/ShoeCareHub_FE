@@ -39,7 +39,7 @@ export default function DetailFeedback_Emp() {
           items={[
             { title: "Quản lý" },
             { title: <Link to="/employee/feedback">Phản hồi</Link> },
-            { title: "Chi tiết phản hồi" },
+            { title: <span className="text-[#002278]">Chi tiết phản hồi</span> },
           ]}
         />
       </div>

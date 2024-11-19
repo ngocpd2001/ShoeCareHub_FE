@@ -106,7 +106,7 @@ const EmployeeDetail = () => {
           items={[
             { title: "Cửa hàng" },
             { title: <Link to="/owner/employee">Nhân viên</Link> },
-            { title: "Chi tiết nhân viên" },
+            { title: <span className="text-[#002278]">Chi tiết nhân viên</span> },
           ]}
         />
       </div>

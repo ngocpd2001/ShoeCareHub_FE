@@ -47,7 +47,7 @@ export default function DetailService_Emp() {
           items={[
             { title: "Cửa hàng" },
             { title: <Link to="/employee/service">Dịch vụ</Link> },
-            { title: "Chi tiết dịch vụ" },
+            { title: <span className="text-[#002278]">Chi tiết dịch vụ</span> },
           ]}
         />
       </div>

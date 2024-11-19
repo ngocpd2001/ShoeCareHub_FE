@@ -17,10 +17,10 @@ export default function ServiceManager() {
           <Breadcrumb
             items={[
               {
-                title: "Cửa hàng",
+                title: <span className="text-base">Cửa hàng</span>,
               },
               {
-                title: "Dịch vụ",
+                title: <span className="text-base text-[#002278]">Dịch vụ</span>,
               },
             ]}
           />

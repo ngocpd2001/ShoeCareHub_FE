@@ -198,13 +198,12 @@ const UpdateTicket = () => {
           <Breadcrumb
             separator=">"
             items={[
-              { title: "Cửa hàng" },
               { title: 
                 <Link to={userRole === 'EMPLOYEE' ? "/employee/ticket" : "/owner/ticket"}>
                   Khiếu nại
                 </Link> 
               },
-              { title: "Cập nhật khiếu nại" },
+              { title: <span className="text-[#002278]">Cập nhật khiếu nại</span> },
             ]}
           />
         </div>

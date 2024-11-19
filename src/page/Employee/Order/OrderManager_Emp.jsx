@@ -16,10 +16,10 @@ export default function OrderManager_Emp() {
           <Breadcrumb
             items={[
               {
-                title: <span className="text-lg">Nhân viên</span>,
+                title: <span className="text-base">Cửa hàng</span>,
               },
               {
-                title: <span className="text-lg">Đơn hàng</span>,
+                title: <span className="text-base text-[#002278]">Đơn hàng</span>,
               },
             ]}
           />

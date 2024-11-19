@@ -271,8 +271,8 @@ const UpdateTicket_Mod = () => {
             separator=">"
             items={[
               { title: "Cửa hàng" },
-              { title: <Link to="/owner/ticket">Khiếu nại</Link> },
-              { title: "Cập nhật khiếu nại" },
+              { title: <Link to="/moderator/ticket">Khiếu nại</Link> },
+              { title: <span className="text-[#002278]">Cập nhật khiếu nại</span> },
             ]}
           />
         </div>
