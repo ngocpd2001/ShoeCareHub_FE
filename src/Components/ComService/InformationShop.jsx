@@ -11,6 +11,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [business, setBusiness] = useState(null);
   const [branches, setBranches] = useState([]);
+  const [selectedBranch, setSelectedBranch] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -48,6 +49,8 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
   }, [businessId]);
 
   const handleBranchClick = (branchId = null) => {
+    const selected = branchId ? branches.find(b => b.id === branchId) : null;
+    setSelectedBranch(selected);
     onBranchSelect(branchId);
     setDropdownOpen(false);
   };
@@ -69,7 +72,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
             <h2 className="text-xl font-semibold text-[#1D364D]">
               {business.name}
             </h2>
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <FontAwesomeIcon
                 icon={faCircle}
                 className={`text-${
@@ -79,7 +82,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
               <p className="text-sm text-gray-600">
                 {business.status === "ACTIVE" ? "Đang hoạt động" : "Ngừng hoạt động"}
               </p>
-            </div>
+            </div> */}
           </div>
           <div className="flex flex-row">
             <button className="bg-[#1D364D] text-white rounded-lg py-2 px-4 flex items-center mr-3">
@@ -87,32 +90,88 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
               Chat Ngay
             </button>
 
-            {isProviderLandingPage ? (
+            {isProviderLandingPage && branches.length > 0 ? (
               <div className="relative inline-block">
                 <button
                   onClick={toggleDropdown}
-                  className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3"
+                  className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3 hover:bg-gray-50 flex items-center"
                 >
-                  Chi nhánh
+                  <span>{selectedBranch ? selectedBranch.name : 'Toàn cửa hàng'}</span>
+                  <svg 
+                    className={`w-4 h-4 ml-2 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`} 
+                    fill="none" 
+                    stroke="currentColor" 
+                    viewBox="0 0 24 24"
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
+                
                 {isDropdownOpen && (
-                  <div className="absolute bg-white shadow-lg rounded-lg mt-2 py-2 w-auto z-50">
-                    <button
-                      onClick={() => handleBranchClick(null)}
-                      className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white whitespace-nowrap font-semibold"
-                    >
-                      Toàn cửa hàng
-                    </button>
-                    <div className="max-h-60 overflow-y-auto">
-                      {branches.map((branch) => (
-                        <button
-                          key={branch.id}
-                          onClick={() => handleBranchClick(branch.id)}
-                          className="block w-full text-left px-4 py-2 text-gray-800 hover:bg-[#1D364D] hover:text-white whitespace-nowrap"
-                        >
-                          {branch.name}
-                        </button>
-                      ))}
+                  <div className="absolute left-0 mt-2 w-[400px] rounded-lg bg-white shadow-lg border border-gray-100 z-50">
+                    <div className="py-1">
+                      <button
+                        onClick={() => handleBranchClick(null)}
+                        className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100"
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium text-[#1D364D]">Toàn cửa hàng</span>
+                          {business?.address && (
+                            <div className="flex mt-1 text-sm text-gray-500">
+                              <svg 
+                                className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" 
+                                fill="none" 
+                                stroke="currentColor" 
+                                viewBox="0 0 24 24"
+                              >
+                                <path 
+                                  strokeLinecap="round" 
+                                  strokeLinejoin="round" 
+                                  strokeWidth={2} 
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                                />
+                              </svg>
+                              <span className="whitespace-normal break-words">
+                                {`${business.address}, ${business.ward}, ${business.district}, ${business.province}`}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                      
+                      <div className="max-h-64 overflow-y-auto">
+                        {branches.map((branch) => (
+                          <button
+                            key={branch.id}
+                            onClick={() => handleBranchClick(branch.id)}
+                            className="w-full px-4 py-3 text-left hover:bg-gray-50 border-b border-gray-100 last:border-b-0"
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium text-[#1D364D]">
+                                {branch.name}
+                              </span>
+                              <div className="flex mt-1 text-sm text-gray-500">
+                                <svg 
+                                  className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" 
+                                  fill="none" 
+                                  stroke="currentColor" 
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path 
+                                    strokeLinecap="round" 
+                                    strokeLinejoin="round" 
+                                    strokeWidth={2} 
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                                  />
+                                </svg>
+                                <span className="whitespace-normal break-words">
+                                  {`${branch.address}, ${branch.ward}, ${branch.district}, ${branch.province}`}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 )}
