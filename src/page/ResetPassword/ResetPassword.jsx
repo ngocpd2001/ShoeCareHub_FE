@@ -1,118 +1,121 @@
-import React, { useState } from "react";
-import ComButton from "../../Components/ComButton/ComButton";
-import ComInput from "../../Components/ComInput/ComInput";
 import { FormProvider, useForm } from "react-hook-form";
-import { useNotification } from "../../Notification/Notification";
-import { putData } from "../../api/api";
+import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { YupPassword } from "../../yup/YupPassword";
-import { useStorage } from "../../hooks/useLocalStorage";
+import ComInput from "../../Components/ComInput/ComInput";
+import ComButton from "../../Components/ComButton/ComButton";
+import { ComLink } from "../../Components/ComLink/ComLink";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { FieldError } from "../../Components/FieldError/FieldError";
+import logo2 from "../../assets/images/logo2.webp";
+
+import { postData } from "../../api/api";
+import { message } from "antd";
 
 export default function ResetPassword() {
-  const { notificationApi } = useNotification();
   const [disabled, setDisabled] = useState(false);
-  const [user, setUser] = useStorage("user", null);
+  const [requestError, setRequestError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const navigate = useNavigate();
 
-  const methods = useForm({
-    resolver: yupResolver(YupPassword),
+  const resetPasswordSchema = yup.object({
+    email: yup
+      .string()
+      .trim()
+      .email("Email không hợp lệ")
+      .required("Mail không được để trống"),
   });
 
-  const {
-    handleSubmit,
-    register,
-      reset,
-    setError,
-    watch,
-    setValue,
-    formState: { errors },
-  } = methods;
+  const methods = useForm({
+    resolver: yupResolver(resetPasswordSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const { handleSubmit, register } = methods;
 
   const onSubmit = (data) => {
-    console.log(data);
-   setDisabled(true);
-    putData(`/accounts`, `${user.id}/password`, data)
+    setDisabled(true);
+    setRequestError(false);
+
+    postData("/auth/request-reset-password", data, {})
       .then((response) => {
-        console.log("Tạo thành công:", response);
+        console.log("Success:", response);
         setDisabled(false);
-        notificationApi("success", "Thành công", "Đổi mật khẩu thành công.");
-        reset();
+        // Hiển thị thông báo thành công
+        message.success("Vui lòng kiểm tra địa chỉ mail");
       })
       .catch((error) => {
+        console.error("Error:", error);
         setDisabled(false);
-          console.error("Lỗi:", error);
-          setError("oldPassword", {
-            message: "Mật khẩu cũ không đúng",
-          });
-          
-        // notificationApi("error", "Lỗi", `${error?.data?.message}`);
+        setRequestError(true);
+        setErrorMessage("Mail không tồn tại");
       });
   };
 
   return (
-    <div className="pb-4 mb-4 mt-2 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-1   sm:pt-1 sm:pb-6 sm:px-6 ">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
-        Đổi mật khẩu
-      </h2>
-
-      <div className="">
-        <FormProvider {...methods}>
-          <form onSubmit={handleSubmit(onSubmit)} className="mx-auto ">
-            <div className="overflow-y-auto p-4">
-              <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
-                    type="password"
-                    label={"Mật khẩu cũ"}
-                    placeholder={"Mật khẩu cũ"}
-                    required
-                    {...register("oldPassword")}
-                  />
-                </div>
-
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
-                    type="password"
-                    label={"Mật khẩu mới"}
-                    placeholder={"Mật khẩu mới"}
-                    required
-                    {...register("newPassword")}
-                  />
-                </div>
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
-                    type="password"
-                    label={"Xác nhận mật khẩu mới"}
-                    placeholder={"Xác nhận mật khẩu mới"}
-                    required
-                    {...register("confirmPassword")}
-                  />
-                </div>
-              </div>
-
-              <div className="mt-10 flex justify-end gap-6">
-                {/* <div>
-                  <ComButton
-                    className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
-                  >
-                    <div className="text-black"> Hủy bỏ</div>
-                  </ComButton>
-                </div> */}
-                <div>
-                  <ComButton
-                    htmlType="submit"
-                    disabled={disabled}
-                    className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${
-                      disabled ? "opacity-50 cursor-not-allowed" : ""
-                    }`}
-                  >
-                    {disabled ? "Xin chờ..." : "Đổi mật khẩu"}
-                  </ComButton>
-                </div>
-              </div>
+    <>
+      <section className="flex items-center justify-center w-screen bg-cover bg-center pt-6">
+        <div className="w-full max-w-4xl h-auto bg-white bg-opacity-90 rounded-3xl shadow-lg border border-[#c3c3c3]">
+          <div className="grid grid-cols-1 lg:grid-cols-2">
+            <div className="hidden lg:block">
+              <img
+                className="object-cover w-full h-full rounded-3xl"
+                src={logo2}
+                alt="Reset Password Image"
+              />
             </div>
-          </form>
-        </FormProvider>
-      </div>
-    </div>
+            <div className="flex flex-col justify-center px-10">
+              <div className="text-center">
+                <h3 className="text-3xl font-bold text-gray-700">
+                  Quên mật khẩu
+                </h3>
+                <p className="mt-2 text-gray-500">
+                  Vui lòng nhập email của bạn để nhận liên kết đặt lại mật khẩu.
+                </p>
+              </div>
+              <FormProvider {...methods}>
+                <div className="flex flex-col items-center">
+                  <form
+                    onSubmit={handleSubmit(onSubmit)}
+                    className="space-y-6 max-w-xl m-4 min-w-full"
+                  >
+                    <div>
+                      <ComInput
+                        placeholder={"Nhập địa chỉ email"}
+                        label={"Email"}
+                        type="email"
+                        {...register("email")}
+                        required
+                      />
+                    </div>
+                    <FieldError className="text-red-500 text-center">
+                      {requestError ? errorMessage : ""}
+                    </FieldError>
+                    <div className="mt-4 text-center gap-3 flex flex-col">
+                      <ComButton
+                        disabled={disabled}
+                        htmlType="submit"
+                        type="primary"
+                        className="w-full duration-300"
+                      >
+                        Gửi yêu cầu
+                      </ComButton>
+                      <Link to="/login" className="text-sky-600">
+                        Đăng nhập
+                      </Link>
+                      <Link to="/register" className="text-sky-600">
+                        Đăng ký
+                      </Link>
+                    </div>
+                  </form>
+                </div>
+              </FormProvider>
+            </div>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

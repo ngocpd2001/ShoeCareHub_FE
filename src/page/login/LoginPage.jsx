@@ -148,6 +148,14 @@ export default function LoginPage(props) {
                     <FieldError className="text-red-500 text-center">
                       {LoginState || LoginError ? errorMessage : ""}
                     </FieldError>
+                    <div className="flex justify-end">
+                      <Link
+                        to="/reset-password"
+                        className=" text-sky-600"
+                      >
+                        Quên mật khẩu
+                      </Link>
+                    </div>
                     <div className="mt-4 text-center gap-3 flex flex-col">
                       <ComButton
                         disabled={disabled}
