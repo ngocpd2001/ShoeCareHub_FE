@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -8,29 +8,21 @@ import { useNotification } from "../../../Notification/Notification";
 import ComInput from "../../../Components/ComInput/ComInput";
 import ComButton from "../../../Components/ComButton/ComButton";
 import ComSelect from "../../../Components/ComInput/ComSelect";
-import ComUpImg from "../../../Components/ComUpImg/ComUpImg";
-import { getBranchByBusinessId } from "../../../api/branch";
-import { createEmployee } from "../../../api/employee";
-import { firebaseImgs } from "./../../../upImgFirebase/firebaseImgs";
-import { YupEmployee } from "../../../yup/YupEmployee"; // Cần tạo schema validate cho Employee
+import { createModerator } from "../../../api/user";
+import { YupModerator } from "../../../yup/YupModerator";
 
-export default function CreateEmployee() {
+export default function CreateModerator() {
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(false);
-  const [image, setImages] = useState(null);
-  const [branches, setBranches] = useState([]);
   const { notificationApi } = useNotification();
-  const [selectedGender, setSelectedGender] = useState("Nam");
-  const [selectedBranch, setSelectedBranch] = useState("");
+  const [selectedGender, setSelectedGender] = useState("MALE");
 
   const methods = useForm({
-    resolver: yupResolver(YupEmployee),
+    resolver: yupResolver(YupModerator),
     defaultValues: {
       fullName: "",
       dob: "",
       gender: "MALE",
-      branchId: "",
-      branchName: "",
       email: "",
       phone: "",
     },
@@ -43,98 +35,25 @@ export default function CreateEmployee() {
     formState: { errors },
   } = methods;
 
-  console.log("Validation errors:", errors);
-
-  // Lấy danh sách chi nhánh
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem("user"));
-        const response = await getBranchByBusinessId(userData.businessId);
-        const branchList = response.data.map((branch) => ({
-          value: branch.id,
-          label: branch.name,
-        }));
-        setBranches(branchList);
-
-        // Set giá trị mặc định cho chi nhánh đầu tiên nếu có
-        if (branchList.length > 0) {
-          setSelectedBranch(branchList[0].value);
-          setValue("branchId", branchList[0].value);
-          setValue("branchName", branchList[0].label);
-        }
-      } catch (error) {
-        notificationApi("error", "Lỗi", "Không thể lấy danh sách chi nhánh");
-      }
-    };
-    fetchBranches();
-  }, []);
-
-  // Xử lý upload ảnh
-  const onChange = (data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
-    setImages(newImages);
-  };
-
-  // Tách riêng phần render của ComSelect chi nhánh
-  const renderBranchSelect = () => {
-    return (
-      <ComSelect
-        label="Chi nhánh"
-        options={branches}
-        required
-        value={selectedBranch}
-        onChange={(value) => {
-          const selectedOption = branches.find((b) => b.value === value);
-          if (selectedOption) {
-            setSelectedBranch(value);
-            setValue("branchId", value);
-            setValue("branchName", selectedOption.label);
-          }
-        }}
-        onSelect={(value, option) => {
-          setSelectedBranch(value);
-          setValue("branchId", value);
-          setValue("branchName", option.label);
-        }}
-      />
-    );
-  };
-
   // Xử lý submit form
   const onSubmit = async (data) => {
-    if (!image) {
-      notificationApi("error", "Lỗi", "Vui lòng chọn ảnh đại diện");
-      return;
-    }
-
     try {
       setDisabled(true);
-      const uploadedUrls = await firebaseImgs(image);
-      const userData = JSON.parse(localStorage.getItem("user"));
 
-      // Format lại dữ liệu trước khi gửi
-      const employeeData = {
+      const moderatorData = {
         fullName: data.fullName,
-        dob: new Date(data.dob).toISOString().split('T')[0], // Format lại ngày tháng
+        dob: new Date(data.dob).toISOString().split('T')[0],
         gender: data.gender,
         email: data.email,
         phone: data.phone,
-        branchId: parseInt(data.branchId), // Chuyển sang số
-        businessId: parseInt(userData.businessId), // Chuyển sang số
-        avatar: uploadedUrls[0],
-        status: "ACTIVE"
       };
 
-      console.log("Data gửi lên API:", employeeData);
-
-      const response = await createEmployee(employeeData);
-      notificationApi("success", "Thành công", "Tạo nhân viên thành công");
-      navigate("/owner/employee");
+      await createModerator(moderatorData);
+      notificationApi("success", "Thành công", "Tạo moderator thành công");
+      navigate("/admin/user");
     } catch (error) {
-      console.log("Error details:", error.response?.data?.errors); // Log chi tiết lỗi validation
-      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi tạo nhân viên";
+      console.log("Error details:", error.response?.data?.errors);
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi tạo moderator";
       notificationApi("error", "Lỗi", errorMessage);
     } finally {
       setDisabled(false);
@@ -144,13 +63,12 @@ export default function CreateEmployee() {
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold text-blue-800 mb-4">
-        Thêm nhân viên
+        Thêm người dùng
       </h2>
       <Breadcrumb
         items={[
-          { title: "Cửa hàng" },
-          { title: <Link to="/owner/employee">Nhân viên</Link> },
-          { title: <span className="text-[#002278]">Thêm nhân viên</span> },
+          { title: <Link to="/admin/user">Người dùng</Link> },
+          { title: <span className="text-[#002278]">Thêm người dùng</span> },
         ]}
       />
 
@@ -188,11 +106,11 @@ export default function CreateEmployee() {
                     setSelectedGender(value);
                     setValue("gender", value);
                   }}
-                  onSelect={(value, option) => {
+                  onSelect={(value) => {
                     setSelectedGender(value);
                     setValue("gender", value);
                   }}
-                  className="w-full min-w-[200px] max-w-full" 
+                  className="w-full min-w-[200px] max-w-full"
                 />
               </div>
             </div>
@@ -216,19 +134,6 @@ export default function CreateEmployee() {
                   required
                   {...register("phone")}
                 />
-
-                {renderBranchSelect()}
-              </div>
-            </div>
-
-            <div className="bg-white rounded border p-5">
-              <h2 className="text-xl font-semibold mb-4">Ảnh đại diện</h2>
-              <div className="space-y-6">
-                <ComUpImg
-                  onChange={onChange}
-                  error={image ? "" : "Vui lòng chọn ảnh đại diện"}
-                  required
-                />
               </div>
             </div>
           </div>
@@ -236,7 +141,7 @@ export default function CreateEmployee() {
           <div className="mt-10 flex justify-end gap-6">
             <div>
               <ComButton
-                onClick={() => navigate('/owner/employee')}
+                onClick={() => navigate('/admin/moderators')}
                 type="button"
                 className="block w-full rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm"
               >

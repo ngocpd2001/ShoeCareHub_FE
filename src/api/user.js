@@ -16,26 +16,6 @@ export const getAllAccount = async (isDescending = false, pageSize = 10, pageNum
   }  
 };  
 
-// export const login = async (email, password) => {
-//   try {
-//     const response = await axiosInstances.login.post('/auth/login', {
-//       email,
-//       password
-//     });
-    
-//     if (response.data.token) {
-//       const token = response.data.token.replace(/^["']|["']$/g, '').trim();
-//       localStorage.setItem('token', token);
-//       console.log('Token đã lưu:', token);
-//     }
-    
-//     return response.data;
-//   } catch (error) {
-//     console.error('Lỗi khi đăng nhập:', error);
-//     throw error;
-//   }
-// };
-
 export const getAccountById = async (id) => {  
   try {  
     const response = await axiosInstances.login.get(`/accounts/${id}`);
@@ -43,5 +23,21 @@ export const getAccountById = async (id) => {
   } catch (error) {  
     throw error;
   }  
+};
+
+export const createModerator = async (moderatorData) => {
+  try {
+    const response = await axiosInstances.login.post('/accounts/moderator', {
+      email: moderatorData.email,
+      fullName: moderatorData.fullName,
+      phone: moderatorData.phone,
+      gender: moderatorData.gender,
+      dob: moderatorData.dob
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi tạo tài khoản moderator:', error);
+    throw error;
+  }
 };
 

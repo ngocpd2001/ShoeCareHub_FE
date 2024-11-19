@@ -146,7 +146,7 @@ export default function CreateSevice() {
 
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
+      <h2 className="text-xl font-semibold text-blue-800 mb-4 ml-4">
         Thêm dịch vụ
       </h2>
       <Breadcrumb
@@ -159,7 +159,7 @@ export default function CreateSevice() {
             title: <Link to="/owner/service">Dịch vụ</Link>,
           },
           {
-            title: "Thêm dịch vụ",
+            title: <span className="text-[#002278]">Thêm dịch vụ</span>,
           },
         ]}
       />

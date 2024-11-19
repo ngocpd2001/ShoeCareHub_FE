@@ -184,7 +184,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
   return (
     <div>
       <div className="bg-white">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Cập nhật dịch vụ
         </h2>
         <FormProvider {...methods}>

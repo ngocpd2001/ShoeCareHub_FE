@@ -21,10 +21,10 @@ export default function BranchManager() {
           <Breadcrumb
             items={[
               {
-                title: "Cửa hàng",
+                title: <span className="text-base">Cửa hàng</span>,
               },
               {
-                title: "Chi nhánh",
+                title: <span className="text-base text-[#002278]">Chi nhánh</span>,
               },
             ]}
           />

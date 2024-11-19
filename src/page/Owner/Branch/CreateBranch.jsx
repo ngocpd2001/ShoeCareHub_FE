@@ -133,7 +133,7 @@ export default function CreateBranch({ onClose, tableRef }) {
   }, [watch("districtId")]);
   return (
     <div>
-      <h2 className="text-xl font-semibold text-gray-800 mb-4 ml-4">
+      <h2 className="text-xl font-semibold text-blue-800 mb-4 ml-4">
         Thêm chi nhánh
       </h2>
 

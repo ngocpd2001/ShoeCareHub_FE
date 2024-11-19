@@ -1,11 +1,11 @@
 import React, { useRef } from "react";
 import { useModalState } from "../../../hooks/useModalState";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { TableFeedback_Emp } from './TableFeedback_Emp';
+import { TableUser } from './TableUser';
 import { Breadcrumb } from "antd";
 import { useNavigate } from "react-router-dom";
 
-export default function FeedbackManager_Emp() {
+export default function UserManager() {
   const modal = useModalState();
   const tableRef = useRef(null);
   const navigate = useNavigate();
@@ -14,22 +14,22 @@ export default function FeedbackManager_Emp() {
     <>
       <div className="flex justify-between items-end pb-2 px-4 ">
         <div>
-          <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Phản hồi khách hàng</h3>
+          <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Quản lý người dùng</h3>
           {/* <Breadcrumb
             items={[
               {
-                title: <span className="text-lg">Phản hồi</span>,
+                title: <span className="text-lg">Người dùng</span>,
               },
             ]}
           /> */}
         </div>
-        {/* <div>
-          <ComButton onClick={() => navigate("/employee/feedback/create")}>
-            + Thêm phản hồi
+        <div>
+          <ComButton onClick={() => navigate("/admin/moderator/create")}>
+            + Thêm người dùng
           </ComButton>
-        </div> */}
+        </div>
       </div>
-      <TableFeedback_Emp ref={tableRef} />
+      <TableUser ref={tableRef} />
     </>
   );
 }

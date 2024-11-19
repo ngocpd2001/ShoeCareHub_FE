@@ -531,7 +531,7 @@ const UpdateOrder = () => {
             items={[
               { title: "Cửa hàng" },
               { title: <Link to="/owner/order">Đơn hàng</Link> },
-              { title: `Cập nhật đơn hàng` },
+              { title: <span className="text-[#002278]">Cập nhật đơn hàng</span> },
             ]}
           />
         </div>

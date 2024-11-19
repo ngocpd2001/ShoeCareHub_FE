@@ -71,7 +71,7 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
   return (
     <div>
       <div className="p-4 bg-white ">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+        <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Cập nhật người dùng
         </h2>
         <FormProvider {...methods}>

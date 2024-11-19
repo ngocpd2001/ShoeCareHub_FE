@@ -61,6 +61,10 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
     navigate(`/employee/feedback/${record.id}`);
   };
 
+  const handleViewDetails = (record) => {
+    navigate(`/employee/feedback/${record.id}`);
+  };
+
   const columns = [
     {
       title: "Dịch vụ",
@@ -160,6 +164,7 @@ export const TableFeedback_Emp = forwardRef((props, ref) => {
             record={record}
             showModalDetails={() => showModalDetails(record)}
             excludeDefaultItems={["delete", "edit"]}
+            // onView={() => handleViewDetails(record)}
           />
         </div>
       ),
