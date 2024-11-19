@@ -67,6 +67,7 @@ import UserManager from "./page/Admin/User/UserManager";
 import CreateModerator from "./page/Admin/User/CreateModerator";
 import ResetPassword from "./page/ResetPassword/ResetPassword";
 import ResetPasswordSuccess from "./page/ResetPassword/ResetPasswordSuccess";
+import UpdateUser from "./page/Admin/User/UpdateUser";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -429,6 +430,10 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/moderator/create",
         element: <CreateModerator />,
+      },
+      {
+        path: "/admin/user/update/:id",
+        element: <UpdateUser/>,
       },
     ],
   },
