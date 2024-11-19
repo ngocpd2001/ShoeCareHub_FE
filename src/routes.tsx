@@ -32,7 +32,7 @@ import BranchManager from "./page/Owner/Branch/BranchManager";
 import CreateBranch from "./page/Owner/Branch/CreateBranch";
 import { isValidToken } from "./utils/jwt";
 import AddressesUser from "./page/AddressesUser/AddressesUser";
-import ResetPassword from "./page/ResetPassword/ResetPassword";
+import ChangePassword from "./page/ResetPassword/ChangePassword";
 import RegisterPage from "./page/Register/RegisterPage";
 import RegisterOwner from "./page/Register/RegisterOwner";
 import ServiceDiscounted from "./page/ServiceDiscounted/ServiceDiscounted";
@@ -62,6 +62,8 @@ import FeedbackManager_Emp from "./page/Employee/Feedback/FeedbackManager_Emp";
 import DetailFeedback_Emp from "./page/Employee/Feedback/DetailFeedback_Emp";
 import TicketManager_Emp from "./page/Employee/Ticket/TicketManager_Emp";
 import FeedbackManager from "./page/Owner/Feedback/FeedbackManager";
+import ResetPassword from "./page/ResetPassword/ResetPassword";
+import ResetPasswordSuccess from "./page/ResetPassword/ResetPasswordSuccess";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -114,6 +116,14 @@ export const routers = createBrowserRouter([
         element: <LoginPage />,
       },
       {
+        path: "/reset-password",
+        element: <ResetPassword />,
+      },
+      {
+        path: "/reset-success",
+        element: <ResetPasswordSuccess />,
+      },
+      {
         path: "/confirm-fail",
         element: <EmailVerificationFailedScreen />,
       },
@@ -157,7 +167,7 @@ export const routers = createBrowserRouter([
           },
           {
             path: "/user/reset-password",
-            element: <ResetPassword />,
+            element: <ChangePassword />,
           },
           {
             path: "/user/profile",
@@ -263,7 +273,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/reset-password",
-        element: <ResetPassword />,
+        element: <ChangePassword />,
       },
       {
         path: "/owner/employee",
@@ -323,7 +333,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/moderator/reset-password",
-        element: <ResetPassword />,
+        element: <ChangePassword />,
       },
     ],
   },
@@ -375,7 +385,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/employee/reset-password",
-        element: <ResetPassword />,
+        element: <ChangePassword />,
       },
       {
         path: "/employee/order",
