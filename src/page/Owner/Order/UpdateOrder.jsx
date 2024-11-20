@@ -551,7 +551,7 @@ const UpdateOrder = () => {
         <div className="lg:col-span-2 bg-white rounded-lg shadow p-6">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center space-x-2">
-              <h2 className="text-lg font-semibold">Service</h2>
+              <h2 className="text-lg font-semibold">Dịch vụ</h2>
               <span className="bg-green-100 text-green-600 px-2 py-1 rounded">
                 {orderDetails.length} dịch vụ
               </span>
