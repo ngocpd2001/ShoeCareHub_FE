@@ -74,6 +74,9 @@ import UpdateBranch_Ad from "./page/Admin/Branch/UpdateBranch_Ad";
 import CategoryTicketManager from "./page/Admin/CategoryTicket/CategoryTicketManager";
 import UpdateTicket_Ad from "./page/Admin/Ticket/UpdateTicket_Ad";
 import TicketManager_Ad from "./page/Admin/Ticket/TicketManager_Ad";
+import Package from "./page/Owner/Package/Package";
+import PaymentSuccess from "./page/Owner/Package/PaymentSuccess";
+import PaymentFailed from "./page/Owner/Package/PaymentFailed";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -130,7 +133,7 @@ export const routers = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
-        path: "/reset-success",
+        path: "/request-reset-password",
         element: <ResetPasswordSuccess />,
       },
       {
@@ -244,6 +247,18 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/service",
         element: <ServiceManager />,
+      },
+      {
+        path: "/owner/package",
+        element: <Package />,
+      },
+      {
+        path: "/owner/payments/success",
+        element: <PaymentSuccess />,
+      },
+      {
+        path: "/owner/payments/fail",
+        element: <PaymentFailed />,
       },
       {
         path: "/owner/feedback",
@@ -439,7 +454,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/admin/user/update/:id",
-        element: <UpdateUser/>,
+        element: <UpdateUser />,
       },
       {
         path: "/admin/store",
