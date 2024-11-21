@@ -44,7 +44,7 @@ const STATUS_DISPLAY = {
 };
 
 // Sử dụng trực tiếp STATUS_DISPLAY trong component
-const UpdateTicket_Mod = () => {
+const UpdateTicket_Ad = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [ticketDetails, setTicketDetails] = useState(null);
@@ -546,7 +546,7 @@ const UpdateTicket_Mod = () => {
               <div className="flex justify-center gap-4 mt-6">
                 <button
                   type="button"
-                  onClick={() => navigate("/moderator/ticket")}
+                  onClick={() => navigate("/admin/ticket")}
                   className="px-6 py-2 border border-gray-300 rounded hover:bg-gray-50"
                 >
                   Hủy bỏ
@@ -567,4 +567,4 @@ const UpdateTicket_Mod = () => {
   );
 };
 
-export default UpdateTicket_Mod;
+export default UpdateTicket_Ad;

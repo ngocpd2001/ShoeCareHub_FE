@@ -41,7 +41,10 @@ const TicketScreen = () => {
   const fetchCategories = async () => {
     try {
       const response = await getCategoryTicket();
-      setCategories(response.data);
+      const availableCategories = response.data.filter(
+        category => category.status !== 'UNAVAILABLE'
+      );
+      setCategories(availableCategories);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách category:", error);
     }

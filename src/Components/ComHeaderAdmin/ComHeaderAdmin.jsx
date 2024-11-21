@@ -56,17 +56,17 @@ const navigation = [
     current: false,
   },
   {
-    name: "Cửa hàng",
+    name: "Doanh nghiệp",
     href: "/admin/store",
     icon: BuildingStorefrontIcon,
     current: false,
   },
-  {
-    name: "Chi nhánh",
-    href: "/admin/branch",
-    icon: Network,
-    current: false,
-  },
+  // {
+  //   name: "Chi nhánh",
+  //   href: "/admin/branch",
+  //   icon: Network,
+  //   current: false,
+  // },
   {
     name: "Gói",
     href: "/admin/package",

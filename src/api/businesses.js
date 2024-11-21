@@ -32,3 +32,20 @@ export const getAllBusiness = async (isDescending = false, pageSize = 10, pageNu
   }
 };
 
+export const updateStatusBusiness = async (id, status) => {
+  try {
+    const currentBusiness = await getBusinessById(id);
+    if (currentBusiness.status === status) {
+      throw new Error('Trạng thái doanh nghiệp không thay đổi');
+    }
+
+    const response = await axiosInstances.login.put(`/businesses/${id}/status`, {
+      status: status
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi cập nhật trạng thái doanh nghiệp:', error);
+    throw error;
+  }
+};
+

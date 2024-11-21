@@ -68,6 +68,12 @@ import CreateModerator from "./page/Admin/User/CreateModerator";
 import ResetPassword from "./page/ResetPassword/ResetPassword";
 import ResetPasswordSuccess from "./page/ResetPassword/ResetPasswordSuccess";
 import UpdateUser from "./page/Admin/User/UpdateUser";
+import BusinessManager from "./page/Admin/Business/BusinessManager";
+import UpdateBusiness from "./page/Admin/Business/UpdateBusiness";
+import UpdateBranch_Ad from "./page/Admin/Branch/UpdateBranch_Ad";
+import CategoryTicketManager from "./page/Admin/CategoryTicket/CategoryTicketManager";
+import UpdateTicket_Ad from "./page/Admin/Ticket/UpdateTicket_Ad";
+import TicketManager_Ad from "./page/Admin/Ticket/TicketManager_Ad";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -434,6 +440,30 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/user/update/:id",
         element: <UpdateUser/>,
+      },
+      {
+        path: "/admin/store",
+        element: <BusinessManager />,
+      },
+      {
+        path: "/admin/store/update/:id",
+        element: <UpdateBusiness/>,
+      },
+      {
+        path: "/admin/branch/update/:id",
+        element: <UpdateBranch_Ad/>,
+      },
+      {
+        path: "/admin/ticket-category",
+        element: <CategoryTicketManager/>,
+      },
+      {
+        path: "/admin/ticket",
+        element: <TicketManager_Ad/>,
+      },
+      {
+        path: "/admin/ticket/update/:id",
+        element: <UpdateTicket_Ad/>,
       },
     ],
   },

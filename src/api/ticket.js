@@ -25,15 +25,6 @@ export const createTicket = async (ticketData) => {
   }
 };
 
-export const getCategoryTicketById = async (id) => {
-  try {
-    const response = await axiosInstances.login.get(`/ticket-categories/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error('Lỗi khi lấy thông tin loại phiếu:', error);
-    throw error;
-  }
-};
 
 export const getTicketById = async (id) => {
   try {

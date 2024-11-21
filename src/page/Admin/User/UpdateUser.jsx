@@ -46,7 +46,29 @@ const UpdateUser = () => {
         if (id) {
           const response = await getAccountById(id);
           if (response && response.data) {
-            setUserDetails(response.data);
+            // console.log('Response data:', response.data);
+            // console.log('Status type:', typeof response.data.status);
+            // console.log('Status value:', response.data.status);
+            // console.log('Status comparison:', response.data.status === 'INACTIVE');
+
+            let normalizedStatus;
+            switch (response.data.status) {
+              case 'Hoạt Động':
+              case 'ACTIVE':
+                normalizedStatus = 'Hoạt Động';
+                break;
+              case 'Ngưng Hoạt Động':
+              case 'INACTIVE':
+                normalizedStatus = 'Ngưng Hoạt Động';
+                break;
+              default:
+                normalizedStatus = 'Không xác định';
+            }
+            
+            setUserDetails({
+              ...response.data,
+              status: normalizedStatus
+            });
           }
         }
       } catch (error) {
@@ -61,6 +83,17 @@ const UpdateUser = () => {
   }, [id, navigate]);
 
   const showConfirm = (newStatus) => {
+    if (
+      (newStatus === 'ACTIVE' && userDetails.status === 'Hoạt Động') || 
+      (newStatus === 'INACTIVE' && userDetails.status === 'Ngưng Hoạt Động')
+    ) {
+      notification.warning({
+        message: "Cảnh báo",
+        description: "Tài khoản đã ở trạng thái này"
+      });
+      return;
+    }
+
     confirm({
       title: 'Xác nhận thay đổi trạng thái',
       icon: <ExclamationCircleOutlined />,
@@ -73,15 +106,6 @@ const UpdateUser = () => {
 
   const handleStatusUpdate = async (newStatus) => {
     try {
-      // Kiểm tra nếu trạng thái mới giống trạng thái hiện tại
-      if (userDetails.status === newStatus) {
-        notification.warning({
-          message: "Cảnh báo",
-          description: "Trạng thái tài khoản không thay đổi"
-        });
-        return;
-      }
-
       await updateStatusUser(id, newStatus);
       
       notification.success({
@@ -89,9 +113,12 @@ const UpdateUser = () => {
         description: "Cập nhật trạng thái thành công"
       });
 
-      // Cập nhật lại thông tin người dùng
-      const updatedUser = await getAccountById(id);
-      setUserDetails(updatedUser.data);
+      // Cập nhật lại status trong userDetails
+      setUserDetails(prev => ({
+        ...prev,
+        status: newStatus === 'ACTIVE' ? 'Hoạt Động' : 'Ngưng Hoạt Động'
+      }));
+
     } catch (error) {
       notification.error({
         message: "Lỗi",
@@ -113,7 +140,6 @@ const UpdateUser = () => {
         <Breadcrumb
           separator=">"
           items={[
-            { title: "Cửa hàng" },
             { title: <Link to="/admin/user">Người dùng</Link> },
             { title: <span className="text-[#002278]">Cập nhật trạng thái</span> },
           ]}
@@ -168,14 +194,14 @@ const UpdateUser = () => {
                 <label className="text-lg font-medium text-blue-800">Trạng thái tài khoản</label>
                 <div className="mt-2">
                   <span className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium ${
-                    userDetails.status === 'INACTIVE' 
+                    userDetails.status === 'Ngưng Hoạt Động' 
                       ? "bg-red-50 text-red-700 ring-1 ring-red-600/20" 
                       : "bg-green-50 text-green-700 ring-1 ring-green-600/20"
                   }`}>
                     <span className={`w-2 h-2 rounded-full mr-2 ${
-                      userDetails.status === 'INACTIVE' ? 'bg-red-600' : 'bg-green-600'
+                      userDetails.status === 'Ngưng Hoạt Động' ? 'bg-red-600' : 'bg-green-600'
                     }`}></span>
-                    {userDetails.status === 'INACTIVE' ? 'Ngừng hoạt động' : 'Đang hoạt động'}
+                    {userDetails.status}
                   </span>
                 </div>
               </div>
@@ -184,9 +210,9 @@ const UpdateUser = () => {
               <div className="flex justify-end gap-4 pt-6">
                 <button
                   onClick={() => showConfirm('ACTIVE')}
-                  disabled={userDetails.status === 'ACTIVE'}
+                  disabled={userDetails.status === 'Hoạt Động'}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${userDetails.status === 'ACTIVE'
+                    ${userDetails.status === 'Hoạt Động'
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-green-600 text-white hover:bg-green-700'
                     }`}
@@ -196,9 +222,9 @@ const UpdateUser = () => {
                 
                 <button
                   onClick={() => showConfirm('INACTIVE')}
-                  disabled={userDetails.status === 'INACTIVE'}
+                  disabled={userDetails.status === 'Ngưng Hoạt Động'}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors
-                    ${userDetails.status === 'INACTIVE'
+                    ${userDetails.status === 'Ngưng Hoạt Động'
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                       : 'bg-red-600 text-white hover:bg-red-700'
                     }`}

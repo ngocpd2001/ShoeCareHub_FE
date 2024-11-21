@@ -65,3 +65,20 @@ export const getBranchByBusinessId = async (businessId) => {
       throw error;
     }
   };
+
+  export const updateStatusBranch = async (id, status) => {
+    try {
+      const currentBranch = await getBranchByBranchId(id);
+      if (currentBranch.status === status) {
+        throw new Error('Trạng thái chi nhánh không thay đổi');
+      }
+  
+      const response = await axiosInstances.login.put(`/branches/${id}/status`, {
+        status: status
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Lỗi khi cập nhật trạng thái chi nhánh:', error);
+      throw error;
+    }
+  };
