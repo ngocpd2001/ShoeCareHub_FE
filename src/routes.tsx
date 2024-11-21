@@ -68,6 +68,9 @@ import CreateModerator from "./page/Admin/User/CreateModerator";
 import ResetPassword from "./page/ResetPassword/ResetPassword";
 import ResetPasswordSuccess from "./page/ResetPassword/ResetPasswordSuccess";
 import UpdateUser from "./page/Admin/User/UpdateUser";
+import Package from "./page/Owner/Package/Package";
+import PaymentSuccess from "./page/Owner/Package/PaymentSuccess";
+import PaymentFailed from "./page/Owner/Package/PaymentFailed";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -124,7 +127,7 @@ export const routers = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
-        path: "/reset-success",
+        path: "/request-reset-password",
         element: <ResetPasswordSuccess />,
       },
       {
@@ -238,6 +241,18 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/service",
         element: <ServiceManager />,
+      },
+      {
+        path: "/owner/package",
+        element: <Package />,
+      },
+      {
+        path: "/owner/payments/success",
+        element: <PaymentSuccess />,
+      },
+      {
+        path: "/owner/payments/fail",
+        element: <PaymentFailed />,
       },
       {
         path: "/owner/feedback",
@@ -433,7 +448,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/admin/user/update/:id",
-        element: <UpdateUser/>,
+        element: <UpdateUser />,
       },
     ],
   },
