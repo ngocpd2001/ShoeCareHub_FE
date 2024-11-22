@@ -1,35 +1,23 @@
 import React, { useEffect, useState } from "react";
 import ComButton from "./../../../Components/ComButton/ComButton";
 import { FormProvider, useForm } from "react-hook-form";
-import ComInput from "./../../../Components/ComInput/ComInput";
+import ComTextArea from "./../../../Components/ComInput/ComTextArea";
 import * as yup from "yup";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
-import ComUpImg from "./../../../Components/ComUpImg/ComUpImg";
 import { useNotification } from "./../../../Notification/Notification";
-import ComUpImgOne from "../../../Components/ComUpImg/ComUpImgOne";
-import ComDatePicker from "../../../Components/ComDatePicker/ComDatePicker";
-import { DateOfBirth } from "../../../Components/ComDateDisabled/DateOfBirth";
-import dayjs from "dayjs";
-import { firebaseImg } from "../../../upImgFirebase/firebaseImg";
-import { postData, putData } from "../../../api/api";
-import {
-  addressRegex,
-  cccdRegex,
-  emailRegex,
-  nameRegex,
-  phoneNumberRegex,
-} from "../../../regexPatterns";
-import { handleErrors } from "../../../Components/errorUtils/errorUtils";
-import ComSelect from "../../../Components/ComInput/ComSelect";
-import ComTextArea from "../../../Components/ComInput/ComTextArea";
+import { putData } from "../../../api/api";
 import { Image } from "antd";
+import ComSelect from "../../../Components/ComInput/ComSelect";
 
 export default function EditFeedback({ selectedUser, onClose, tableRef }) {
   const [image, setImages] = useState([]);
   const { notificationApi } = useNotification();
   const [disabled, setDisabled] = useState(false);
+  const [isAutoChecked, setIsAutoChecked] = useState(false); // Trạng thái kiểm tra tự động
+
+  // Validation schema
   const CreateProductMessenger = yup.object({});
+
   const methods = useForm({
     resolver: yupResolver(CreateProductMessenger),
     defaultValues: {
@@ -40,57 +28,110 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
     values: selectedUser,
   });
 
-  const { handleSubmit, register, setFocus, watch, setValue, setError } =
-    methods;
-  const onSubmit = (data) => {
+  const { handleSubmit, register, watch, setValue, reset } = methods;
+
+  const onSubmit = (data, isAuto = false) => {
     setDisabled(true);
     putData(`/feedbacks`, selectedUser.id, {
       isValidContent: data.isValidContent,
       isValidAsset: data.isValidAsset,
       status: data.status,
     })
-      .then((e) => {
-        notificationApi("success", "Cập nhật thành công ", "Đã cập nhật");
-        tableRef();
+      .then(() => {
+        if (!isAuto) {
+          notificationApi("success", "Cập nhật thành công", "Đã cập nhật");
+        }
+        tableRef(); // Reload lại bảng dữ liệu
         onClose();
         setDisabled(false);
       })
-      .catch((e) => {
-        console.log(e);
-        // set các trường hợp lỗi api
+      .catch(() => {
         setDisabled(false);
-        notificationApi("error", "Cập nhật không thành công", "Đã cập nhật");
+        if (!isAuto) {
+          notificationApi("error", "Cập nhật không thành công", "Đã cập nhật");
+        }
       });
   };
+
   useEffect(() => {
     setImages([]);
-  }, [selectedUser]);
+    setIsAutoChecked(false); // Reset trạng thái kiểm tra tự động khi mở form
+    reset(selectedUser); // Reset giá trị form theo feedback được chọn
+  }, [selectedUser, reset]);
 
   const imageUrls = selectedUser?.assetUrls?.map((image) => image?.url);
-  useEffect(() => {}, [watch("isValidAsset"), watch("isValidContent")]);
+
+  const handleManualUpdate = (field, value) => {
+    setValue(field, value, { shouldValidate: true });
+
+    const isContentValid =
+      field === "isValidContent" ? value : watch("isValidContent");
+    const isAssetValid =
+      field === "isValidAsset" ? value : watch("isValidAsset");
+
+    // Nếu cả hai trường hợp lệ, tự động đặt trạng thái là ACTIVE
+    if (isContentValid && isAssetValid) {
+      setValue("status", "ACTIVE", { shouldValidate: true });
+    } else {
+      // Nếu một trong hai không hợp lệ, tự động đặt trạng thái là SUSPENDED
+      setValue("status", "SUSPENDED", { shouldValidate: true });
+    }
+  };
+
+  useEffect(() => {
+    if (!isAutoChecked && watch("status") === "PENDING") {
+      const isContentValid = watch("isValidContent");
+      const isAssetValid = watch("isValidAsset");
+
+      if (
+        isContentValid === true &&
+        isAssetValid === true &&
+        watch("status") !== "ACTIVE"
+      ) {
+        // Nếu cả hai đều hợp lệ, đặt trạng thái thành ACTIVE
+        setValue("status", "ACTIVE", { shouldValidate: true });
+        handleSubmit((data) => onSubmit(data, true))(); // Submit tự động
+        setIsAutoChecked(true); // Đánh dấu đã kiểm tra tự động
+      } else if (
+        (isContentValid === false || isAssetValid === false) &&
+        watch("status") !== "SUSPENDED"
+      ) {
+        // Nếu một trong hai hoặc cả hai không hợp lệ, đặt trạng thái thành SUSPENDED
+        setValue("status", "SUSPENDED", { shouldValidate: true });
+        handleSubmit((data) => onSubmit(data, true))(); // Submit tự động
+        setIsAutoChecked(true); // Đánh dấu đã kiểm tra tự động
+      }
+    }
+  }, [
+    watch("isValidContent"),
+    watch("isValidAsset"),
+    watch("status"),
+    isAutoChecked,
+    handleSubmit,
+    setValue,
+    onSubmit,
+  ]);
+
   return (
     <div>
-      <div className="p-4 bg-white ">
+      <div className="p-4 bg-white">
         <h2 className="text-xl font-semibold text-blue-800 mb-4">
           Cập nhật người dùng
         </h2>
         <FormProvider {...methods}>
           <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="mx-auto mt-2 max-w-xl "
+            onSubmit={handleSubmit((data) => onSubmit(data, false))}
+            className="mx-auto mt-2 max-w-xl"
           >
-            <div className=" overflow-y-auto p-2">
-              <div
-                className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2"
-                // style={{ height: "65vh" }}
-              >
+            <div className="overflow-y-auto p-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-6 sm:grid-cols-2">
+                {/* Nội dung */}
                 <div className="sm:col-span-2">
                   <div className="mt-2.5">
                     <ComTextArea
                       type="name"
                       label={"Nội dung"}
                       rows={5}
-                      // disabled
                       readOnly
                       placeholder={"Nội dung"}
                       {...register("content")}
@@ -98,16 +139,17 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                     />
                   </div>
                 </div>
+
+                {/* Ảnh */}
                 <div className="sm:col-span-2">
                   <div className="mt-2.5">
-                    <div className=" h-24 flex items-center overflow-hidden">
+                    <div className="h-24 flex items-center overflow-hidden">
                       <Image.PreviewGroup>
                         {imageUrls?.map((item, index) => (
-                          <div className="flex h-24 gap-4">
+                          <div className="flex h-24 gap-4" key={index}>
                             <Image
-                              key={index}
                               maskClassName="object-cover w-24 h-24 object-cover object-center flex items-center justify-center"
-                              className=" w-24 h-24 object-center flex items-center justify-center"
+                              className="w-24 h-24 object-center flex items-center justify-center"
                               src={item}
                               style={{
                                 width: "6rem",
@@ -123,6 +165,8 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                     </div>
                   </div>
                 </div>
+
+                {/* Trạng thái hình ảnh */}
                 <div className="sm:col-span-1">
                   <div className="mt-2.5">
                     <ComSelect
@@ -131,39 +175,15 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                         width: "100%",
                       }}
                       label="Trạng thái hình ảnh"
-                      placeholder="hình ảnh"
-                      onChangeValue={(e, value) => {
-                        if (value.length === 0) {
-                          setValue("isValidAsset", null, {
-                            shouldValidate: true,
-                          });
-                        } else {
-                          setValue("isValidAsset", value, {
-                            shouldValidate: true,
-                          });
-                        }
-                        if (watch("isValidContent") & watch("isValidAsset")) {
-                          setValue("status", "ACTIVE");
-                          console.log(456);
-                        } else {
-                          setValue("status", "SUSPENDED");
-                          console.log("====================================");
-                          console.log(123);
-                          console.log("====================================");
-                        }
-                      }}
-                      // value={selectedUser}
+                      placeholder="Hình ảnh"
+                      onChangeValue={(e, value) =>
+                        handleManualUpdate("isValidAsset", value)
+                      }
                       value={watch("isValidAsset")}
                       mode="default"
                       options={[
-                        {
-                          value: true,
-                          label: `Hợp lệ `,
-                        },
-                        {
-                          value: false,
-                          label: `Không hợp lệ`,
-                        },
+                        { value: true, label: `Hợp lệ` },
+                        { value: false, label: `Không hợp lệ` },
                       ]}
                       required
                       {...register("isValidAsset")}
@@ -171,6 +191,7 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                   </div>
                 </div>
 
+                {/* Trạng thái nội dung */}
                 <div className="sm:col-span-1">
                   <div className="mt-2.5">
                     <ComSelect
@@ -180,73 +201,39 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                       }}
                       label="Trạng thái nội dung"
                       placeholder="Trạng thái nội dung"
-                      onChangeValue={(e, value) => {
-                        if (value.length === 0) {
-                          setValue(e, null, {
-                            shouldValidate: true,
-                          });
-                        } else {
-                          setValue(e, value, {
-                            shouldValidate: true,
-                          });
-                        }
-                        if (watch("isValidContent") & watch("isValidAsset")) {
-                          setValue("status", "ACTIVE");
-                          console.log(456);
-                        } else {
-                          setValue("status", "SUSPENDED");
-                          console.log("====================================");
-                          console.log(123);
-                          console.log("====================================");
-                        }
-                      }}
-                      // value={selectedUser}
+                      onChangeValue={(e, value) =>
+                        handleManualUpdate("isValidContent", value)
+                      }
                       value={watch("isValidContent")}
                       mode="default"
                       options={[
-                        {
-                          value: true,
-                          label: `Hợp lệ `,
-                        },
-                        {
-                          value: false,
-                          label: `Không hợp lệ`,
-                        },
+                        { value: true, label: `Hợp lệ` },
+                        { value: false, label: `Không hợp lệ` },
                       ]}
                       required
                       {...register("isValidContent")}
                     />
                   </div>
                 </div>
+
+                {/* Trạng thái */}
                 <div className="sm:col-span-2">
                   <div className="mt-2.5">
                     <ComSelect
                       size={"large"}
                       style={{
                         width: "100%",
+                        backgroundColor: "#fff", // Giữ nền bình thường
+                        pointerEvents: "none", // Ngăn người dùng tương tác
+                        borderColor: "#d9d9d9", // Giữ đường viền như bình thường
                       }}
                       label="Trạng thái"
-                      placeholder="hình ảnh"
-                      onChangeValue={(e, value) => {
-                        setValue(e, value, {
-                          shouldValidate: true,
-                        });
-                      }}
+                      placeholder="Trạng thái"
                       value={watch("status")}
                       mode="default"
                       options={[
-                        {
-                          value: "PENDING",
-                          label: `Chờ duyệt`,
-                        },
-                        {
-                          value: "ACTIVE",
-                          label: `Đã duyệt`,
-                        },
-                        {
-                          value: "SUSPENDED",
-                          label: `Từ chối`,
-                        },
+                        { value: "ACTIVE", label: `Đã duyệt` },
+                        { value: "SUSPENDED", label: `Từ chối` },
                       ]}
                       required
                       {...register("status")}
@@ -255,12 +242,13 @@ export default function EditFeedback({ selectedUser, onClose, tableRef }) {
                 </div>
               </div>
 
+              {/* Nút cập nhật */}
               <div className="mt-10">
                 <ComButton
                   htmlType="submit"
                   type="primary"
                   disabled={disabled}
-                  className="block w-full rounded-md bg-[#0F296D]  text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  className="block w-full rounded-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                 >
                   Cập nhật
                 </ComButton>
