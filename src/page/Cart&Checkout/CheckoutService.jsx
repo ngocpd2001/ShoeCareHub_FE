@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckoutCart from "../../Components/ComCart/CheckoutCart";
 import { getServiceById } from "../../api/service";
-import { checkoutCart, checkoutService } from "../../api/cart";
+import { checkoutService } from "../../api/cart";
 import { getAddressByAccountId } from "../../api/address";
 import { getAccountById } from "../../api/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -76,10 +76,36 @@ const CheckoutService = () => {
               
               try {
                 const response = await getServiceById(service.id);
-                const serviceData = response.data?.items?.find(
-                  (item) => item.id === service.id
-                );
-                return serviceData ? { ...service, ...serviceData } : service;
+                
+                // Log để debug
+                // console.log("Raw response:", response);
+                
+                // Kiểm tra xem response có phải là data trực tiếp không
+                const serviceData = response.data || response;
+                
+                // Log để debug
+                // console.log("Service data:", serviceData);
+
+                // Lấy URL ảnh từ assetUrls
+                let imageUrl = null;
+                let foundImageAsset = null;
+                if (serviceData.assetUrls && Array.isArray(serviceData.assetUrls)) {
+                  foundImageAsset = serviceData.assetUrls.find(asset => 
+                    asset && (asset.type === "image" || asset.isImage === false) && asset.url
+                  );
+                  imageUrl = foundImageAsset?.url || null;
+                }
+
+                // Log để debug
+                // console.log("Asset URLs:", serviceData.assetUrls);
+                // console.log("Found image asset:", foundImageAsset);
+                // console.log("Final image URL:", imageUrl);
+
+                return {
+                  ...service,
+                  ...serviceData,
+                  image: imageUrl
+                };
               } catch (error) {
                 console.error(`Lỗi khi lấy thông tin dịch vụ ${service.id}:`, error);
                 return service;
@@ -91,7 +117,6 @@ const CheckoutService = () => {
         })
       );
       
-      // Chỉ cập nhật state nếu có sự thay đổi
       if (JSON.stringify(updatedCartItems) !== JSON.stringify(cartItems)) {
         setCartItems(updatedCartItems);
       }
@@ -298,9 +323,26 @@ const CheckoutService = () => {
     }
   };
 
-  const handleShippingFeesChange = (fees) => {
-    setShippingFees(fees);
-    // console.log("Shipping fees updated:", fees);
+  const handleShippingFeesChange = (fees, branchId) => {
+    // Kiểm tra nếu có lỗi không hỗ trợ ship
+    if (fees.error && fees.error.includes('Không hỗ trợ ship')) {
+      Modal.warning({
+        title: 'Thông báo',
+        content: 'Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.',
+        okText: 'Đồng ý',
+        centered: true,
+        okButtonProps: {
+          className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+        }
+      });
+      // Reset delivery option về pickup
+      handleDeliveryOptionChange({
+        isValid: true,
+        options: { [branchId]: 'pickup' }
+      });
+    } else {
+      setShippingFees(fees);
+    }
   };
 
   const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
@@ -325,7 +367,7 @@ const CheckoutService = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1 mr-6 font-medium">
                   {userInfo?.fullname || "Tên không có"} (
-                  {userInfo?.phone || "Số điện thoại không có"})
+                  {userInfo?.phone || "Số iện thoại không có"})
                 </div>
                 <div className="flex-1 text-right whitespace-nowrap mr-6">
                   {defaultAddress ? (

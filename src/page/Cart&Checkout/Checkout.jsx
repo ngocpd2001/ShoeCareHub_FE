@@ -55,12 +55,21 @@ const Checkout = () => {
             if (shop.services && Array.isArray(shop.services)) {
               const updatedServices = await Promise.all(
                 shop.services.map(async (service) => {
-                  if (service?.id) {
-                    const response = await getServiceById(service.id);
-                    const serviceData = response.data?.items?.find(
-                      (item) => item.id === service.id
+                  if (service?.serviceId) {
+                    const response = await getServiceById(service.serviceId);
+                    // Lọc và lấy URL ảnh từ assetUrls
+                    const imageAssets = response.data.assetUrls.filter(asset => 
+                      asset.type === "image"
                     );
-                    return { ...service, ...serviceData };
+                    const imageUrl = imageAssets.length > 0 ? imageAssets[0].url : null;
+                    
+                    return { 
+                      ...service, 
+                      ...response.data,
+                      id: service.id,
+                      cartItemId: service.id,
+                      image: imageUrl // Thêm URL ảnh vào object service
+                    };
                   }
                   return service;
                 })

@@ -21,7 +21,10 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
       try {
         const branchData = await getBranchByBusinessId(businessId);
         console.log("Branch Data:", branchData);
-        setBranches(Array.isArray(branchData.data) ? branchData.data : []);
+        const activeBranches = Array.isArray(branchData.data) 
+          ? branchData.data.filter(branch => branch.status !== "INACTIVE")
+          : [];
+        setBranches(activeBranches);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin chi nhánh:", error.errors || error);
       }
@@ -40,7 +43,10 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         setBusiness(businessData);
         
         const branchData = await getBranchByBusinessId(businessId);
-        setBranches(Array.isArray(branchData.data) ? branchData.data : []);
+        const activeBranches = Array.isArray(branchData.data) 
+          ? branchData.data.filter(branch => branch.status !== "INACTIVE")
+          : [];
+        setBranches(activeBranches);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin:", error.errors || error);
       }

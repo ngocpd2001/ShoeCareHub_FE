@@ -36,19 +36,25 @@ const UserCart = () => {
       const dataArray = Array.isArray(data) ? data : [];
       setBranches(dataArray);
 
-      // console.log("Data từ API:", dataArray);
-
       const detailedItems = await Promise.all(
         dataArray.flatMap((branch) =>
           (branch.items || []).map(async (item) => {
             const serviceDetails = await getServiceById(item.serviceId);
+            const imageUrl = serviceDetails.assetUrls?.[0]?.url || '';
+            
+            // console.log('Service Details:', {
+            //   serviceId: item.serviceId,
+            //   assetUrls: serviceDetails.assetUrls,
+            //   firstImageUrl: imageUrl
+            // });
+            
             return {
               id: item.id,
               branchId: branch.branchId,
               shopName: branch.shopName,
               shopAddress: branch.shopAddress,
               name: serviceDetails.name,
-              image: serviceDetails.image,
+              image: imageUrl,
               price: serviceDetails.price,
               promotion: serviceDetails.promotion,
               quantity: item.quantity,
@@ -59,8 +65,6 @@ const UserCart = () => {
           })
         )
       );
-
-      // console.log("Detailed Items:", detailedItems);
 
       const groupedItems = detailedItems.reduce((acc, item) => {
         const branch = acc.find((b) => b.branchId === item.branchId);
@@ -76,8 +80,6 @@ const UserCart = () => {
         }
         return acc;
       }, []);
-
-      // console.log("Grouped Items:", groupedItems);
 
       setCartItems(groupedItems);
       const newTotal = calculateTotalAmount(groupedItems);
