@@ -191,15 +191,17 @@ const ServiceGrid = ({ businessId, branchId }) => {
         })}
       </div>
 
-      <div className="flex justify-center mt-4">
-        <Pagination
-          current={currentPage}
-          total={totalItems}
-          pageSize={pageSize}
-          onChange={setCurrentPage}
-          showSizeChanger={false}
-        />
-      </div>
+      {totalItems > pageSize && (
+        <div className="flex justify-center mt-4">
+          <Pagination
+            current={currentPage}
+            total={totalItems}
+            pageSize={pageSize}
+            onChange={setCurrentPage}
+            showSizeChanger={false}
+          />
+        </div>
+      )}
     </div>
   );
 };
