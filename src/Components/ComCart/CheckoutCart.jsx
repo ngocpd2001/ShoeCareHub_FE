@@ -413,7 +413,7 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                         Nhận hàng tại cửa hàng
                       </p>
                     </div>
-                    <p className="font-medium">Free</p>
+                    {/* <p className="font-medium">Free</p> */}
                   </div>
                 </div>
               </div>
