@@ -8,12 +8,6 @@ export const getAllService = async (keyword = '', status = '', pageIndex = 1, pa
       PageIndex: pageIndex,  
       PageSize: pageSize,  
     });  
-      // Log các tham số để kiểm tra
-    // console.log("Keyword:", keyword);
-    // console.log("Status:", status);
-    // console.log("PageIndex:", pageIndex);
-    // console.log("PageSize:", pageSize);
-    // console.log("OrderBy:", orderBy);
 
     if (orderBy !== null && orderBy !== undefined) {  
       params.append('OrderBy', orderBy);  

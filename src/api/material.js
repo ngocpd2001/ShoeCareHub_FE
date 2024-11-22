@@ -57,4 +57,19 @@ export const deleteMaterial = async (id) => {
     console.error('Lỗi khi xóa vật liệu:', error);
     throw error;
   }
+};
+
+export const getMaterialsByBusiness = async (businessId, pageIndex = 1, pageSize = 10) => {
+  try {
+    const response = await axiosInstances.login.get(`/materials/businesses/${businessId}`, {
+      params: {
+        pageIndex: pageIndex,
+        pageSize: pageSize
+      }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy danh sách vật liệu theo doanh nghiệp:', error);
+    throw error;
+  }
 };  

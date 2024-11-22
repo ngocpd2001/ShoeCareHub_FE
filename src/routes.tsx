@@ -77,6 +77,8 @@ import TicketManager_Ad from "./page/Admin/Ticket/TicketManager_Ad";
 import Package from "./page/Owner/Package/Package";
 import PaymentSuccess from "./page/Owner/Package/PaymentSuccess";
 import PaymentFailed from "./page/Owner/Package/PaymentFailed";
+import MaterialManager from "./page/Owner/Material/MaterialManager";
+import UpdateMaterial from "./page/Owner/Material/UpdateMaterial";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -323,6 +325,14 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/ticket/update/:id",
         element: <UpdateTicket />,
+      },
+      {
+        path: "/owner/material",
+        element: <MaterialManager />,
+      },
+      {
+        path: "/owner/material/update/:id",
+        element: <UpdateMaterial />,
       },
     ],
   },
