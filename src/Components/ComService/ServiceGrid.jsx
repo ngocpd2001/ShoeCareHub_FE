@@ -83,31 +83,9 @@ const ServiceGrid = ({ businessId, branchId }) => {
     navigate(`/servicedetail/${serviceId}`); // Điều hướng đến trang chi tiết dịch vụ
   };
 
-  // // Hàm helper để kiểm tra promotion hợp lệ
-  // const isValidPromotion = (service) => {
-  //   // Kiểm tra từng điều kiện
-  //   const conditions = {
-  //     isServiceActive: service.status === "Hoạt Động",
-  //     hasPromotion: !!service.promotion,
-  //     hasSaleOff: service.promotion?.saleOff > 0,
-  //     hasNewPrice: service.promotion?.newPrice > 0
-  //   };
-
-  //   // Bỏ điều kiện isPromotionActive
-  //   const isValid = conditions.isServiceActive && 
-  //                  conditions.hasPromotion && 
-  //                  conditions.hasSaleOff && 
-  //                  conditions.hasNewPrice;
-
-  //   return isValid;
-  // };
-
-  // Thêm log trong phần render để kiểm tra
-  console.log("Current services state:", services);
-
   return (
     <div className="container mx-auto p-4">
-      <div className="flex flex-row items-center mb-4 bg-white p-4">
+      <div className="flex flex-row items-center mb-10 bg-white p-4">
         <h2 className="text-lg font-semibold text-center">SẮP XẾP THEO</h2>
 
         <Button
