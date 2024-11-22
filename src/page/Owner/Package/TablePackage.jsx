@@ -87,17 +87,37 @@ export const TablePackage = forwardRef((props, ref) => {
       ...getColumnApprox("processTime", "Thời gian"),
       render: (data, record) => (
         <>
-          <ComDateConverter >{data}</ComDateConverter>
+          <ComDateConverter>{data}</ComDateConverter>
         </>
       ),
     },
     {
-      title: "Trạng thái",
+      title: "Trạng thái ",
+      width: 100,
       dataIndex: "status",
       key: "status",
-      width: 150,
-      // ...getColumnApprox("status", "Trạng thái"),
+      width: 120,
+      filters: [
+        { text: "Thành công", value: "COMPLETED" },
+        { text: "Thất bại", value: "FAILED" },
+        { text: "Chờ thanh toán", value: "PROCESSING" },
+      ],
+      onFilter: (value, record) => record.status === value,
+      render: (_, record) => (
+        <div>
+          {record.status === "COMPLETED" && "Thành công"}
+          {record.status === "FAILED" && "Thất bại"}
+          {record.status === "PROCESSING" && "Chờ thanh toán"}
+        </div>
+      ),
     },
+    // {
+    //   title: "Trạng thái",
+    //   dataIndex: "status",
+    //   key: "status",
+    //   width: 150,
+    // ...getColumnApprox("status", "Trạng thái"),
+    // },
     // {
     //   title: "",
     //   key: "operation",
@@ -143,11 +163,9 @@ export const TablePackage = forwardRef((props, ref) => {
   }));
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(
-      `/transactions/account/${user?.id}?pageIndex=1&pageSize=9999`
-    )
+    getData(`/transactions/account/${user?.id}?pageIndex=1&pageSize=9999`)
       .then((e) => {
-        const activeItems = e?.data?.data?.items
+        const activeItems = e?.data?.data?.items;
         setData(activeItems);
         console.log("====================================");
         console.log(e?.data.data?.items);
@@ -178,7 +196,6 @@ export const TablePackage = forwardRef((props, ref) => {
       >
         <DetailService selectedUpgrede={selectedData} />
       </ComModal>
-
     </div>
   );
 });

@@ -36,6 +36,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Affix } from "antd";
 import { PackageIcon, UserCircleIcon } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
+import { FaStar } from "react-icons/fa";
 
 const navigation = [
   {
@@ -70,7 +71,7 @@ const navigation = [
   {
     name: "Đánh giá",
     href: "/owner/feedback",
-    icon: ChatBubbleBottomCenterTextIcon,
+    icon: FaStar,
     current: false,
   },
   {
