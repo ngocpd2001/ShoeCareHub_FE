@@ -24,10 +24,43 @@ export const getBranchByBusinessId = async (businessId) => {
     }
   };
 
-  export const getServiceByBranchId = async (branchId) => {
+  export const getServiceByBranchId = async (
+    branchId, 
+    pageIndex = 1, 
+    pageSize = 10, 
+    showAll = false,
+    options = {}
+  ) => {
     try {
-      const response = await axiosInstances.login.get(`/services/branches/${branchId}`);
-      return response.data;
+      const { keyword, status, orderBy } = options;
+      
+      const params = {
+        PageIndex: pageIndex,
+        PageSize: showAll ? 1000 : pageSize
+      };
+
+      if (keyword) params.Keyword = keyword;
+      if (status) params.Status = status;
+      if (orderBy) params.OrderBy = orderBy;
+
+      const response = await axiosInstances.login.get(`/services/branches/${branchId}`, {
+        params
+      });
+
+      if (response.data && response.data.message === "Lấy dịch vụ thành công") {
+        return {
+          message: response.data.message,
+          data: {
+            items: response.data.data.items || [],
+            totalCount: response.data.data.totalCount,
+            pageIndex: response.data.data.pageIndex,
+            pageSize: response.data.data.pageSize,
+            totalPages: response.data.data.totalPages
+          }
+        };
+      }
+      
+      throw new Error("Không thể lấy dữ liệu dịch vụ");
     } catch (error) {
       console.error("Lỗi khi gọi API dịch vụ theo chi nhánh", error);
       throw error;

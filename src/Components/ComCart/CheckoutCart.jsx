@@ -8,8 +8,16 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { getBranchByBranchId } from "../../api/branch";
 import { calculateShippingFee } from "../../api/cart";
+import { Modal, Image } from "antd";
 
-const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, defaultAddress, onShippingFeesChange = () => {}, notes = {} }) => {
+const CheckoutCart = ({
+  cartItems,
+  onDeliveryOptionChange,
+  onNoteChange,
+  defaultAddress,
+  onShippingFeesChange = () => {},
+  notes = {},
+}) => {
   const user = JSON.parse(localStorage.getItem("user"));
   // console.log("cart", cartItems);
   const [branchDataList, setBranchDataList] = useState({});
@@ -18,7 +26,8 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
   const [deliveryOptions, setDeliveryOptions] = useState({});
   const [shippingFees, setShippingFees] = useState({});
   const [loadingShippingFees, setLoadingShippingFees] = useState({});
-  const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] = useState(false);
+  const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] =
+    useState(false);
 
   useEffect(() => {
     const fetchBranchData = async () => {
@@ -59,12 +68,19 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
 
   useEffect(() => {
     if (cartItems && Array.isArray(cartItems)) {
-      cartItems.forEach(shop => {
-        if (deliveryOptions[shop.branchId] === "delivery" && defaultAddress?.id) {
+      cartItems.forEach((shop) => {
+        if (
+          deliveryOptions[shop.branchId] === "delivery" &&
+          defaultAddress?.id
+        ) {
           const totalQuantity = shop.services.reduce((total, service) => {
             return total + (service?.quantity || 0);
           }, 0);
-          calculateShippingFeeForBranch(shop.branchId, totalQuantity, defaultAddress.id);
+          calculateShippingFeeForBranch(
+            shop.branchId,
+            totalQuantity,
+            defaultAddress.id
+          );
         }
       });
     }
@@ -82,41 +98,81 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
       return;
     }
 
-    const allShopsSelected = cartItems.every(shop => 
-      deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
+    const allShopsSelected = cartItems.every(
+      (shop) =>
+        deliveryOptions[shop.branchId] === "delivery" ||
+        deliveryOptions[shop.branchId] === "pickup"
     );
-    
+
     setAllShopsHaveDeliveryOption(allShopsSelected);
-    onDeliveryOptionChange({ isValid: allShopsSelected, options: deliveryOptions });
+    onDeliveryOptionChange({
+      isValid: allShopsSelected,
+      options: deliveryOptions,
+    });
   }, [deliveryOptions, cartItems]);
 
   const handleDeliveryOptionChange = (branchId, value) => {
-    setDeliveryOptions((prevOptions) => {
-      const newOptions = {
-        ...prevOptions,
-        [branchId]: value,
-      };
-      
-      onDeliveryOptionChange({ 
-        isValid: true, 
-        options: newOptions,
-        deliveryType: value 
-      });
-      
-      return newOptions;
-    });
+    if (value === "delivery") {
+      // Kiểm tra khả năng ship trước khi thay đổi option
+      checkShippingAvailability(branchId).then((canShip) => {
+        if (!canShip) {
+          // Hiển thị Modal thông báo
+          Modal.warning({
+            title: "Thông báo",
+            content:
+              "Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.",
+            okText: "Đồng ý",
+            centered: true,
+            okButtonProps: {
+              className:
+                "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+            },
+          });
+          // Giữ nguyên option pickup
+          setDeliveryOptions((prev) => ({
+            ...prev,
+            [branchId]: "pickup",
+          }));
+          return;
+        }
 
-    if (value === "delivery" && defaultAddress?.id) {
-      const shop = cartItems.find(item => item.branchId === branchId);
-      if (shop) {
-        const totalQuantity = shop.services.reduce((total, service) => {
-          return total + (service?.quantity || 0);
-        }, 0);
-        calculateShippingFeeForBranch(branchId, totalQuantity, defaultAddress.id);
-      }
+        // Nếu có thể ship, cập nhật option và tính phí ship
+        setDeliveryOptions((prev) => ({
+          ...prev,
+          [branchId]: value,
+        }));
+
+        if (defaultAddress?.id) {
+          const shop = cartItems.find((item) => item.branchId === branchId);
+          if (shop) {
+            const totalQuantity = shop.services.reduce((total, service) => {
+              return total + (service?.quantity || 0);
+            }, 0);
+            calculateShippingFeeForBranch(
+              branchId,
+              totalQuantity,
+              defaultAddress.id
+            );
+          }
+        }
+      });
     } else {
-      setShippingFees(prev => ({...prev, [branchId]: 0}));
+      // Nếu chọn pickup, cập nhật bình thường
+      setDeliveryOptions((prev) => ({
+        ...prev,
+        [branchId]: value,
+      }));
+      setShippingFees((prev) => ({ ...prev, [branchId]: 0 }));
     }
+
+    onDeliveryOptionChange({
+      isValid: true,
+      options: {
+        ...deliveryOptions,
+        [branchId]: value,
+      },
+      deliveryType: value,
+    });
   };
 
   const handleNoteChange = (e, branchId) => {
@@ -124,38 +180,54 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
     onNoteChange({ branchId, note: newNote });
   };
 
-  const calculateShippingFeeForBranch = async (branchId, totalQuantity, selectedAddressId) => {
-    if (!selectedAddressId) {
-      console.log("Không có địa chỉ!");
-      return;
-    }
-    
-    setLoadingShippingFees(prev => ({...prev, [branchId]: true}));
+  const calculateShippingFeeForBranch = async (branchId) => {
     try {
-      console.log("Gửi request tính phí ship với:", {
-        addressId: selectedAddressId,
-        branchId,
-        quantity: totalQuantity
+      if (!defaultAddress?.id) return;
+
+      const totalQuantityForBranch = cartItems
+        .flatMap((shop) => shop.services)
+        .filter((service) => service.branchId === branchId)
+        .reduce((total, service) => total + (service.quantity || 1), 0);
+
+      const shippingFee = await calculateShippingFee({
+        addressId: defaultAddress.id,
+        branchId: branchId,
+        quantity: totalQuantityForBranch,
       });
 
-      const fee = await calculateShippingFee({
-        addressId: selectedAddressId,
-        branchId,
-        quantity: totalQuantity
-      });
-      
-      console.log("Kết quả tính phí ship:", {
-        branchId,
-        fee,
-        totalQuantity,
-        addressId: selectedAddressId
-      });
-      
-      setShippingFees(prev => ({...prev, [branchId]: fee}));
+      // Nếu có lỗi không hỗ trợ ship, truyền lỗi lên component cha
+      if (shippingFee.error) {
+        onShippingFeesChange({ error: shippingFee.error }, branchId);
+        return;
+      }
+
+      // Cập nhật phí ship nếu không có lỗi
+      onShippingFeesChange(shippingFee, branchId);
     } catch (error) {
       console.error("Lỗi khi tính phí ship:", error);
-    } finally {
-      setLoadingShippingFees(prev => ({...prev, [branchId]: false}));
+    }
+  };
+
+  // Thêm hàm mới để kiểm tra khả năng ship
+  const checkShippingAvailability = async (branchId) => {
+    try {
+      if (!defaultAddress?.id) return false;
+
+      const totalQuantityForBranch = cartItems
+        .flatMap((shop) => shop.services)
+        .filter((service) => service.branchId === branchId)
+        .reduce((total, service) => total + (service.quantity || 1), 0);
+
+      const response = await calculateShippingFee({
+        addressId: defaultAddress.id,
+        branchId: branchId,
+        quantity: totalQuantityForBranch,
+      });
+
+      return !response.error;
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra khả năng ship:", error);
+      return false;
     }
   };
 
@@ -227,11 +299,17 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
 
             {(shop.services || []).map((service) => {
               if (!service) return null;
+
+              const serviceData = service.data || service;
+              const imageUrl = service.image || null;
+
               const price =
-                service.promotion && service.promotion.newPrice !== undefined
-                  ? service.promotion.newPrice
-                  : service.price;
-              const totalPrice = price * (service.quantity || 0);
+                serviceData.promotion &&
+                serviceData.promotion.newPrice !== undefined
+                  ? serviceData.promotion.newPrice
+                  : serviceData.price;
+
+              const totalPrice = price * (serviceData.quantity || 0);
 
               return (
                 <div
@@ -239,13 +317,25 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                   className="grid grid-cols-4 items-center justify-center mt-2 py-2"
                 >
                   <div className="flex items-center">
-                    <img
-                      src={service.image}
-                      alt={service.name}
-                      className="w-16 h-16 mr-4"
-                    />
+                    <div className="w-16 h-16 mr-4">
+                      {imageUrl ? (
+                        <Image
+                          src={imageUrl}
+                          alt={serviceData.name}
+                          className="object-cover w-full h-full rounded"
+                          fallback="data:image/png;base64,..."
+                          preview={{
+                            mask: "Xem ảnh",
+                          }}
+                        />
+                      ) : (
+                        <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded">
+                          <span className="text-gray-400 text-xs text-center">Không có ảnh</span>
+                        </div>
+                      )}
+                    </div>
                     <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      {service.name}
+                      {serviceData.name}
                     </span>
                   </div>
 
@@ -282,7 +372,7 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                   className="w-full p-2 border border-gray-300 rounded h-34"
                   placeholder="Lưu ý cho cửa hàng..."
                   onChange={(e) => handleNoteChange(e, shop.branchId)}
-                  value={notes[shop.branchId] || ''}
+                  value={notes[shop.branchId] || ""}
                 />
               </div>
 
@@ -335,7 +425,9 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                               fee: shippingFees[shop.branchId]
                             })} */}
                             <span className="font-medium">
-                              {shippingFees[shop.branchId]?.toLocaleString() || "0"} đ
+                              {shippingFees[shop.branchId]?.toLocaleString() ||
+                                "0"}{" "}
+                              đ
                             </span>
                           </>
                         )}

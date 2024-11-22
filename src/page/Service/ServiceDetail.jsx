@@ -159,10 +159,12 @@ const ServiceDetail = () => {
 
     try {
       const itemData = {
-        serviceId: service.id,
-        branchId: selectedBranch.id,
-        quantity: quantity,
+        serviceId: Number(service.id),
+        branchId: Number(selectedBranch.id),
+        quantity: Number(quantity),
       };
+
+      console.log('Add to cart data:', itemData);
 
       await addItemToCart(user.id, itemData);
       navigate("/cart");
@@ -329,7 +331,9 @@ const ServiceDetail = () => {
               {/* Price-rating & feedback */}
               <div className="flex items-center justify-between mt-5 border-t pt-4">
                 <div className="flex flex-col items-start">
-                  {service.promotion && service.promotion.newPrice ? (
+                  {service.promotion && 
+                   service.promotion.status === "Hoạt Động" && 
+                   service.promotion.newPrice ? (
                     <>
                       <span className="text-3xl font-bold text-blue-800">
                         {formatCurrency(service.promotion.newPrice)}
@@ -339,7 +343,7 @@ const ServiceDetail = () => {
                       </span>
                     </>
                   ) : (
-                    <span className="text-[#3A4980] font-bold text-xl">
+                    <span className="text-[#3A4980] font-bold text-3xl">
                       {formatCurrency(service.price)}
                     </span>
                   )}

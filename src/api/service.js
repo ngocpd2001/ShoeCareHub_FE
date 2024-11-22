@@ -54,28 +54,58 @@ export const getServiceById = async (id) => {
   }
 };
 
-export const getServiceByBusinessId = async (businessId, pageNum = 1, pageSize = 10, isDescending = false) => {
+export const getServiceByBusinessId = async (
+  businessId,
+  pageIndex = 1,
+  pageSize = 10,
+  showAll = false,
+  options = {}
+) => {
   try {
-    const params = new URLSearchParams({
+    const { keyword, status, orderBy } = options;
+    
+    const params = {
       BusinessId: businessId,
-      IsDecsending: isDescending,
-      PageSize: pageSize,
-      PageNum: pageNum,
+      PageNum: pageIndex,
+      PageSize: showAll ? 1000 : pageSize,
+      IsDecsending: false
+    };
+
+    if (keyword) params.Keyword = keyword;
+    if (status) params.Status = status;
+    if (orderBy) params.OrderBy = orderBy;
+
+    const response = await axiosInstances.login.get('/services/business', {
+      params
     });
 
-    const response = await axiosInstances.login.get(`/services/business?${params.toString()}`);
-
-    // console.log("Dữ liệu nhận được:", response.data); // Log dữ liệu nhận được từ API
-
     if (response.data && response.data.message === "Lấy Dữ Liệu Dịch Vụ Thành Công!") {
-      return response.data.data; // Trả về dữ liệu dịch vụ
-    } else {
-      console.error("Dữ liệu không hợp lệ:", response.data);
-      return []; // Trả về mảng rỗng nếu dữ liệu không hợp lệ
+      const items = Array.isArray(response.data.data) ? response.data.data : [];
+      return {
+        message: response.data.message,
+        data: {
+          items: items,
+          totalCount: response.data.pagination?.totalItems || items.length,
+          pageIndex: response.data.pagination?.currentPage || pageIndex,
+          pageSize: response.data.pagination?.pageSize || pageSize,
+          totalPages: response.data.pagination?.totalPages || 1
+        }
+      };
     }
+    
+    return {
+      message: "Không có dữ liệu",
+      data: {
+        items: [],
+        totalCount: 0,
+        pageIndex: pageIndex,
+        pageSize: pageSize,
+        totalPages: 0
+      }
+    };
   } catch (error) {
-    console.error("Lỗi khi gọi API", error);
-    throw error; // Rethrowing the error for higher-level catching
+    console.error("Lỗi khi gọi API dịch vụ theo doanh nghiệp", error);
+    throw error;
   }
 };
 

@@ -3,22 +3,33 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
 import { updateCartItemQuantity, deleteCartItem } from "../../api/cart";
+import { Image } from "antd";
 
-const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => {
-  // console.log("Service", service);
+const CartItem = ({
+  service,
+  userId,
+  onQuantityChange,
+  onRemove,
+  onSelect,
+}) => {
+  // Thêm log này
+  // console.log("Toàn bộ service object:", service);
 
   const [inputValue, setInputValue] = useState(service.quantity || 0);
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
-    const price = service.promotion && service.promotion.newPrice ? service.promotion.newPrice : service.price;
+    const price =
+      service.promotion && service.promotion.newPrice
+        ? service.promotion.newPrice
+        : service.price;
     setTotalPrice(price * inputValue);
   }, [inputValue, service]);
 
   const handleQuantityChange = async (e) => {
     const updatedQuantity = parseInt(e.target.value, 10);
     if (!userId) {
-      console.error('User ID is undefined for service:', service);
+      console.error("User ID is undefined for service:", service);
       return;
     }
     if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
@@ -28,32 +39,32 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
         service.quantity = updatedQuantity;
         onQuantityChange(service.id, updatedQuantity);
       } catch (error) {
-        console.error('Có lỗi xảy ra khi cập nhật số lượng:', error);
+        console.error("Có lỗi xảy ra khi cập nhật số lượng:", error);
       }
     } else {
       setInputValue(e.target.value);
     }
   };
 
-  const handleIncrease = async () => {  
-    if (!userId) {  
-      console.error('User ID is undefined for service:', service);  
-      return;  
-    }  
+  const handleIncrease = async () => {
+    if (!userId) {
+      console.error("User ID is undefined for service:", service);
+      return;
+    }
     const newQuantity = inputValue + 1;
-    try {  
-      await updateCartItemQuantity(service.id, newQuantity);  
+    try {
+      await updateCartItemQuantity(service.id, newQuantity);
       setInputValue(newQuantity);
       service.quantity = newQuantity;
       onQuantityChange(service.id, newQuantity);
-    } catch (error) {  
-      console.error('Có lỗi xảy ra:', error);  
-    }  
+    } catch (error) {
+      console.error("Có lỗi xảy ra:", error);
+    }
   };
 
   const handleDecrease = async () => {
     if (!userId) {
-      console.error('User ID is undefined for service:', service);
+      console.error("User ID is undefined for service:", service);
       return;
     }
     if (inputValue > 1) {
@@ -64,7 +75,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
         service.quantity = newQuantity;
         onQuantityChange(service.id, newQuantity);
       } catch (error) {
-        console.error('Có lỗi xảy ra:', error);
+        console.error("Có lỗi xảy ra:", error);
       }
     }
   };
@@ -76,23 +87,48 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
   // Kiểm tra giá trị userId
   // console.log("User ID trong CartItem:", userId);
 
+  // Thêm console.log để kiểm tra dữ liệu
+  // console.log("Service data:", {
+  //   name: service.name,
+  //   assetUrls: service.assetUrls,
+  //   firstImageUrl: service.assetUrls?.[0]?.url,
+  // });
+
   return (
     <div className="grid grid-cols-4 items-center p-4 border-b">
       <div className="flex items-center col-span-1">
-      <input
-        type="checkbox"
-        checked={service.selected}
-        onChange={() => onSelect(service.id)}
-        className="mr-2"
-      />
-        <img
-          src={service.image}
-          alt={service.name}
-          className="w-12 h-12 mr-4"
+        <input
+          type="checkbox"
+          checked={service.selected}
+          onChange={() => onSelect(service.id)}
+          className="mr-2"
         />
-        <span className="max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-          {service.name}
-        </span>
+        <div className="w-12 h-12 flex items-center justify-center overflow-hidden mr-4">
+          {service.image ? ( // Sử dụng service.image thay vì service.imageUrl
+            <Image.PreviewGroup
+              preview={{
+                onChange: (current, prev) =>
+                  console.log(`Switched from preview ${prev} to ${current}`),
+              }}
+            >
+              <Image
+                src={service.image} // Sử dụng service.image
+                alt={service.name}
+                className="object-cover w-full h-full"
+                fallback="data:image/png;base64,..."
+                preview={{
+                  mask: "Xem ảnh",
+                  urls: [service.image], // Sử dụng service.image
+                }}
+              />
+            </Image.PreviewGroup>
+          ) : (
+            <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">
+              <span className="text-gray-400">No image</span>
+            </div>
+          )}
+        </div>
+        <span>{service.name}</span>
       </div>
 
       <div className="text-center col-span-1">
@@ -138,7 +174,7 @@ const CartItem = ({ service, userId, onQuantityChange, onRemove, onSelect }) => 
 
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-          {totalPrice.toLocaleString()}{" "} đ
+          {totalPrice.toLocaleString()} đ
         </span>
 
         <button onClick={handleRemoveClick} className="text-[#002278] w-[30%]">

@@ -59,26 +59,39 @@ export const getCartTotal = async (cartId) => {
 // Thêm một mục mới vào giỏ hàng
 export const addItemToCart = async (userId, itemData) => {
   try {
-    // Đảm bảo rằng itemData có cấu trúc đúng
+    // Kiểm tra xem là service hay material
+    const isService = 'serviceId' in itemData;
+    const isMaterial = 'materialId' in itemData;
+
+    if (!isService && !isMaterial) {
+      throw new Error('Phải có serviceId hoặc materialId');
+    }
+
+    // Tạo request body với các trường cần thiết
     const requestBody = {
-      serviceId: itemData.serviceId,
-      branchId: itemData.branchId,
-      quantity: itemData.quantity,
+      branchId: Number(itemData.branchId),
+      quantity: Number(itemData.quantity),
     };
+
+    // Thêm serviceId hoặc materialId tùy theo loại
+    if (isService) {
+      requestBody.serviceId = Number(itemData.serviceId);
+    } else {
+      requestBody.materialId = Number(itemData.materialId);
+    }
+
+    console.log('Request body for add to cart:', requestBody);
 
     const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, requestBody);
     return response.data;
   } catch (error) {
     if (error.response) {
-      // Server responded with a status other than 2xx
       console.error('Lỗi từ server:', error.response.data);
       throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
     } else if (error.request) {
-      // Request was made but no response received
       console.error('Lỗi mạng:', error.request);
       throw new Error('Network error: No response received');
     } else {
-      // Something else happened
       console.error('Lỗi:', error.message);
       throw new Error(`Error: ${error.message}`);
     }
@@ -204,20 +217,30 @@ export const checkoutService = async (checkoutData) => {
   try {
     // Đảm bảo dữ liệu đúng format trước khi gửi
     const formattedData = {
-      items: checkoutData.items.map(item => ({
-        serviceId: Number(item.serviceId),
-        materialId: Number(item.materialId || 0),
-        branchId: Number(item.branchId),
-        quantity: Number(item.quantity)
-      })),
+      items: checkoutData.items.map(item => {
+        const formattedItem = {
+          serviceId: Number(item.serviceId),
+          materialId: Number(item.materialId || 0),
+          branchId: Number(item.branchId),
+          quantity: Number(item.quantity),
+          note: checkoutData.notes[item.branchId] || ''
+        };
+        console.log(`Item ${item.serviceId} note:`, formattedItem.note); // Log để kiểm tra note của từng item
+        return formattedItem;
+      }),
       accountId: Number(checkoutData.accountId),
-      addressId: Number(checkoutData.addressId),
+      addressId: checkoutData.addressId ? Number(checkoutData.addressId) : undefined,
       isAutoReject: Boolean(checkoutData.isAutoReject),
-      note: String(checkoutData.note || ''),
-      isShip: Boolean(checkoutData.isShip) // Đảm bảo isShip luôn là boolean
+      isShip: Boolean(checkoutData.isShip)
     };
 
-    console.log('Formatted checkout data:', formattedData);
+    // Log chi tiết để kiểm tra
+    console.log('Original checkout data:', {
+      items: checkoutData.items,
+      notes: checkoutData.notes
+    });
+    
+    console.log('Formatted checkout data:', JSON.stringify(formattedData, null, 2));
 
     const response = await axiosInstances.login.post('/services/service/checkout', formattedData);
     return response.data;
@@ -250,6 +273,12 @@ export const calculateShippingFee = async ({ addressId, branchId, quantity }) =>
     return response.data;
   } catch (error) {
     console.error("Error calculating shipping fee:", error);
+    // Kiểm tra lỗi không hỗ trợ ship
+    if (error.response?.data?.message?.includes('Không hỗ trợ ship')) {
+      return {
+        error: error.response.data.message
+      };
+    }
     throw error;
   }
 };

@@ -222,9 +222,9 @@ const FeedbackService = () => {
                 }
               })}
             </div>
-            <span className="ml-2 mb-4 text-[#4F547B]">Service Rating</span>
+            <span className="ml-2 mb-4 text-[#4F547B]">Đánh giá dịch vụ</span>
           </div>
-          <div className="flex flex-col w-2/3 ml-10 bg-[#F9FAFB] px-7 py-3">
+          {/* <div className="flex flex-col w-2/3 ml-10 bg-[#F9FAFB] px-7 py-3">
             {ratings.map((rating) => {
               const totalStars = 5; // Định nghĩa totalStars tại đây
               const filledStars = (rating.percentage / 100) * totalStars; // Định nghĩa filledStars tại đây
@@ -289,7 +289,7 @@ const FeedbackService = () => {
                 </div>
               );
             })}
-          </div>
+          </div> */}
         </div>
 
         <h3 className="text-xl font-medium text-[#344054] mt-7 pb-5">
