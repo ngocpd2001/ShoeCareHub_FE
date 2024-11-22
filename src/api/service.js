@@ -64,31 +64,26 @@ export const getServiceByBusinessId = async (
   try {
     const { keyword, status, orderBy } = options;
     
-    const params = {
-      BusinessId: businessId,
-      PageNum: pageIndex,
-      PageSize: showAll ? 1000 : pageSize,
-      IsDecsending: false
-    };
-
-    if (keyword) params.Keyword = keyword;
-    if (status) params.Status = status;
-    if (orderBy) params.OrderBy = orderBy;
-
-    const response = await axiosInstances.login.get('/services/business', {
-      params
+    const params = new URLSearchParams({
+      PageIndex: pageIndex,
+      PageSize: showAll ? 1000 : pageSize
     });
 
-    if (response.data && response.data.message === "Lấy Dữ Liệu Dịch Vụ Thành Công!") {
-      const items = Array.isArray(response.data.data) ? response.data.data : [];
+    if (keyword) params.append('Keyword', keyword);
+    if (status) params.append('Status', status);
+    if (orderBy) params.append('OrderBy', orderBy);
+
+    const response = await axiosInstances.login.get(`/services/business/${businessId}?${params.toString()}`);
+
+    if (response.data && response.data.data) {
       return {
-        message: response.data.message,
+        message: response.data.message || "Thành công",
         data: {
-          items: items,
-          totalCount: response.data.pagination?.totalItems || items.length,
-          pageIndex: response.data.pagination?.currentPage || pageIndex,
-          pageSize: response.data.pagination?.pageSize || pageSize,
-          totalPages: response.data.pagination?.totalPages || 1
+          items: response.data.data.items || [],
+          totalCount: response.data.data.totalCount,
+          pageIndex: response.data.data.pageIndex,
+          pageSize: response.data.data.pageSize,
+          totalPages: response.data.data.totalPages
         }
       };
     }

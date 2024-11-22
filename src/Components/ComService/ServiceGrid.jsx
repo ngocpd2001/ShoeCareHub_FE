@@ -120,7 +120,9 @@ const ServiceGrid = ({ businessId, branchId }) => {
                   className="w-full h-50 object-cover rounded"
                 />
                 <div className="absolute top-1 right-1">
-                  {service.promotion && service.promotion.saleOff > 0 && (
+                  {service.promotion && 
+                   service.promotion.status === "Hoạt Động" && 
+                   service.promotion.saleOff > 0 && (
                     <div className="bg-red-500 text-white rounded-lg px-2 py-1">
                       <span className="text-sm font-bold">
                         -{service.promotion.saleOff}%
@@ -130,7 +132,9 @@ const ServiceGrid = ({ businessId, branchId }) => {
                 </div>
               </div>
               <h3 className="text-lg font-semibold mt-2">{service.name}</h3>
-              {service.promotion && service.promotion.newPrice > 0 ? (
+              {service.promotion && 
+               service.promotion.status === "Hoạt Động" && 
+               service.promotion.newPrice > 0 ? (
                 <>
                   <p className="text-[#667085] font-normal line-through">
                     {service.price.toLocaleString("vi-VN")}đ
