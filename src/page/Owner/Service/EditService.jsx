@@ -80,6 +80,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
           console.log("Tạo dịch vụ thành công:", response);
           setDisabled(false);
           tableRef();
+          onClose();
           notificationApi(
             "success",
             "Thành công",
@@ -88,7 +89,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
         })
         .catch((error) => {
           setDisabled(false);
-          console.error("Lỗi khi tạo dịch vụ:", error);
+          console.error("Lỗi khi cập nhật dịch vụ:", error);
           notificationApi("error", "Lỗi", `${error?.data?.message}`);
         });
 

@@ -187,11 +187,9 @@ export const TableService = forwardRef((props, ref) => {
   }));
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(
-      `services/business?BusinessId=${user?.businessId}&IsDecsending=false&PageSize=99999999&PageNum=1`
-    )
+    getData(`services/business/${user?.businessId}?PageIndex=1&PageSize=100`)
       .then((e) => {
-        setData(e?.data?.data.sort((a, b) => b.id - a.id));
+        setData(e?.data?.data?.items.sort((a, b) => b.id - a.id));
         console.log("====================================");
         console.log(e?.data);
         console.log("====================================");

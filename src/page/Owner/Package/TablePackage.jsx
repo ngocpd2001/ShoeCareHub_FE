@@ -19,13 +19,21 @@ import useColumnFilters from "../../../Components/ComTable/utils";
 import { useStorage } from "../../../hooks/useLocalStorage";
 import { render } from "@testing-library/react";
 import ComDateConverter from "./../../../Components/ComDateConverter/ComDateConverter";
+
 function formatCurrency(number) {
-  // Sử dụng hàm toLocaleString() để định dạng số thành chuỗi với ngăn cách hàng nghìn và mặc định là USD.
+  // Định dạng số thành tiền tệ Việt Nam
   if (typeof number === "number") {
     return number.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
+  } else if (typeof number === "string" && !isNaN(Number(number))) {
+    return Number(number).toLocaleString("vi-VN", {
+      style: "currency",
+      currency: "VND",
+    });
+  } else {
+    return number;
   }
 }
 export const TablePackage = forwardRef((props, ref) => {
@@ -58,10 +66,10 @@ export const TablePackage = forwardRef((props, ref) => {
       title: "Tên gói",
       width: 200,
       // fixed: "left",
-      dataIndex: "pack.name",
-      key: "pack.name",
-      sorter: (a, b) => a?.pack.name?.localeCompare(b?.pack.name),
-      ...getColumnSearchProps("pack.name", "Dich vụ"),
+      dataIndex: "packName",
+      key: "packName",
+      sorter: (a, b) => a?.packName?.localeCompare(b?.packName),
+      ...getColumnSearchProps("packName", "Dich vụ"),
     },
     {
       title: "Tổng tiền",
@@ -69,6 +77,8 @@ export const TablePackage = forwardRef((props, ref) => {
       key: "balance",
       sorter: (a, b) => a.balance - b.balance,
       width: 150,
+      ...getColumnPriceRangeProps("balance", "Giá tiền"),
+      render: (text, record) => <>{formatCurrency(record.balance)}</>,
     },
     {
       title: "Thanh toán bằng",
@@ -163,12 +173,14 @@ export const TablePackage = forwardRef((props, ref) => {
   }));
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(`/transactions/account/${user?.id}?pageIndex=1&pageSize=9999`)
+    getData(
+      `/transactions?AccountId=${user?.id}&IsDecsending=false&PageSize=1000&PageNum=1`
+    )
       .then((e) => {
-        const activeItems = e?.data?.data?.items;
+        const activeItems = e?.data?.data;
         setData(activeItems);
         console.log("====================================");
-        console.log(e?.data.data?.items);
+        console.log(e?.data);
         console.log("====================================");
         table.handleCloseLoading();
       })
