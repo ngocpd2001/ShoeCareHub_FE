@@ -67,7 +67,7 @@ export default function LoginPage(props) {
                 navigate("/admin/user");
                 break;
               case "MODERATOR":
-                navigate("/MODERATOR");
+                navigate("/moderator/Feedback");
                 break;
               default:
                 setDisabled(false);
@@ -149,10 +149,7 @@ export default function LoginPage(props) {
                       {LoginState || LoginError ? errorMessage : ""}
                     </FieldError>
                     <div className="flex justify-end">
-                      <Link
-                        to="/reset-password"
-                        className=" text-sky-600"
-                      >
+                      <Link to="/reset-password" className=" text-sky-600">
                         Quên mật khẩu
                       </Link>
                     </div>
