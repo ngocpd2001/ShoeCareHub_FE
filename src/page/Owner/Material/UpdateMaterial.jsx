@@ -1,42 +1,117 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
-import { Breadcrumb, Input, Select, InputNumber, Upload, message, Modal } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
-import { getMaterialById, updateMaterial } from '../../../api/material';
-import { useNotification } from '../../../Notification/Notification';
-import { getBranchByBusinessId } from '../../../api/branch';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate, Link } from "react-router-dom";
+import {
+  Breadcrumb,
+  Input,
+  Select,
+  InputNumber,
+  Upload,
+  message,
+  Modal,
+  Image,
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import {
+  getMaterialById,
+  updateMaterial,
+  updateMaterialQuantity,
+} from "../../../api/material";
+import { useNotification } from "../../../Notification/Notification";
+import { getBranchByBusinessId } from "../../../api/branch";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
+import { FormProvider, useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import ComInput from "../../../Components/ComInput/ComInput";
+import ComButton from "../../../Components/ComButton/ComButton";
+import ComUpImg from "../../../Components/ComUpImg/ComUpImg";
+import ComSelect from "../../../Components/ComInput/ComSelect";
+import ComNumber from "../../../Components/ComInput/ComNumber";
+import * as yup from "yup";
 
 const { Option } = Select;
+
+// Tách validation schema ra file riêng
+const MaterialSchema = yup.object().shape({
+  name: yup
+    .string()
+    .required("Tên phụ kiện là bắt buộc")
+    .trim()
+    .min(2, "Tên phụ kiện phải có ít nhất 2 ký tự"),
+  price: yup
+    .number()
+    .required("Giá phụ kiện là bắt buộc")
+    .min(1000, "Giá tối thiểu là 1000đ"),
+  status: yup.string().required("Trạng thái là bắt buộc"),
+  branchId: yup
+    .array()
+    .of(yup.string())
+    .min(1, "Phải chọn ít nhất một chi nhánh")
+    .required("Vui lòng chọn chi nhánh"),
+});
+
+// Tách các hằng số và options ra
+const STATUS_OPTIONS = [
+  {
+    value: "AVAILABLE",
+    label: "Hoạt Động",
+    className: "w-full whitespace-normal break-words py-2 px-4",
+  },
+  {
+    value: "UNAVAILABLE",
+    label: "Ngưng Hoạt Động",
+    className: "w-full whitespace-normal break-words py-2 px-4",
+  },
+];
+
+const INITIAL_FORM_STATE = {
+  branchId: [],
+  name: "",
+  price: 0,
+  status: "AVAILABLE",
+  assetUrls: [],
+};
 
 const UpdateMaterial = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { notificationApi } = useNotification();
-  
-  const [formData, setFormData] = useState({
-    branchId: [],
-    name: '',
-    price: 0,
-    status: 'available',
-    assetUrls: []
-  });
+
+  const [formData, setFormData] = useState(INITIAL_FORM_STATE);
 
   const [fileList, setFileList] = useState([]);
   const [loading, setLoading] = useState(false);
   const [branchMaterials, setBranchMaterials] = useState([]);
   const [allBranches, setAllBranches] = useState([]);
+  const [quantities, setQuantities] = useState({});
+  const [branchStatuses, setBranchStatuses] = useState({});
+
+  const methods = useForm({
+    resolver: yupResolver(MaterialSchema),
+    defaultValues: {
+      name: "",
+      price: null,
+      status: "",
+      branchId: [],
+    },
+  });
+
+  const {
+    handleSubmit,
+    register,
+    setValue,
+    formState: { errors },
+  } = methods;
 
   const fetchAllBranches = async () => {
     try {
       const businessId = 1;
-    //   console.log('Đang gọi API getBranchByBusinessId với businessId:', businessId);
+      //   console.log('Đang gọi API getBranchByBusinessId với businessId:', businessId);
       const response = await getBranchByBusinessId(businessId);
-    //   console.log('Kết quả API getBranchByBusinessId:', response);
+      //   console.log('Kết quả API getBranchByBusinessId:', response);
       setAllBranches(response.data || []);
     } catch (error) {
-      console.error('Lỗi khi gọi API getBranchByBusinessId:', error);
-      notificationApi('error', 'Lỗi', 'Không thể tải danh sách chi nhánh');
+      console.error("Lỗi khi gọi API getBranchByBusinessId:", error);
+      notificationApi("error", "Lỗi", "Không thể tải danh sách chi nhánh");
     }
   };
 
@@ -45,286 +120,356 @@ const UpdateMaterial = () => {
       const response = await getMaterialById(id);
       const materialData = response.data;
 
-      setFormData({
-        branchId: materialData.branchMaterials?.map(bm => bm.branch.id) || [],
-        name: materialData.name || '',
-        price: materialData.price || 0,
-        status: materialData.status === 'Hoạt Động' ? 'available' : 'unavailable',
-        assetUrls: materialData.assetUrls || []
-      });
+      // Thêm console.log để debug
+      console.log("Material Data:", materialData);
+      console.log("Price before parsing:", materialData.price);
 
+      // Đảm bảo chuyển đổi giá trị price sang số một cách chính xác
+      const price = materialData.price ? parseFloat(materialData.price) : 0;
+      console.log("Price after parsing:", price);
+
+      // Cập nhật giá trị form
+      setValue("name", materialData.name || "");
+      setValue("price", price); // Sử dụng giá trị đã parse
+      setValue(
+        "status",
+        materialData.status === "Hoạt Động" ? "AVAILABLE" : "UNAVAILABLE"
+      );
+      setValue(
+        "branchId",
+        materialData.branchMaterials?.map((bm) => bm.branch.id) || []
+      );
+
+      // Cập nhật formData state
+      setFormData((prev) => ({
+        ...prev,
+        name: materialData.name || "",
+        price: price, // Sử dụng giá trị đã parse
+        status:
+          materialData.status === "Hoạt Động" ? "AVAILABLE" : "UNAVAILABLE",
+        branchId: materialData.branchMaterials?.map((bm) => bm.branch.id) || [],
+      }));
+
+      // Cập nhật số lượng cho từng chi nhánh
+      const currentQuantities = {};
+      materialData.branchMaterials?.forEach((bm) => {
+        currentQuantities[bm.branch.id] = bm.storage; // Sử dụng storage thay vì quantity
+      });
+      setQuantities(currentQuantities);
       setBranchMaterials(materialData.branchMaterials || []);
 
+      // Cập nhật trạng thái cho từng chi nhánh
+      const currentBranchStatuses = {};
+      materialData.branchMaterials?.forEach((bm) => {
+        currentBranchStatuses[bm.branch.id] = bm.status;
+      });
+      setBranchStatuses(currentBranchStatuses);
+
+      // Cập nhật danh sách hình ảnh
       if (materialData.assetUrls && materialData.assetUrls.length > 0) {
-        const files = materialData.assetUrls.map((url, index) => ({
-          uid: `-${index}`,
-          name: `image-${index}`,
-          status: 'done',
-          url: url,
-          type: 'image'
-        }));
-        setFileList(files);
+        setFileList(
+          materialData.assetUrls.map((asset, index) => ({
+            uid: `-${index}`,
+            name: `image-${index}`,
+            status: "done",
+            url: asset.url,
+            type: "image",
+          }))
+        );
       }
     } catch (error) {
-      notificationApi('error', 'Lỗi', 'Không thể tải thông tin vật liệu');
+      notificationApi("error", "Lỗi", "Không thể tải thông tin vật liệu");
     }
   };
 
   useEffect(() => {
     fetchMaterialData();
     fetchAllBranches();
-  }, [id]);
+  }, [id, setValue]);
 
   const handleInputChange = (name, value) => {
-    if (name === 'price') {
+    if (name === "price") {
       const numericValue = Math.max(0, Number(value) || 0);
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: numericValue
+        [name]: numericValue,
       }));
       return;
     }
 
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
-  const handleImageChange = async ({ fileList: newFileList }) => {
-    try {
-      setLoading(true);
-      
-      // Xử lý từng file một
-      for (let i = 0; i < newFileList.length; i++) {
-        const file = newFileList[i];
-        
-        // Nếu là file mới và chưa có URL
-        if (file.originFileObj && !file.url) {
-          try {
-            const uploadedUrls = await firebaseImgs([file.originFileObj]);
-            newFileList[i] = {
-              ...file,
-              status: 'done',
-              url: uploadedUrls[0]
-            };
-          } catch (error) {
-            console.error('Lỗi upload file:', error);
-            continue;
-          }
-        }
-      }
-
-      // Cập nhật fileList
-      setFileList(newFileList);
-
-      // Lấy tất cả URLs từ fileList
-      const urls = newFileList
-        .map(file => file.url)
-        .filter(Boolean); // Lọc bỏ các giá trị undefined/null
-
-      console.log('URLs mới:', urls);
-
-      // Cập nhật formData
-      setFormData(prev => ({
-        ...prev,
-        assetUrls: urls
-      }));
-
-    } catch (error) {
-      console.error('Lỗi xử lý ảnh:', error);
-      notificationApi('error', 'Lỗi', 'Không thể xử lý ảnh');
-    } finally {
-      setLoading(false);
-    }
+  const handleImageChange = async (data) => {
+    const selectedImages = data;
+    const newImages = selectedImages.map((file) => file.originFileObj);
+    setFileList(selectedImages);
+    setFormData((prev) => ({
+      ...prev,
+      assetUrls: selectedImages.map((file) => file.url).filter(Boolean),
+    }));
   };
 
-  const handleSubmit = async () => {
+  const handleQuantityChange = async (branchId, quantity) => {
     try {
-      setLoading(true);
-
-      // Kiểm tra dữ liệu
-      if (!formData.name || formData.price < 0 || formData.branchId.length === 0) {
-        notificationApi('error', 'Lỗi', 'Vui lòng điền đầy đủ thông tin');
+      if (!quantity || Number(quantity) <= 0) {
         return;
       }
 
-      // Chuẩn bị dữ liệu gửi đi
+      const numericQuantity = Number(quantity);
+      await updateMaterialQuantity(branchId, id, numericQuantity);
+
+      setQuantities((prev) => ({
+        ...prev,
+        [branchId]: numericQuantity,
+      }));
+    } catch (error) {
+      console.error("Chi tiết lỗi cập nhật số lượng:", error);
+      notificationApi(
+        "error",
+        "Lỗi",
+        error.message || "Không thể cập nhật số lượng"
+      );
+    }
+  };
+
+  // Tách logic xử lý hình ảnh thành hook riêng
+  const handleImageProcessing = async (fileList) => {
+    const newImages = fileList
+      .filter((file) => file.originFileObj)
+      .map((file) => file.originFileObj);
+
+    let assetUrls = fileList
+      .filter((file) => file.url)
+      .map((file) => ({ url: file.url }));
+
+    if (newImages.length > 0) {
+      const uploadedUrls = await firebaseImgs(newImages);
+      assetUrls = [...assetUrls, ...uploadedUrls.map((url) => ({ url }))];
+    }
+
+    return assetUrls;
+  };
+
+  // Tách logic cập nhật số lượng thành function riêng
+  const updateBranchQuantities = async (quantities) => {
+    const validQuantities = Object.entries(quantities).filter(
+      ([_, quantity]) => quantity && Number(quantity) > 0
+    );
+
+    if (validQuantities.length > 0) {
+      const updatePromises = validQuantities.map(([branchId, quantity]) =>
+        updateMaterialQuantity(branchId, id, quantity)
+      );
+      await Promise.all(updatePromises);
+    }
+  };
+
+  // Tối ưu hóa onSubmit
+  const onSubmit = async (data) => {
+    if (!fileList?.length) {
+      notificationApi(
+        "error",
+        "Hình ảnh không hợp lệ",
+        "Vui lòng chọn hình ảnh."
+      );
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const assetUrls = await handleImageProcessing(fileList);
+
       const submitData = {
-        name: formData.name,
-        price: Number(formData.price), // Đảm bảo price là số
-        status: formData.status === 'available' ? 'Hoạt Động' : 'Ngưng Hoạt Động', // Chuyển đổi status sang tiếng Việt
-        branchId: formData.branchId.map(id => Number(id)), // Đảm bảo branchId là mảng số
-        assetUrls: Array.isArray(formData.assetUrls) ? formData.assetUrls : [] // Đảm bảo assetUrls là mảng
+        name: data.name.trim(),
+        price: Number(data.price),
+        status: data.status,
+        branchId: data.branchId,
+        assetUrls,
       };
 
-      // Log để kiểm tra
-      console.log('Dữ liệu gửi đi:', submitData);
+      await updateMaterial(id, submitData);
+      await updateBranchQuantities(quantities);
 
-      Modal.confirm({
-        title: 'Xác nhận cập nhật',
-        content: 'Bạn có chắc chắn muốn cập nhật thông tin vật liệu này?',
-        okText: 'Đồng ý',
-        cancelText: 'Hủy',
-        onOk: async () => {
-          try {
-            const response = await updateMaterial(id, submitData);
-            console.log('Phản hồi từ API:', response); // Thêm log để kiểm tra response
-            
-            if (response && response.data) {
-              notificationApi('success', 'Thành công', 'Cập nhật vật liệu thành công');
-              navigate('/owner/material');
-            }
-          } catch (error) {
-            console.error('Chi tiết lỗi:', error.response?.data || error);
-            throw error;
-          }
-        }
-      });
-
+      notificationApi("success", "Thành công", "Cập nhật vật liệu thành công");
+      navigate("/owner/material");
     } catch (error) {
-      console.error('Lỗi cập nhật:', error);
-      notificationApi('error', 'Lỗi', 'Không thể cập nhật vật liệu');
+      console.error("Chi tiết lỗi:", error);
+      notificationApi(
+        "error",
+        "Lỗi",
+        error.response?.data?.message || "Không thể cập nhật vật liệu"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-blue-800">
-          Cập nhật vật liệu
-        </h2>
-        <Breadcrumb
-          separator=">"
-          items={[
-            { title: "Cửa hàng" },
-            { title: <Link to="/owner/material">Vật liệu</Link> },
-            { title: <span className="text-[#002278]">Cập nhật vật liệu</span> },
-          ]}
-        />
-      </div>
+    <FormProvider {...methods}>
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-6xl mx-auto p-6">
+        <div className="mb-8">
+          <h2 className="text-2xl font-semibold text-blue-800 mb-3">
+            Cập nhật phụ kiện
+          </h2>
+          <Breadcrumb
+            separator=">"
+            items={[
+              { title: "Cửa hàng" },
+              { title: <Link to="/owner/material">Phụ kiện</Link> },
+              {
+                title: (
+                  <span className="text-[#002278]">Cập nhật phụ kiện</span>
+                ),
+              },
+            ]}
+          />
+        </div>
 
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="space-y-6">
-          {/* Tên vật liệu */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tên vật liệu
-            </label>
-            <Input
-              value={formData.name}
-              onChange={(e) => handleInputChange('name', e.target.value)}
-              placeholder="Nhập tên vật liệu"
-            />
-          </div>
-
-          {/* Giá */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Giá
-            </label>
-            <InputNumber
-              className="w-full"
-              value={formData.price}
-              onChange={(value) => handleInputChange('price', value)}
-              min={0}
-              step={1000}
-              formatter={(value) => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-              parser={(value) => value.replace(/\$\s?|(,*)/g, '')}
-              placeholder="Nhập giá"
-            />
-          </div>
-
-          {/* Trạng thái */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Trạng thái
-            </label>
-            <Select
-              className="w-full"
-              value={formData.status}
-              onChange={(value) => handleInputChange('status', value)}
-            >
-              <Option value="available">Hoạt động</Option>
-              <Option value="unavailable">Ngưng hoạt động</Option>
-            </Select>
-          </div>
-
-          {/* Phần chỉ hiển thị thông tin storage - không thể update */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Số lượng trong kho
-            </label>
-            <div className="bg-gray-50 p-4 rounded">
-              <span className="text-lg font-medium">
-                {branchMaterials.reduce((total, bm) => total + (bm.storage || 0), 0)}
-              </span>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Thông tin chung */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold mb-6">Thông tin chung</h2>
+              <div className="space-y-4">
+                <ComInput
+                  type="text"
+                  label="Tên phụ kiện"
+                  error={errors.name?.message}
+                  required
+                  {...register("name")}
+                />
+                <ComNumber
+                  min={1000}
+                  label="Giá phụ kiện"
+                  error={errors.price?.message}
+                  {...register("price")}
+                  value={methods.watch("price")}
+                  onChange={(value) => setValue("price", value)}
+                  required
+                />
+              </div>
             </div>
           </div>
 
-          {/* Phần có thể update */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Chọn chi nhánh
-            </label>
-            <Select
-              mode="multiple"
-              className="w-full"
-              value={formData.branchId}
-              onChange={(value) => handleInputChange('branchId', value)}
-              placeholder="Chọn chi nhánh"
-            >
-              {allBranches.map(branch => (
-                <Option key={branch.id} value={branch.id}>
-                  {branch.name}
-                </Option>
-              ))}
-            </Select>
+          {/* Trạng thái */}
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full">
+              <h2 className="text-lg font-semibold mb-6">Trạng thái</h2>
+              <ComSelect
+                size="large"
+                className="w-full min-w-[200px]"
+                dropdownMatchSelectWidth={false}
+                dropdownStyle={{ minWidth: "200px" }}
+                label="Trạng thái phụ kiện"
+                placeholder="Lựa chọn"
+                onChangeValue={(e, value) => {
+                  setValue("status", value);
+                }}
+                mode="default"
+                value={methods.watch("status")}
+                options={STATUS_OPTIONS}
+                required
+                {...register("status")}
+              />
+            </div>
+          </div>
+
+          {/* Số lượng theo chi nhánh */}
+          <div className="lg:col-span-2">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold mb-6">
+                Số lượng theo chi nhánh
+              </h2>
+              <div className="space-y-4">
+                {branchMaterials.map((bm) => (
+                  <div key={bm.branch.id} className="flex flex-col gap-2">
+                    <label className="text-sm font-medium">
+                      {bm.branch.name}
+                    </label>
+                    <InputNumber
+                      className="w-full"
+                      min={1}
+                      value={quantities[bm.branch.id] || undefined}
+                      onChange={(value) => {
+                        setQuantities((prev) => ({
+                          ...prev,
+                          [bm.branch.id]: value,
+                        }));
+                      }}
+                      onBlur={() => {
+                        const value = quantities[bm.branch.id];
+                        if (value !== undefined && value !== null) {
+                          handleQuantityChange(bm.branch.id, value);
+                        }
+                      }}
+                      size="large"
+                      controls={true}
+                      placeholder="Nhập số lượng"
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
 
           {/* Hình ảnh */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Hình ảnh
-            </label>
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onChange={handleImageChange}
-              maxCount={5}
-              beforeUpload={() => false}
-              accept="image/*"
-            >
-              {fileList.length >= 5 ? null : (
-                <div>
-                  <PlusOutlined />
-                  <div className="mt-2">Tải lên</div>
+          <div className="lg:col-span-1">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <h2 className="text-lg font-semibold mb-6">Hình ảnh</h2>
+              {fileList && fileList.length > 0 ? (
+                <div className="grid grid-cols-2 gap-2">
+                  {fileList.map((file, index) => (
+                    <div key={index} className="relative">
+                      <Image
+                        src={file.url}
+                        alt={`image-${index}`}
+                        className="w-full h-32 object-cover rounded"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-gray-500 text-center">
+                  Chưa có hình ảnh
                 </div>
               )}
-            </Upload>
+              <ComUpImg
+                onChange={handleImageChange}
+                fileList={fileList}
+                error={fileList.length === 0 ? "Vui lòng chọn hình ảnh" : ""}
+                required
+              />
+            </div>
           </div>
         </div>
 
-        {/* Nút submit */}
-        <div className="mt-6 flex justify-end space-x-4">
-          <button
-            onClick={() => navigate('/owner/material')}
-            className="px-4 py-2 border rounded-md hover:bg-gray-100"
-          >
-            Hủy
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-          >
-            {loading ? 'Đang cập nhật...' : 'Cập nhật'}
-          </button>
+        {/* Buttons */}
+        <div className="mt-10 flex justify-end gap-6">
+          <div className="w-[150px]">
+            <ComButton
+              onClick={() => navigate('/owner/material')}
+              type="button"
+              className="w-full h-[45px] rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm flex items-center justify-center"
+            >
+              <div className="text-black">Hủy bỏ</div>
+            </ComButton>
+          </div>
+          <div className="w-[150px]">
+            <ComButton
+              htmlType="submit"
+              disabled={loading}
+              className="w-full h-[45px] bg-[#002B5B] hover:bg-[#002B5B]/90 text-white rounded-md font-medium flex items-center justify-center"
+            >
+              {loading ? "Đang cập nhật..." : "Cập nhật"}
+            </ComButton>
+          </div>
         </div>
-      </div>
-    </div>
+      </form>
+    </FormProvider>
   );
 };
 

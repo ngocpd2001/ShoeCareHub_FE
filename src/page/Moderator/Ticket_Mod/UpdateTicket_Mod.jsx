@@ -14,14 +14,12 @@ import {
   getTicketById,
   updateTicketStatus,
   createChildTicket,
-  notifyCustomerForTicket
+  notifyCustomerForTicket,
 } from "../../../api/ticket";
 import { UploadOutlined } from "@ant-design/icons";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faBell
-} from "@fortawesome/free-solid-svg-icons";
+import { faBell } from "@fortawesome/free-solid-svg-icons";
 
 // Thêm hàm formatDate
 const formatDate = (dateString) => {
@@ -272,7 +270,11 @@ const UpdateTicket_Mod = () => {
             items={[
               { title: "Cửa hàng" },
               { title: <Link to="/moderator/ticket">Khiếu nại</Link> },
-              { title: <span className="text-[#002278]">Cập nhật khiếu nại</span> },
+              {
+                title: (
+                  <span className="text-[#002278]">Cập nhật khiếu nại</span>
+                ),
+              },
             ]}
           />
         </div>
@@ -303,7 +305,7 @@ const UpdateTicket_Mod = () => {
                 disabled={loading}
                 style={{ width: 150 }}
               />
-              {ticketDetails.status === "CLOSED" && (
+              {ticketDetails.status === "PROCESSING" && (
                 <button
                   onClick={handleNotifyCustomer}
                   className="ml-2 px-4 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"

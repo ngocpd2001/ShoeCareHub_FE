@@ -19,6 +19,11 @@ function formatCurrency(number) {
 
 export const TableMaterial = forwardRef((props, ref) => {
   const [data, setData] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0
+  });
   const table = useTableState();
   const { notificationApi } = useNotification();
   const navigate = useNavigate();
@@ -32,12 +37,12 @@ export const TableMaterial = forwardRef((props, ref) => {
 
   const columns = [
     {
-      title: "Tên vật liệu",
+      title: "Tên phụ kiện",
       dataIndex: "name",
       key: "name",
       width: 250,
       sorter: (a, b) => a.name.localeCompare(b.name),
-      ...getColumnSearchProps("name", "Tên vật liệu"),
+      ...getColumnSearchProps("name", "Tên phụ kiện"),
       render: (text, record) => (
         <div className="flex items-center gap-3">
           {record.assetUrls?.[0]?.url ? (
@@ -74,11 +79,10 @@ export const TableMaterial = forwardRef((props, ref) => {
       key: "branchName",
       width: 250,
       render: (branchMaterials) => (
-        <div className="max-h-20 overflow-y-auto">
+        <div>
           <ul className="space-y-1">
             {branchMaterials?.map((bm, index) => (
               <li key={index} className="flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-500 rounded-full"></span>
                 {bm.branch.name}
               </li>
             ))}
@@ -146,11 +150,47 @@ export const TableMaterial = forwardRef((props, ref) => {
     reloadData,
   }));
 
+  const handleTableChange = async (newPagination, filters, sorter) => {
+    table.handleOpenLoading();
+    try {
+      const businessId = getBusinessId();
+      const response = await getMaterialsByBusiness(businessId, newPagination.current, newPagination.pageSize);
+      
+      if (response?.data) {
+        setData(response.data.items || []);
+        setPagination({
+          current: response.data.pageIndex,
+          pageSize: response.data.pageSize,
+          total: response.data.totalCount
+        });
+      }
+    } catch (error) {
+      console.error("Lỗi khi tải dữ liệu:", error);
+      notificationApi("error", "Lỗi", "Không thể tải dữ liệu vật liệu");
+    } finally {
+      table.handleCloseLoading();
+    }
+  };
+
   const reloadData = async () => {
     table.handleOpenLoading();
     try {
-      const response = await getMaterialsByBusiness(1);
-      setData(response.data.items);
+      const businessId = getBusinessId();
+      if (!businessId) {
+        notificationApi("error", "Lỗi", "Vui lòng đăng nhập lại để tiếp tục");
+        navigate('/login');
+        return;
+      }
+
+      const response = await getMaterialsByBusiness(businessId, pagination.current, pagination.pageSize);
+      if (response?.data) {
+        setData(response.data.items || []);
+        setPagination({
+          current: response.data.pageIndex,
+          pageSize: response.data.pageSize,
+          total: response.data.totalCount
+        });
+      }
     } catch (error) {
       console.error("Lỗi khi tải dữ liệu:", error);
       notificationApi("error", "Lỗi", "Không thể tải dữ liệu vật liệu");
@@ -158,6 +198,14 @@ export const TableMaterial = forwardRef((props, ref) => {
     } finally {
       table.handleCloseLoading();
     }
+  };
+
+  const getBusinessId = () => {
+    const userData = localStorage.getItem('user');
+    if (!userData) {
+      return null;
+    }
+    return JSON.parse(userData)?.businessId;
   };
 
   useEffect(() => {
@@ -172,14 +220,29 @@ export const TableMaterial = forwardRef((props, ref) => {
   return (
     <div>
       <ComTable
-        y={"calc(100vh - 200px)"}
+        y={"50vh"}
         x={1020}
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? data : []}
         loading={table.loading}
         rowKey="id"
         bordered
         className="w-full"
+        // pagination={{
+        //   ...pagination,
+        //   showSizeChanger: true,
+        //   showQuickJumper: true,
+        //   locale: {
+        //     jump_to: "Đến",
+        //     page: "Trang",
+        //     items_per_page: "/ trang",
+        //     prev_page: "Trang trước",
+        //     next_page: "Trang sau",
+        //     prev_5: "5 trang trước",
+        //     next_5: "5 trang sau"
+        //   }
+        // }}
+        onChange={handleTableChange}
       />
     </div>
   );

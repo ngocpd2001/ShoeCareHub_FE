@@ -72,4 +72,27 @@ export const getMaterialsByBusiness = async (businessId, pageIndex = 1, pageSize
     console.error('Lỗi khi lấy danh sách vật liệu theo doanh nghiệp:', error);
     throw error;
   }
-};  
+};
+
+export const updateMaterialQuantity = async (branchId, materialId, storage) => {
+  const numericStorage = Number(storage);
+  
+  if (numericStorage <= 0) {
+    throw new Error('Số lượng phải lớn hơn 0');
+  }
+
+  try {
+    const response = await axiosInstances.login.put(
+      `/materials/update-quantity`,
+      numericStorage,
+      {
+        params: { branchId, materialId },
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data || error;
+  }
+};
+

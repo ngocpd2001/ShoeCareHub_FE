@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faSearch, faPlus, faSort } from "@fortawesome/free-solid-svg-icons";
+import { faSearch, faPlus, faSort, faQuestionCircle } from "@fortawesome/free-solid-svg-icons";
 import { getCategoryTicket, getAllTicket, cancelTicket, getTicketById } from "../../api/ticket";
 import { useNavigate } from 'react-router-dom';
 import TicketDetailModal from "./TicketDetailModal";
+import GuideModal from './GuideModal';
 
 const TicketScreen = () => {
   const [categories, setCategories] = useState([]);
@@ -22,6 +23,7 @@ const TicketScreen = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [pageSize] = useState(10);
+  const [showGuide, setShowGuide] = useState(false);
 
   const statusOptions = [
     { value: '', label: 'Trạng thái' },
@@ -332,8 +334,15 @@ const TicketScreen = () => {
   return (
     <div className="min-h-screen bg-gray-50 px-6 py-6">
       {/* Header */}
-      <div className="bg-[#002278] text-white p-4 rounded-t-lg">
+      <div className="bg-[#002278] text-white p-4 rounded-t-lg flex justify-between items-center">
         <h1 className="text-xl font-semibold">Danh sách khiếu nại</h1>
+        <button
+          onClick={() => setShowGuide(true)}
+          className="flex items-center gap-2 px-4 py-2 bg-white bg-opacity-20 rounded-md hover:bg-opacity-30 transition-all"
+        >
+          <FontAwesomeIcon icon={faQuestionCircle} />
+          <span>Hướng dẫn</span>
+        </button>
       </div>
 
       {/* Main Content */}
@@ -462,6 +471,9 @@ const TicketScreen = () => {
           onClose={() => setSelectedTicketId(null)} 
         />
       )}
+
+      {/* Add Guide Modal */}
+      {showGuide && <GuideModal onClose={() => setShowGuide(false)} />}
     </div>
   );
 };
