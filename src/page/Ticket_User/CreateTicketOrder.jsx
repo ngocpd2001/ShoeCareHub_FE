@@ -278,7 +278,7 @@ const CreateTicketOrder = () => {
           {/* Notice Box */}
           <div className="bg-orange-50 border border-orange-100 rounded-md p-4 mb-6">
             <p className="text-orange-800">
-              ShoeCare Hub rất cần quý khách gửi kèm <span className="font-semibold">hình ảnh liên quan đến vấn đề gặp phải</span>, để ShoeCareHub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách xử lý nhanh nhất có thể.
+              ShoeCareHub rất cần quý khách gửi kèm <span className="font-semibold">hình ảnh liên quan đến vấn đề gặp phải</span>, để ShoeCareHub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách xử lý nhanh nhất có thể.
             </p>
             <p className="text-orange-800 mt-2">Cảm ơn quý khách.</p>
           </div>

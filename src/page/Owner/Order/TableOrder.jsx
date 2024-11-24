@@ -100,14 +100,31 @@ export const TableOrder = forwardRef((props, ref) => {
       title: "Tên dịch vụ",
       dataIndex: "orderDetails",
       key: "serviceName",
-      width: 200,
+      width: 250,
       sorter: (a, b) => a.orderDetails[0]?.service?.name.localeCompare(b.orderDetails[0]?.service?.name),
       ...getColumnSearchProps("serviceName", "Tên dịch vụ"),
       render: (orderDetails) => (
         <ul>
-          {orderDetails.map((detail, index) => (
-            <li key={index}>- {detail.service?.name || "N/A"}</li>
-          ))}
+          {orderDetails.map((detail, index) => {
+            const imageUrl = detail.service?.assetUrls?.find(asset => asset.type === "image")?.url;
+            return (
+              <li key={index} className="flex items-center space-x-2">
+                {imageUrl ? (
+                  <Image
+                    width={50}
+                    src={imageUrl}
+                    alt={detail.service.name}
+                    fallback="path/to/default-image.png"
+                  />
+                ) : (
+                  <div className="w-12 h-12 bg-gray-200 flex items-center justify-center">
+                    <span className="text-gray-400">No image</span>
+                  </div>
+                )}
+                <div>{detail.service?.name || "N/A"}</div>
+              </li>
+            );
+          })}
         </ul>
       ),
     },
@@ -138,7 +155,7 @@ export const TableOrder = forwardRef((props, ref) => {
       title: "Tổng tiền",
       dataIndex: "totalPrice",
       key: "totalPrice",
-      width: 150,
+      width: 100,
       sorter: (a, b) => a.totalPrice - b.totalPrice,
       ...getColumnPriceRangeProps("totalPrice", "Tổng tiền"),
       render: (text) => formatCurrency(text),

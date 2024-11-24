@@ -365,7 +365,7 @@ const CreateTicket = () => {
           {/* Notice Box */}
           <div className="bg-orange-50 border border-orange-100 rounded-md p-4 mb-6">
             <p className="text-orange-800">
-              ShoeCare Hub rất cần quý khách gửi kèm{" "}
+              ShoeCareHub rất cần quý khách gửi kèm{" "}
               <span className="font-semibold">
                 hình ảnh liên quan đến vấn đề khiếu nại
               </span>
