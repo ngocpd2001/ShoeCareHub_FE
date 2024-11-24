@@ -20,7 +20,7 @@ const getStatusColor = (status) => {
   switch (status) {
     case "ACTIVE":
       return "success";
-    case "PENDING":
+    case "EXPIRED":
       return "warning";
     case "INACTIVE":
       return "error";
@@ -94,7 +94,7 @@ const TableBusiness = () => {
         <Tag color={getStatusColor(status)}>
           {status === "ACTIVE"
             ? "Hoạt động"
-            : status === "PENDING"
+            : status === "EXPIRED"
             ? "Chờ duyệt"
             : "Ngừng hoạt động"}
         </Tag>
