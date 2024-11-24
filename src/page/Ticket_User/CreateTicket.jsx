@@ -369,7 +369,7 @@ const CreateTicket = () => {
               <span className="font-semibold">
                 hình ảnh liên quan đến vấn đề khiếu nại
               </span>
-              , để ShoeCare Hub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách
+              , để ShoeCareHub nhanh chóng hiểu rõ vấn đề và hỗ trợ quý khách
               xử lý nhanh nhất có thể.
             </p>
             <p className="text-orange-800 mt-2">Cảm ơn quý khách.</p>
