@@ -68,6 +68,21 @@ import React, {
   
     const columns = [
       {
+        title: "Hình ảnh",
+        dataIndex: "imageUrl",
+        key: "image",
+        width: 100,
+        render: (imageUrl) => (
+          <Image
+            src={imageUrl}
+            alt="Ticket image"
+            width={50}
+            height={50}
+            style={{ objectFit: 'cover' }}
+          />
+        ),
+      },
+      {
         title: "Tiêu đề",
         dataIndex: "title",
         key: "title",
@@ -226,4 +241,5 @@ import React, {
       </div>
     );
   });
+  
   

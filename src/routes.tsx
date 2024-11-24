@@ -79,6 +79,7 @@ import PaymentSuccess from "./page/Owner/Package/PaymentSuccess";
 import PaymentFailed from "./page/Owner/Package/PaymentFailed";
 import MaterialManager from "./page/Owner/Material/MaterialManager";
 import UpdateMaterial from "./page/Owner/Material/UpdateMaterial";
+import CreateMaterial from "./page/Owner/Material/CreateMaterial";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -333,6 +334,10 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/material/update/:id",
         element: <UpdateMaterial />,
+      },
+      {
+        path: "/owner/material/create",
+        element: <CreateMaterial />,
       },
     ],
   },
