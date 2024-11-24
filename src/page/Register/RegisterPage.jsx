@@ -13,6 +13,7 @@ import { getData, postData } from "../../api/api";
 import ComSelect from "../../Components/ComInput/ComSelect";
 import ComModal from "./../../Components/ComModal/ComModal";
 import { useModalState } from "../../hooks/useModalState";
+import ComDatePicker from "../../Components/ComDatePicker/ComDatePicker";
 export default function RegisterPage() {
   const [token, setToken] = useStorage("token", "");
   const [user, setUser] = useStorage("user", null);
@@ -45,6 +46,10 @@ export default function RegisterPage() {
       .string()
       .oneOf(["MALE", "FEMALE"], "Vui lòng chọn giới tính hợp lệ")
       .required("Giới tính không được để trống"),
+    dob: yup
+      .string()
+      .typeError("Ngày sinh không hợp lệ")
+      .required("Ngày sinh không được để trống"),
     password: yup
       .string()
       .required("Mật khẩu không được để trống")
@@ -188,7 +193,14 @@ export default function RegisterPage() {
                         required
                       />
                     </div>
-
+                    <div>
+                      <ComDatePicker
+                        placeholder={"Ngày sinh"}
+                        label={"Ngày sinh"}
+                        {...register("dob")}
+                        required
+                      />
+                    </div>
                     <div>
                       <ComSelect
                         size={"large"}

@@ -5,6 +5,7 @@ import { useNotification } from "../../../Notification/Notification";
 import ComInput from "../../../Components/ComInput/ComInput";
 import ComButton from "../../../Components/ComButton/ComButton";
 import ComUpImgOne from "../../../Components/ComUpImg/ComUpImgOne";
+import { useNavigate } from "react-router-dom";
 import ComTextArea from "../../../Components/ComInput/ComTextArea";
 import { getData, postData } from "../../../api/api";
 import { Breadcrumb, Upload } from "antd";
@@ -21,6 +22,7 @@ import { useStorage } from "../../../hooks/useLocalStorage";
 export default function CreateSevice() {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
+  const navigate = useNavigate();
   const [image, setImages] = useState(null);
   const [branches, setBranches] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -41,10 +43,7 @@ export default function CreateSevice() {
         setBranches(
           response?.data?.data.map((branch) => ({
             value: branch.id,
-            label: `${branch.name} 
-         ${branch.address},
-          ${branch.ward},
-           ${branch.province}`,
+            label: `${branch.name}, ${branch.address}, ${branch.ward}, ${branch.province}`,
           }))
         );
       })
@@ -125,6 +124,7 @@ export default function CreateSevice() {
                 "Thành công",
                 "Dịch vụ đã được tạo thành công."
               );
+              navigate("/owner/service");
             })
             .catch((error) => {
               setDisabled(false);
