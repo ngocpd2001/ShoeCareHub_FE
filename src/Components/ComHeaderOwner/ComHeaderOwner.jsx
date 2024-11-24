@@ -88,6 +88,7 @@ const navigation = [
     current: false,
     children: [
       { name: "Hồ sơ của tôi", href: "/owner/profile" },
+      { name: "Hồ sơ doanh nghiệp", href: "/owner/business" },
       { name: "Đổi mật khẩu", href: "/owner/reset-password" },
     ],
   },

@@ -184,12 +184,13 @@ export default function CarouselsSection() {
   ];
 
   useEffect(() => {
-    getData("/services?PageIndex=1&PageSize=99")
+    getData("/services/discounted?PageIndex=1&PageSize=99")
       .then((data) => {
         console.log(data?.data?.data?.items);
-        const discountedServices = data?.data?.data?.items.filter(
-          (service) => service.promotion !== null
-        );
+        const discountedServices = data?.data?.data?.items;
+        // .filter(
+        //   (service) => service.promotion !== null
+        // );
         setServices(discountedServices);
       })
       .catch((error) => {

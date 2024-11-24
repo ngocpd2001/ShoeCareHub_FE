@@ -81,9 +81,15 @@ const ServiceDetail = () => {
   // }, []);
 
   useEffect(() => {
-    if (service && service.branchServices && service.branchServices.length > 0) {
+    if (
+      service &&
+      service.branchServices &&
+      service.branchServices.length > 0
+    ) {
       // Tìm chi nhánh đầu tiên đang hoạt động
-      const activeBranch = service.branchServices.find(bs => bs.status === "Hoạt Động");
+      const activeBranch = service.branchServices.find(
+        (bs) => bs.status === "Hoạt Động"
+      );
       if (activeBranch) {
         setSelectedBranch(activeBranch.branch);
       } else {
@@ -152,7 +158,7 @@ const ServiceDetail = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      navigate("/login");
+      // navigate("/login");
       return;
     }
 
@@ -163,21 +169,20 @@ const ServiceDetail = () => {
         quantity: Number(quantity),
       };
 
-      console.log('Add to cart data:', itemData);
+      console.log("Add to cart data:", itemData);
       await addItemToCart(user.id, itemData);
 
       // Hiển thị thông báo thành công
       message.success({
-        content: 'Đã cập nhật trạng thái đơn hàng',
+        content: "Đã cập nhật trạng thái đơn hàng",
         duration: 2,
         style: {
-          marginTop: '20px',
-          fontSize: '16px',
-          fontWeight: 'normal',
-          color: '#52c41a', // Màu chữ
-          borderRadius: '4px', // Bo góc
-         
-        }
+          marginTop: "20px",
+          fontSize: "16px",
+          fontWeight: "normal",
+          color: "#52c41a", // Màu chữ
+          borderRadius: "4px", // Bo góc
+        },
       });
     } catch (error) {
       console.error("Error adding item to cart:", error);
@@ -187,13 +192,13 @@ const ServiceDetail = () => {
         navigate("/login");
       } else {
         message.error({
-          content: 'Có lỗi xảy ra khi thêm vào giỏ hàng',
+          content: "Có lỗi xảy ra khi thêm vào giỏ hàng",
           duration: 2,
           style: {
-            marginTop: '20px',
-            fontSize: '16px',
-            fontWeight: 'normal',
-          }
+            marginTop: "20px",
+            fontSize: "16px",
+            fontWeight: "normal",
+          },
         });
       }
     }
@@ -215,9 +220,12 @@ const ServiceDetail = () => {
 
     // Kiểm tra trạng thái chi nhánh
     const selectedBranchService = service.branchServices.find(
-      bs => bs.branch.id === selectedBranch.id
+      (bs) => bs.branch.id === selectedBranch.id
     );
-    if (!selectedBranchService || selectedBranchService.status !== "Hoạt Động") {
+    if (
+      !selectedBranchService ||
+      selectedBranchService.status !== "Hoạt Động"
+    ) {
       setUserMessage("Vui lòng chọn chi nhánh đang hoạt động");
       return;
     }
@@ -349,9 +357,9 @@ const ServiceDetail = () => {
               {/* Price-rating & feedback */}
               <div className="flex items-center justify-between mt-5 border-t pt-4">
                 <div className="flex flex-col items-start">
-                  {service.promotion && 
-                   service.promotion.status === "Hoạt Động" && 
-                   service.promotion.newPrice ? (
+                  {service.promotion &&
+                  service.promotion.status === "Hoạt Động" &&
+                  service.promotion.newPrice ? (
                     <>
                       <span className="text-3xl font-bold text-blue-800">
                         {formatCurrency(service.promotion.newPrice)}
