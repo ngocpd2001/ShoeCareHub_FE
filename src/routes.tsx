@@ -80,6 +80,10 @@ import PaymentFailed from "./page/Owner/Package/PaymentFailed";
 import MaterialManager from "./page/Owner/Material/MaterialManager";
 import UpdateMaterial from "./page/Owner/Material/UpdateMaterial";
 import CreateMaterial from "./page/Owner/Material/CreateMaterial";
+import TransactionManager from "./page/Admin/Transaction/TransactionManager";
+import CategoryServiceManager from "./page/Admin/CategoryService/CategoryServiceManager";
+import PackageManager from "./page/Admin/package/PackageManager";
+import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -300,6 +304,10 @@ export const routers = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: "/owner/business",
+        element: <ProfileBusiness />,
+      },
+      {
         path: "/owner/reset-password",
         element: <ChangePassword />,
       },
@@ -494,6 +502,22 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/ticket/update/:id",
         element: <UpdateTicket_Ad/>,
+      },
+      {
+        path: "/admin/transaction",
+        element: <TransactionManager/>,
+      },
+      {
+        path: "/admin/feedback",
+        element: <TableFeedback />,
+      },
+      {
+        path: "/admin/service-category",
+        element: <CategoryServiceManager />,
+      },
+      {
+        path: "/admin/package",
+        element: <PackageManager />,
       },
     ],
   },

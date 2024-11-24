@@ -81,9 +81,15 @@ const ServiceDetail = () => {
   // }, []);
 
   useEffect(() => {
-    if (service && service.branchServices && service.branchServices.length > 0) {
+    if (
+      service &&
+      service.branchServices &&
+      service.branchServices.length > 0
+    ) {
       // Tìm chi nhánh đầu tiên đang hoạt động
-      const activeBranch = service.branchServices.find(bs => bs.status === "Hoạt Động");
+      const activeBranch = service.branchServices.find(
+        (bs) => bs.status === "Hoạt Động"
+      );
       if (activeBranch) {
         setSelectedBranch(activeBranch.branch);
       } else {
@@ -153,7 +159,7 @@ const ServiceDetail = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      navigate("/login");
+      // navigate("/login");
       return;
     }
 
@@ -164,7 +170,7 @@ const ServiceDetail = () => {
         quantity: Number(quantity),
       };
 
-      console.log('Add to cart data:', itemData);
+      console.log("Add to cart data:", itemData);
 
       await addItemToCart(user.id, itemData);
       navigate("/cart");
@@ -197,9 +203,12 @@ const ServiceDetail = () => {
 
     // Kiểm tra trạng thái chi nhánh
     const selectedBranchService = service.branchServices.find(
-      bs => bs.branch.id === selectedBranch.id
+      (bs) => bs.branch.id === selectedBranch.id
     );
-    if (!selectedBranchService || selectedBranchService.status !== "Hoạt Động") {
+    if (
+      !selectedBranchService ||
+      selectedBranchService.status !== "Hoạt Động"
+    ) {
       setMessage("Vui lòng chọn chi nhánh đang hoạt động");
       return;
     }
@@ -331,9 +340,9 @@ const ServiceDetail = () => {
               {/* Price-rating & feedback */}
               <div className="flex items-center justify-between mt-5 border-t pt-4">
                 <div className="flex flex-col items-start">
-                  {service.promotion && 
-                   service.promotion.status === "Hoạt Động" && 
-                   service.promotion.newPrice ? (
+                  {service.promotion &&
+                  service.promotion.status === "Hoạt Động" &&
+                  service.promotion.newPrice ? (
                     <>
                       <span className="text-3xl font-bold text-blue-800">
                         {formatCurrency(service.promotion.newPrice)}
