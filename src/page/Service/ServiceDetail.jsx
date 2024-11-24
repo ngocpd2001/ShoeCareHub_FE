@@ -17,7 +17,7 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addItemToCart, getUserCart, getCartItemById } from "../../api/cart";
-import { Select } from "antd";
+import { Select, message } from "antd";
 
 const ServiceDetail = () => {
   // const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -31,7 +31,7 @@ const ServiceDetail = () => {
   const navigate = useNavigate();
   const serviceId = id;
   const [cartItems, setCartItems] = useState([]);
-  const [message, setMessage] = useState("");
+  const [userMessage, setUserMessage] = useState("");
   const location = useLocation();
   const [businessId, setBusinessId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
@@ -149,7 +149,6 @@ const ServiceDetail = () => {
       return;
     }
 
-    // Kiểm tra đăng nhập
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
@@ -165,18 +164,32 @@ const ServiceDetail = () => {
       };
 
       console.log('Add to cart data:', itemData);
-
       await addItemToCart(user.id, itemData);
-      navigate("/cart");
+
+      // Hiển thị thông báo thành công
+      message.success({
+        content: 'Thêm vào giỏ hàng thành công!',
+        duration: 2,
+        style: {
+          marginTop: '20px',
+          fontSize: '16px'
+        }
+      });
     } catch (error) {
       console.error("Error adding item to cart:", error);
       if (error.response?.status === 401) {
-        // Token hết hạn hoặc không hợp lệ
         localStorage.removeItem("user");
         localStorage.setItem("redirectAfterLogin", location.pathname);
         navigate("/login");
       } else {
-        setMessage("Có lỗi xảy ra khi thêm vào giỏ hàng");
+        message.error({
+          content: 'Có lỗi xảy ra khi thêm vào giỏ hàng',
+          duration: 2,
+          style: {
+            marginTop: '20px',
+            fontSize: '16px'
+          }
+        });
       }
     }
   };
@@ -191,7 +204,7 @@ const ServiceDetail = () => {
 
     // Thêm kiểm tra chi nhánh
     if (!selectedBranch) {
-      setMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      setUserMessage("Vui lòng chọn chi nhánh đang hoạt động");
       return;
     }
 
@@ -200,7 +213,7 @@ const ServiceDetail = () => {
       bs => bs.branch.id === selectedBranch.id
     );
     if (!selectedBranchService || selectedBranchService.status !== "Hoạt Động") {
-      setMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      setUserMessage("Vui lòng chọn chi nhánh đang hoạt động");
       return;
     }
 
@@ -505,7 +518,7 @@ const ServiceDetail = () => {
                   className={`rounded-xl py-4 px-6 flex items-center ${
                     service.status === "Hoạt Động"
                       ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"
-                      : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
                 >
                   <FontAwesomeIcon icon={faCartShopping} className="mr-4" />
@@ -548,7 +561,7 @@ const ServiceDetail = () => {
           </div>
         </div>
       </div>
-      {message && <div className="alert alert-success">{message}</div>}
+      {userMessage && <div className="alert alert-success">{userMessage}</div>}
     </div>
   );
 };
