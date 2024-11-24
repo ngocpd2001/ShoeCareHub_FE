@@ -153,7 +153,7 @@ const UpdateTicket = () => {
 
       notification.success({
         message: "Thành công",
-        description: "Đã thêm ph��n hồi mới",
+        description: "Đã thêm phản hồi mới",
       });
 
       // Refresh data

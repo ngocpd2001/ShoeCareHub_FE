@@ -477,35 +477,44 @@ const UpdateOrder = () => {
   const handleFormChange = (e) => {
     const { name, value } = e.target;
 
-    if (!isShip && (name === 'deliveredFee' || name === 'shippingCode' || name === 'shippingUnit')) {
-      notificationApi("error", "Lỗi", "Không thể cập nhật thông tin vận chuyển khi không chọn giao hàng");
+    if (
+      !isShip &&
+      (name === "deliveredFee" ||
+        name === "shippingCode" ||
+        name === "shippingUnit")
+    ) {
+      notificationApi(
+        "error",
+        "Lỗi",
+        "Không thể cập nhật thông tin vận chuyển khi không chọn giao hàng"
+      );
       return;
     }
 
     if (name === "deliveredFee") {
       // Loại bỏ các ký tự không phải số và số 0 ở đầu
-      const numericValue = value.replace(/^0+|[^0-9]/g, '');
-      
+      const numericValue = value.replace(/^0+|[^0-9]/g, "");
+
       // Nếu chuỗi rỗng thì gán giá trị 0
-      const displayValue = numericValue === '' ? '0' : numericValue;
-      
-      setFormData(prev => ({
+      const displayValue = numericValue === "" ? "0" : numericValue;
+
+      setFormData((prev) => ({
         ...prev,
-        [name]: displayValue
+        [name]: displayValue,
       }));
 
       // Cập nhật orderData với giá trị đã parse
       const parsedValue = parseInt(displayValue, 10);
-      setOrderData(prev => ({
+      setOrderData((prev) => ({
         ...prev,
         deliveredFee: parsedValue,
         isShip: parsedValue > 0,
-        totalPrice: (prev.orderPrice || 0) + parsedValue
+        totalPrice: (prev.orderPrice || 0) + parsedValue,
       }));
     } else {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        [name]: value
+        [name]: value,
       }));
     }
   };
@@ -531,7 +540,11 @@ const UpdateOrder = () => {
             items={[
               { title: "Cửa hàng" },
               { title: <Link to="/owner/order">Đơn hàng</Link> },
-              { title: <span className="text-[#002278]">Cập nhật đơn hàng</span> },
+              {
+                title: (
+                  <span className="text-[#002278]">Cập nhật đơn hàng</span>
+                ),
+              },
             ]}
           />
         </div>
