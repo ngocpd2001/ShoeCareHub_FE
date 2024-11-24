@@ -239,7 +239,7 @@ export default function ComHeader({ children }) {
                   </li>
                   <li>
                     <Link
-                      to="/"
+                      to="/provider"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
                       KÊNH CUNG CẤP

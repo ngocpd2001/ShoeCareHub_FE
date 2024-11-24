@@ -244,7 +244,7 @@ export default function CarouselsSection() {
           title="Nhà cung cấp tiêu biểu"
           items={business}
           type="supplier"
-          goto="typical-provider"
+          goto="provider"
         />
         <ServiceGrid />
       </div>

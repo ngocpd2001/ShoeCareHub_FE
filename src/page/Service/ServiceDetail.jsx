@@ -168,11 +168,15 @@ const ServiceDetail = () => {
 
       // Hiển thị thông báo thành công
       message.success({
-        content: 'Thêm vào giỏ hàng thành công!',
+        content: 'Đã cập nhật trạng thái đơn hàng',
         duration: 2,
         style: {
           marginTop: '20px',
-          fontSize: '16px'
+          fontSize: '16px',
+          fontWeight: 'normal',
+          color: '#52c41a', // Màu chữ
+          borderRadius: '4px', // Bo góc
+         
         }
       });
     } catch (error) {
@@ -187,7 +191,8 @@ const ServiceDetail = () => {
           duration: 2,
           style: {
             marginTop: '20px',
-            fontSize: '16px'
+            fontSize: '16px',
+            fontWeight: 'normal',
           }
         });
       }

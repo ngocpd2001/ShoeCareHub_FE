@@ -348,7 +348,7 @@ const FeedbackService = () => {
                     ))}
                   </div>
 
-                  <div className="flex mt-5 items-center">
+                  {/* <div className="flex mt-5 items-center">
                     <button
                       onClick={() => handleLikeClick(reviewIndex)}
                       className="flex items-center"
@@ -368,7 +368,7 @@ const FeedbackService = () => {
                       />
                       Thích
                     </button>
-                  </div>
+                  </div> */}
                 </div>
               </div>
             </div>
