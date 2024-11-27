@@ -1,7 +1,13 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useState,
+} from "react";
 import { useTableState } from "../../../hooks/useTableState";
 import { useNotification } from "../../../Notification/Notification";
 import { useNavigate, useLocation } from "react-router-dom";
+import { Image } from "antd";
 
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import ComTable from "../../../Components/ComTable/ComTable";
@@ -22,12 +28,14 @@ export const TableMaterial = forwardRef((props, ref) => {
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
-    total: 0
+    total: 0,
   });
   const table = useTableState();
   const { notificationApi } = useNotification();
   const navigate = useNavigate();
   const location = useLocation();
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState("");
 
   const {
     getColumnSearchProps,
@@ -43,26 +51,28 @@ export const TableMaterial = forwardRef((props, ref) => {
       width: 250,
       sorter: (a, b) => a.name.localeCompare(b.name),
       ...getColumnSearchProps("name", "Tên phụ kiện"),
-      render: (text, record) => (
-        <div className="flex items-center gap-3">
-          {record.assetUrls?.[0]?.url ? (
-            <img
-              src={record.assetUrls[0].url}
-              alt={text}
-              className="w-10 h-10 object-cover rounded-md"
-              onError={(e) => {
-                e.target.parentNode.replaceChild(
-                  document.createTextNode("No image"),
-                  e.target
-                );
-              }}
-            />
-          ) : (
-            <span className="text-gray-400">No image</span>
-          )}
-          <span>{text}</span>
-        </div>
-      ),
+      
+    },
+    {
+      title: "Hình ảnh",
+      dataIndex: "assetUrls",
+      key: "assetUrls",
+      width: 150,
+      render: (data, record) => {
+        const imageUrls = data?.map((image) => image?.url);
+        return (
+          <div className="w-24 h-24 flex items-center justify-center overflow-hidden">
+            <Image.PreviewGroup items={imageUrls}>
+              <Image
+                maskClassName="object-cover w-full h-full object-cover object-center flex items-center justify-center"
+                src={imageUrls[0]}
+                alt={"data"}
+                preview={{ mask: "Xem ảnh" }}
+              />
+            </Image.PreviewGroup>
+          </div>
+        );
+      },
     },
     {
       title: "Giá",
@@ -90,29 +100,29 @@ export const TableMaterial = forwardRef((props, ref) => {
         </div>
       ),
     },
-    {
-      title: "Số lượng trong kho",
-      dataIndex: "branchMaterials",
-      key: "storage",
-      width: 150,
-      render: (branchMaterials) => (
-        <ul>
-          {branchMaterials?.map((bm, index) => (
-            <li key={index}>
-              {bm.storage}
-            </li>
-          ))}
-        </ul>
-      ),
-    },
+    // {
+    //   title: "Số lượng trong kho",
+    //   dataIndex: "branchMaterials",
+    //   key: "storage",
+    //   width: 150,
+    //   render: (branchMaterials) => (
+    //     <ul>
+    //       {branchMaterials?.map((bm, index) => (
+    //         <li key={index}>
+    //           {bm.storage}
+    //         </li>
+    //       ))}
+    //     </ul>
+    //   ),
+    // },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
       width: 150,
       filters: [
-        { text: 'Hoạt Động', value: 'Hoạt Động' },
-        { text: 'Ngưng Hoạt Động', value: 'Ngưng Hoạt Động' }
+        { text: "Hoạt Động", value: "Hoạt Động" },
+        { text: "Ngưng Hoạt Động", value: "Ngưng Hoạt Động" },
       ],
       onFilter: (value, record) => record.status === value,
       render: (status) => (
@@ -154,14 +164,18 @@ export const TableMaterial = forwardRef((props, ref) => {
     table.handleOpenLoading();
     try {
       const businessId = getBusinessId();
-      const response = await getMaterialsByBusiness(businessId, newPagination.current, newPagination.pageSize);
-      
+      const response = await getMaterialsByBusiness(
+        businessId,
+        newPagination.current,
+        newPagination.pageSize
+      );
+
       if (response?.data) {
         setData(response.data.items || []);
         setPagination({
           current: response.data.pageIndex,
           pageSize: response.data.pageSize,
-          total: response.data.totalCount
+          total: response.data.totalCount,
         });
       }
     } catch (error) {
@@ -178,17 +192,21 @@ export const TableMaterial = forwardRef((props, ref) => {
       const businessId = getBusinessId();
       if (!businessId) {
         notificationApi("error", "Lỗi", "Vui lòng đăng nhập lại để tiếp tục");
-        navigate('/login');
+        navigate("/login");
         return;
       }
 
-      const response = await getMaterialsByBusiness(businessId, pagination.current, pagination.pageSize);
+      const response = await getMaterialsByBusiness(
+        businessId,
+        pagination.current,
+        pagination.pageSize
+      );
       if (response?.data) {
         setData(response.data.items || []);
         setPagination({
           current: response.data.pageIndex,
           pageSize: response.data.pageSize,
-          total: response.data.totalCount
+          total: response.data.totalCount,
         });
       }
     } catch (error) {
@@ -201,7 +219,7 @@ export const TableMaterial = forwardRef((props, ref) => {
   };
 
   const getBusinessId = () => {
-    const userData = localStorage.getItem('user');
+    const userData = localStorage.getItem("user");
     if (!userData) {
       return null;
     }
@@ -228,20 +246,6 @@ export const TableMaterial = forwardRef((props, ref) => {
         rowKey="id"
         bordered
         className="w-full"
-        // pagination={{
-        //   ...pagination,
-        //   showSizeChanger: true,
-        //   showQuickJumper: true,
-        //   locale: {
-        //     jump_to: "Đến",
-        //     page: "Trang",
-        //     items_per_page: "/ trang",
-        //     prev_page: "Trang trước",
-        //     next_page: "Trang sau",
-        //     prev_5: "5 trang trước",
-        //     next_5: "5 trang sau"
-        //   }
-        // }}
         onChange={handleTableChange}
       />
     </div>

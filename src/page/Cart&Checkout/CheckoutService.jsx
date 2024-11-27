@@ -11,7 +11,8 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
-import { Modal } from 'antd';
+import { Modal } from "antd";
+import { getMaterialByServiceId } from "../../api/material";
 
 const CheckoutService = () => {
   const location = useLocation();
@@ -40,16 +41,16 @@ const CheckoutService = () => {
       try {
         // Đầu tiên set thông tin cơ bản từ localStorage
         setUserInfo({
-          fullname: user.fullName || '',
-          phone: user.phone || '',
+          fullname: user.fullName || "",
+          phone: user.phone || "",
         });
 
         // Sau đó fetch thông tin chi tiết từ API
         const userData = await getAccountById(accountId);
         if (userData) {
-          setUserInfo(prevInfo => ({
+          setUserInfo((prevInfo) => ({
             ...prevInfo,
-            ...userData
+            ...userData,
           }));
         }
       } catch (error) {
@@ -67,31 +68,37 @@ const CheckoutService = () => {
           if (!shop.services || !Array.isArray(shop.services)) {
             return shop;
           }
-          
+
           const updatedServices = await Promise.all(
             shop.services.map(async (service) => {
               if (!service?.id) {
                 return service;
               }
-              
+
               try {
                 const response = await getServiceById(service.id);
-                
+
                 // Log để debug
                 // console.log("Raw response:", response);
-                
+
                 // Kiểm tra xem response có phải là data trực tiếp không
                 const serviceData = response.data || response;
-                
+
                 // Log để debug
                 // console.log("Service data:", serviceData);
 
                 // Lấy URL ảnh từ assetUrls
                 let imageUrl = null;
                 let foundImageAsset = null;
-                if (serviceData.assetUrls && Array.isArray(serviceData.assetUrls)) {
-                  foundImageAsset = serviceData.assetUrls.find(asset => 
-                    asset && (asset.type === "image" || asset.isImage === false) && asset.url
+                if (
+                  serviceData.assetUrls &&
+                  Array.isArray(serviceData.assetUrls)
+                ) {
+                  foundImageAsset = serviceData.assetUrls.find(
+                    (asset) =>
+                      asset &&
+                      (asset.type === "image" || asset.isImage === false) &&
+                      asset.url
                   );
                   imageUrl = foundImageAsset?.url || null;
                 }
@@ -104,19 +111,22 @@ const CheckoutService = () => {
                 return {
                   ...service,
                   ...serviceData,
-                  image: imageUrl
+                  image: imageUrl,
                 };
               } catch (error) {
-                console.error(`Lỗi khi lấy thông tin dịch vụ ${service.id}:`, error);
+                console.error(
+                  `Lỗi khi lấy thông tin dịch vụ ${service.id}:`,
+                  error
+                );
                 return service;
               }
             })
           );
-          
+
           return { ...shop, services: updatedServices };
         })
       );
-      
+
       if (JSON.stringify(updatedCartItems) !== JSON.stringify(cartItems)) {
         setCartItems(updatedCartItems);
       }
@@ -160,42 +170,54 @@ const CheckoutService = () => {
     }
   }, []);
 
-  // Tính tng tiền
+  // Kiểm tra dữ liệu nhận được
+  useEffect(() => {
+    console.log("Selected Items:", initialCartItems);
+  }, [initialCartItems]);
+
+  // Tính tổng tiền dịch vụ
   const totalAmount = cartItems.reduce((total, shop) => {
     if (shop && Array.isArray(shop.services)) {
       const shopTotal = shop.services.reduce((shopTotal, service) => {
         const servicePrice =
           service?.promotion?.newPrice || service?.price || 0;
         const serviceQuantity = service?.quantity || 1;
-        return shopTotal + servicePrice * serviceQuantity;
+        const materialPrice = service?.materialPrice || 0;
+        return shopTotal + (servicePrice + materialPrice) * serviceQuantity;
       }, 0);
       return total + shopTotal;
     }
     return total;
   }, 0);
 
+  // Tính tổng số dịch vụ
   const totalServices = cartItems.reduce((count, shop) => {
     if (shop && Array.isArray(shop.services)) {
-      return count + shop.services.length;
+      return (
+        count +
+        shop.services.reduce((serviceCount, service) => {
+          return serviceCount + (service?.quantity || 1);
+        }, 0)
+      );
     }
     return count;
   }, 0);
 
   const handleDeliveryOptionChange = (option) => {
-    if (typeof option === 'object') {
-      if (option.hasOwnProperty('isValid')) {
+    if (typeof option === "object") {
+      if (option.hasOwnProperty("isValid")) {
         setDeliveryOption(option.isValid);
       }
-      if (option.hasOwnProperty('options')) {
+      if (option.hasOwnProperty("options")) {
         setDeliveryOptions(option.options);
       }
     }
   };
 
   const handleNoteChange = ({ branchId, note }) => {
-    setNotes(prevNotes => ({
+    setNotes((prevNotes) => ({
       ...prevNotes,
-      [branchId]: note
+      [branchId]: note,
     }));
   };
 
@@ -217,9 +239,10 @@ const CheckoutService = () => {
 
   const handleSelectAddress = (selectedAddress) => {
     setDefaultAddress(selectedAddress);
+    const addressId = selectedAddress?.id;
+    console.log("Selected Address ID:", addressId);
     setIsAddressModalOpen(false);
   };
-
 
   const handleCheckout = async () => {
     try {
@@ -227,75 +250,75 @@ const CheckoutService = () => {
       const hasDeliveryOptions = Object.values(deliveryOptions).length > 0;
       if (!hasDeliveryOptions) {
         Modal.confirm({
-          title: 'Thông báo',
-          content: 'Vui lòng chọn phương thức giao hàng',
-          okText: 'Đồng ý',
-          cancelText: 'Hủy',
+          title: "Thông báo",
+          content: "Vui lòng chọn phương thức giao hàng",
+          okText: "Đồng ý",
+          cancelText: "Hủy",
           okButtonProps: {
-            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+            className:
+              "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
           },
-          className: 'custom-modal mt-[-32%]',
-          centered: true
+          className: "custom-modal mt-[-32%]",
+          centered: true,
         });
         return;
       }
 
       // Xác định isShip dựa trên deliveryOptions
-      const isShip = Object.values(deliveryOptions).some(option => option === 'delivery');
+      const isShip = Object.values(deliveryOptions).some(
+        (option) => option === "delivery"
+      );
 
       // Kiểm tra nếu có giao hàng nhưng không có địa chỉ
       if (isShip && !defaultAddress) {
         Modal.confirm({
-          title: 'Thông báo',
-          content: 'Vui lòng chọn địa chỉ giao hàng cho đơn hàng giao tận nơi',
-          okText: 'Đồng ý',
-          cancelText: 'Hủy',
+          title: "Thông báo",
+          content: "Vui lòng chọn địa chỉ giao hàng cho đơn hàng giao tận nơi",
+          okText: "Đồng ý",
+          cancelText: "Hủy",
           okButtonProps: {
-            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
+            className:
+              "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
           },
           centered: true,
-          className: 'custom-antd-modal'
+          className: "custom-antd-modal",
         });
         return;
       }
 
-      const checkoutItems = cartItems.flatMap(shop => 
-        shop.services.map(service => ({
-          serviceId: Number(service.id),
-          materialId: Number(service.materialId || 0),
-          branchId: Number(service.branchId),
-          quantity: Number(service.quantity || 1),
-          note: notes[service.branchId] || ''
-        }))
+      const checkoutItems = cartItems.flatMap((shop) =>
+        shop.services.map((service) => {
+          const item = {
+            serviceId: Number(service.id),
+            branchId: Number(service.branchId),
+            addressId: defaultAddress?.id ? Number(defaultAddress.id) : null,
+            note: notes[service.branchId] || "",
+          };
+
+          // Thêm materialId nếu có
+          if (service.materialId) {
+            item.materialId = Number(service.materialId);
+          }
+
+          return item;
+        })
       );
 
-      const missingBranchId = checkoutItems.some(item => !item.branchId);
-      if (missingBranchId) {
-        console.error("Có dịch vụ không có branchId");
-        alert("Có lỗi với thông tin chi nhánh. Vui lòng thử lại.");
-        return;
-      }
+      // Log dữ liệu checkoutItems
+      console.log("Checkout Items:", JSON.stringify(checkoutItems, null, 2));
 
-      // Tạo checkoutData cơ bản
       let checkoutData = {
         items: checkoutItems,
         accountId: Number(accountId),
         isAutoReject: false,
         notes: notes,
-        isShip: isShip
+        isShip: isShip,
       };
 
-      // Chỉ thêm addressId khi có giao hàng và có địa chỉ
-      if (isShip && defaultAddress?.id) {
-        checkoutData.addressId = Number(defaultAddress.id);
-      }
+      // Log dữ liệu checkoutData
+      console.log("Checkout Data:", JSON.stringify(checkoutData, null, 2));
 
-      // Log để debug
-      console.log("Cart Items:", cartItems);
-      console.log("Checkout Items:", checkoutItems);
-      console.log("Full Checkout Data:", checkoutData);
-
-      const response = await checkoutService(checkoutData);
+      const response = await CheckoutService(checkoutData);
       console.log("Response from API:", response);
 
       if (response) {
@@ -306,48 +329,78 @@ const CheckoutService = () => {
     } catch (error) {
       console.error("Lỗi khi thanh toán:", error);
       Modal.error({
-        title: 'Lỗi',
-        content: 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!',
-        okText: 'Đồng ý',
+        title: "Lỗi",
+        content: "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!",
+        okText: "Đồng ý",
         centered: true,
         okButtonProps: {
           style: {
-            backgroundColor: '#002278',
-            borderColor: '#002278'
-          }
+            backgroundColor: "#002278",
+            borderColor: "#002278",
+          },
         },
         style: {
-          top: '20px'
-        }
+          top: "20px",
+        },
       });
     }
   };
 
   const handleShippingFeesChange = (fees, branchId) => {
     // Kiểm tra nếu có lỗi không hỗ trợ ship
-    if (fees.error && fees.error.includes('Không hỗ trợ ship')) {
+    if (fees.error && fees.error.includes("Không hỗ trợ ship")) {
       Modal.warning({
-        title: 'Thông báo',
-        content: 'Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.',
-        okText: 'Đồng ý',
+        title: "Thông báo",
+        content:
+          "Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.",
+        okText: "Đồng ý",
         centered: true,
         okButtonProps: {
-          className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-        }
+          className:
+            "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+        },
       });
       // Reset delivery option về pickup
       handleDeliveryOptionChange({
         isValid: true,
-        options: { [branchId]: 'pickup' }
+        options: { [branchId]: "pickup" },
       });
     } else {
       setShippingFees(fees);
     }
   };
 
-  const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
+  // Tính tổng tiền giao hàng
+  const totalShippingFee = Object.values(shippingFees).reduce(
+    (total, fee) => total + (fee || 0),
+    0
+  );
 
+  // Tính tổng tiền tạm tính
   const finalTotalAmount = totalAmount + totalShippingFee;
+
+  useEffect(() => {
+    const fetchMaterialData = async () => {
+      if (cartItems.length > 0) {
+        try {
+          const materialsPromises = cartItems.map(async (shop) => {
+            const serviceIds = shop.services.map((service) => service.id);
+            const materials = await Promise.all(
+              serviceIds.map((id) => getMaterialByServiceId(id))
+            );
+            return materials;
+          });
+          const materialsData = await Promise.all(materialsPromises);
+          console.log("Dữ liệu vật liệu:", materialsData);
+          // Xử lý dữ liệu vật liệu ở đây nếu cần
+        } catch (error) {
+          console.error("Lỗi khi lấy dữ liệu vật liệu:", error);
+        }
+      }
+    };
+
+    fetchMaterialData();
+  }, [cartItems]); // Gọi lại khi cartItems thay đổi
 
   return (
     <>

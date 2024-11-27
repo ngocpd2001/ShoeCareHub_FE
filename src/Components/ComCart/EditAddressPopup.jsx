@@ -96,6 +96,14 @@ const EditAddressPopup = ({ onClose }) => {
       const user = JSON.parse(userData);
       const userId = user.id;
 
+      const wardCodePattern = /^[a-zA-Z0-9]{1,9}$/;
+      console.log("Giá trị WardCode:", selectedWardCode);
+
+      if (!/^\d{1,9}$/.test(selectedWardCode)) {
+        alert("WardCode phải là một chuỗi chỉ chứa các chữ số từ 1 đến 9 ký tự.");
+        return;
+      }
+
       const addressData = {
         accountId: userId,
         address,
@@ -113,7 +121,7 @@ const EditAddressPopup = ({ onClose }) => {
         console.log("Địa chỉ đã được tạo:", response);
         onClose();
       } catch (error) {
-        console.error("Lỗi khi tạo địa chỉ:", error);
+        console.error("Lỗi khi tạo địa chỉ:", error.errors);
       }
     } else {
       console.log("Không tìm thấy dữ liệu người dùng trong localStorage");

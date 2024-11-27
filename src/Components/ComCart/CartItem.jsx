@@ -2,100 +2,49 @@ import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faTrash } from "@fortawesome/free-solid-svg-icons";
 import "./CartItem.css";
-import { updateCartItemQuantity, deleteCartItem } from "../../api/cart";
+// import { updateCartItemQuantity, deleteCartItem } from "../../api/cart";
 import { Image } from "antd";
+import { getMaterialById } from "../../api/material";
 
 const CartItem = ({
   service,
   userId,
-  onQuantityChange,
   onRemove,
   onSelect,
+  material,
+  materialPrice,
 }) => {
-  // Thêm log này
-  // console.log("Toàn bộ service object:", service);
-
-  const [inputValue, setInputValue] = useState(service.quantity || 0);
   const [totalPrice, setTotalPrice] = useState(0);
 
   useEffect(() => {
     const price =
       service.promotion && service.promotion.newPrice
-        ? service.promotion.newPrice
-        : service.price;
-    setTotalPrice(price * inputValue);
-  }, [inputValue, service]);
+        ? service.promotion.newPrice + materialPrice
+        : service.price + materialPrice;
 
-  const handleQuantityChange = async (e) => {
-    const updatedQuantity = parseInt(e.target.value, 10);
-    if (!userId) {
-      console.error("User ID is undefined for service:", service);
-      return;
-    }
-    if (!isNaN(updatedQuantity) && updatedQuantity >= 0) {
-      try {
-        await updateCartItemQuantity(service.id, updatedQuantity);
-        setInputValue(updatedQuantity);
-        service.quantity = updatedQuantity;
-        onQuantityChange(service.id, updatedQuantity);
-      } catch (error) {
-        console.error("Có lỗi xảy ra khi cập nhật số lượng:", error);
-      }
-    } else {
-      setInputValue(e.target.value);
-    }
-  };
+    setTotalPrice(price);
+  }, [service, materialPrice]);
 
-  const handleIncrease = async () => {
-    if (!userId) {
-      console.error("User ID is undefined for service:", service);
-      return;
+  useEffect(() => {
+    if (service.materialId) {
+      const fetchMaterialData = async () => {
+        try {
+          const materialData = await getMaterialById(service.materialId);
+          // Xử lý dữ liệu vật liệu ở đây
+        } catch (error) {
+          console.error("Lỗi khi lấy thông tin vật liệu:", error);
+        }
+      };
+      fetchMaterialData();
     }
-    const newQuantity = inputValue + 1;
-    try {
-      await updateCartItemQuantity(service.id, newQuantity);
-      setInputValue(newQuantity);
-      service.quantity = newQuantity;
-      onQuantityChange(service.id, newQuantity);
-    } catch (error) {
-      console.error("Có lỗi xảy ra:", error);
-    }
-  };
-
-  const handleDecrease = async () => {
-    if (!userId) {
-      console.error("User ID is undefined for service:", service);
-      return;
-    }
-    if (inputValue > 1) {
-      const newQuantity = inputValue - 1;
-      try {
-        await updateCartItemQuantity(service.id, newQuantity);
-        setInputValue(newQuantity);
-        service.quantity = newQuantity;
-        onQuantityChange(service.id, newQuantity);
-      } catch (error) {
-        console.error("Có lỗi xảy ra:", error);
-      }
-    }
-  };
+  }, [service.materialId]);
 
   const handleRemoveClick = () => {
     onRemove(service.id);
   };
 
-  // Kiểm tra giá trị userId
-  // console.log("User ID trong CartItem:", userId);
-
-  // Thêm console.log để kiểm tra dữ liệu
-  // console.log("Service data:", {
-  //   name: service.name,
-  //   assetUrls: service.assetUrls,
-  //   firstImageUrl: service.assetUrls?.[0]?.url,
-  // });
-
   return (
-    <div className="grid grid-cols-4 items-center p-4 border-b">
+    <div className="grid grid-cols-3 items-center p-4 border-b">
       <div className="flex items-center col-span-1">
         <input
           type="checkbox"
@@ -104,7 +53,7 @@ const CartItem = ({
           className="mr-2"
         />
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden mr-4">
-          {service.image ? ( // Sử dụng service.image thay vì service.imageUrl
+          {service.image ? (
             <Image.PreviewGroup
               preview={{
                 onChange: (current, prev) =>
@@ -112,13 +61,13 @@ const CartItem = ({
               }}
             >
               <Image
-                src={service.image} // Sử dụng service.image
+                src={service.image}
                 alt={service.name}
                 className="object-cover w-full h-full"
                 fallback="data:image/png;base64,..."
                 preview={{
                   mask: "Xem ảnh",
-                  urls: [service.image], // Sử dụng service.image
+                  urls: [service.image],
                 }}
               />
             </Image.PreviewGroup>
@@ -128,61 +77,50 @@ const CartItem = ({
             </div>
           )}
         </div>
-        <span>{service.name}</span>
+        <div className="flex flex-col">
+          <span>{service.name}</span>
+          {service.material && (
+            <div className="flex flex-col">
+              <span className="text-sm text-gray-800">
+                Vật liệu: {service.material}
+              </span>
+              {materialPrice > 0 && (
+                <div className="text-sm text-gray-600">
+                  Giá vật liệu: {materialPrice.toLocaleString()} đ
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="text-center col-span-1">
-        {service.promotion && service.promotion.newPrice ? (
-          <>
+      <div className="text-center item-center col-span-1 flex justify-center">
+        <div className="flex flex-col">
+          {service.promotion && service.promotion.newPrice ? (
+            <>
+              <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                {service.promotion.newPrice.toLocaleString()} đ
+              </div>
+              <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                {service.price.toLocaleString()} đ
+              </div>
+            </>
+          ) : (
             <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-              {service.promotion.newPrice.toLocaleString()} đ
-            </div>
-            <div className="line-through text-gray-500 max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
               {service.price.toLocaleString()} đ
             </div>
-          </>
-        ) : (
-          <div className="text-[#002278] font-bold max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-            {service.price.toLocaleString()} đ
-          </div>
-        )}
-      </div>
-
-      <div className="col-span-1 flex items-center justify-center">
-        <div className="flex flex-row items-center justify-center border-[#002278] border-2 w-26 h-7">
-          <button
-            onClick={handleDecrease}
-            className="flex items-center justify-center w-10 h-full border-r-2 border-[#002278] text-lg"
-          >
-            -
-          </button>
-          <input
-            type="number"
-            value={inputValue}
-            onChange={handleQuantityChange}
-            onFocus={() => setInputValue("")}
-            className="w-10 h-full border-r-2 border-[#002278] text-lg text-center cart-item-input"
-          />
-          <button
-            onClick={handleIncrease}
-            className="flex items-center justify-center w-10 h-full text-lg"
-          >
-            +
-          </button>
+          )}
         </div>
       </div>
 
       <div className="col-span-1 flex flex-row items-center justify-center">
         <span className="w-[70%] text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-          {totalPrice.toLocaleString()} đ
+          {totalPrice.toLocaleString() + " đ"}
         </span>
 
         <button onClick={handleRemoveClick} className="text-[#002278] w-[30%]">
           <FontAwesomeIcon icon={faTrash} />
         </button>
-        {/* <button onClick={handleRemoveClick} className="text-red-500">
-          Xóa
-        </button> */}
       </div>
     </div>
   );

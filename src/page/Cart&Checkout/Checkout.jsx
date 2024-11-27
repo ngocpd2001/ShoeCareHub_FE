@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import CheckoutCart from "../../Components/ComCart/CheckoutCart";
 import { getServiceById } from "../../api/service";
-import { checkoutCart, checkoutService } from "../../api/cart";
+import { checkoutCart } from "../../api/cart";
 import { getAddressByAccountId } from "../../api/address";
 import { getAccountById } from "../../api/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +11,7 @@ import {
   faMapMarkerAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import AddressModal from "../../Components/ComCart/AddressModal";
-import { Modal } from 'antd';
+import { Modal } from "antd";
 
 const Checkout = () => {
   const location = useLocation();
@@ -30,6 +30,7 @@ const Checkout = () => {
   const [deliveryOptions, setDeliveryOptions] = useState({});
   const [isValidDelivery, setIsValidDelivery] = useState(false);
   const [notes, setNotes] = useState({});
+  const [totalAmount, setTotalAmount] = useState(0);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -48,7 +49,7 @@ const Checkout = () => {
   useEffect(() => {
     const fetchServiceDetails = async () => {
       if (!initialCartItems.length) return;
-      
+
       try {
         const updatedCartItems = await Promise.all(
           initialCartItems.map(async (shop) => {
@@ -58,17 +59,18 @@ const Checkout = () => {
                   if (service?.serviceId) {
                     const response = await getServiceById(service.serviceId);
                     // Lọc và lấy URL ảnh từ assetUrls
-                    const imageAssets = response.data.assetUrls.filter(asset => 
-                      asset.type === "image"
+                    const imageAssets = response.data.assetUrls.filter(
+                      (asset) => asset.type === "image"
                     );
-                    const imageUrl = imageAssets.length > 0 ? imageAssets[0].url : null;
-                    
-                    return { 
-                      ...service, 
+                    const imageUrl =
+                      imageAssets.length > 0 ? imageAssets[0].url : null;
+
+                    return {
+                      ...service,
                       ...response.data,
                       id: service.id,
                       cartItemId: service.id,
-                      image: imageUrl // Thêm URL ảnh vào object service
+                      image: imageUrl, // Thêm URL ảnh vào object service
                     };
                   }
                   return service;
@@ -112,13 +114,13 @@ const Checkout = () => {
     // Chỉ gọi API một lần khi component mount và có accountId
     const fetchUserData = async () => {
       if (!accountId) return;
-      
+
       try {
         const userData = await getAccountById(accountId);
         if (userData) {
-          setUserInfo(prev => ({
+          setUserInfo((prev) => ({
             ...prev,
-            ...userData
+            ...userData,
           }));
         }
       } catch (error) {
@@ -134,7 +136,7 @@ const Checkout = () => {
   useEffect(() => {
     const fetchAddress = async () => {
       if (!accountId) return;
-      
+
       try {
         const addressData = await getAddressByAccountId(accountId);
         const defaultAddr = addressData.find((addr) => addr.isDefault);
@@ -147,20 +149,27 @@ const Checkout = () => {
     fetchAddress();
   }, [accountId]);
 
-  // Tính tng tiền
-  const totalAmount = cartItems.reduce((total, shop) => {
-    if (shop && Array.isArray(shop.services)) {
-      const shopTotal = shop.services.reduce((shopTotal, service) => {
-        const servicePrice =
-          service?.promotion?.newPrice || service?.price || 0;
-        const serviceQuantity = service?.quantity || 1;
-        return shopTotal + servicePrice * serviceQuantity;
-      }, 0);
-      return total + shopTotal;
-    }
-    return total;
-  }, 0);
+  // Thêm useEffect để tính totalAmount
+  useEffect(() => {
+    const calculateTotal = async () => {
+      let total = 0;
+      for (const shop of cartItems) {
+        if (shop && Array.isArray(shop.services)) {
+          for (const service of shop.services) {
+            const servicePrice =
+              service?.promotion?.newPrice || service?.price || 0;
+            const materialPrice = service?.materialPrice || 0;
+            total += servicePrice + materialPrice;
+          }
+        }
+      }
+      setTotalAmount(total);
+    };
 
+    calculateTotal();
+  }, [cartItems]);
+
+  // Tính tổng số dịch vụ
   const totalServices = cartItems.reduce((count, shop) => {
     if (shop && Array.isArray(shop.services)) {
       return count + shop.services.length;
@@ -173,10 +182,13 @@ const Checkout = () => {
     setDeliveryOptions(options);
   };
 
-  const handleNoteChange = ({ branchId, note }) => {
-    setNotes(prevNotes => ({
+  const handleNoteChange = ({ branchId, serviceId, note }) => {
+    setNotes((prevNotes) => ({
       ...prevNotes,
-      [branchId]: note
+      [branchId]: {
+        ...prevNotes[branchId],
+        [serviceId]: note,
+      },
     }));
   };
 
@@ -204,81 +216,90 @@ const Checkout = () => {
   const handleCheckout = async () => {
     try {
       // Kiểm tra xem có cửa hàng nào chọn giao hàng không
-      const shopsWithDelivery = cartItems.filter(shop => 
-        deliveryOptions[shop.branchId] === 'delivery'
+      const shopsWithDelivery = cartItems.filter(
+        (shop) => deliveryOptions[shop.branchId] === "delivery"
       );
 
-      // Nếu có cửa hàng chọn giao hàng và không có địa chỉ
-      if (shopsWithDelivery.length > 0 && !defaultAddress) {
-        Modal.confirm({
-          title: 'Thông báo',
-          content: 'Vui lòng chọn địa chỉ giao hàng cho đơn hàng giao tận nơi',
-          okText: 'Đồng ý',
-          cancelText: 'Hủy',
-          okButtonProps: {
-            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-          },
+      // Nếu không có cửa hàng chọn giao hàng và không có địa chỉ
+      if (shopsWithDelivery.length === 0 && !defaultAddress) {
+        Modal.error({
+          title: "Lỗi",
+          content:
+            "Vui lòng chọn địa chỉ giao hàng hoặc chọn lấy tại cửa hàng.",
+          okText: "Đồng ý",
           centered: true,
-          className: 'custom-antd-modal'
         });
         return;
       }
 
       // Kiểm tra xem tất cả cửa hàng đã chọn phương thức giao hàng chưa
-      const allShopsHaveDeliveryOption = cartItems.every(shop => 
-        deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
+      const allShopsHaveDeliveryOption = cartItems.every(
+        (shop) =>
+          deliveryOptions[shop.branchId] === "delivery" ||
+          deliveryOptions[shop.branchId] === "pickup"
       );
 
       if (!allShopsHaveDeliveryOption) {
-        Modal.confirm({
-          title: 'Thông báo',
-          content: 'Vui lòng chọn phương thức giao hàng cho cửa hàng',
-          okText: 'Đồng ý',
-          cancelText: 'Hủy',
-          okButtonProps: {
-            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-          },
-          className: 'custom-modal mt-[-32%]',
-          centered: true
+        Modal.error({
+          title: "Lỗi",
+          content: "Vui lòng chọn phương thức giao hàng cho tất cả cửa hàng.",
+          okText: "Đồng ý",
+          centered: true,
         });
         return;
       }
 
-      // Chuẩn bị dữ liệu checkout
-      let checkoutData = {
-        cartItems,
-        accountId: Number(accountId),
-        isAutoReject: false,
-        notes,
-        deliveryOptions,
-        // Thêm các trường liên quan đến shipping
-        isShip: shopsWithDelivery.length > 0, // true nếu có shop chọn giao hàng
-        deliveredFee: totalShippingFee, // Thêm phí ship tổng
-      };
+      // Chuẩn bị dữ liệu checkout cho từng cửa hàng
+      const checkoutPromises = cartItems.map(async (shop) => {
+        const shopServices = shop.services.map((service) => ({
+          cartItemId: service.id,
+          note: notes[shop.branchId]?.[service.id] || "",
+          branchId: shop.branchId,
+        }));
 
-      // Thêm addressId nếu có giao hàng
-      if (shopsWithDelivery.length > 0 && defaultAddress?.id) {
-        checkoutData.addressId = Number(defaultAddress.id);
-      }
+        let checkoutData = {
+          isShip: deliveryOptions[shop.branchId] === "delivery",
+          cartItems: shopServices,
+          accountId: Number(accountId),
+          addressId: defaultAddress?.id ? Number(defaultAddress.id) : 0,
+          isAutoReject: false,
+        };
 
-      console.log("Dữ liệu checkout từ giỏ hàng:", checkoutData);
-      const response = await checkoutCart(checkoutData);
-      
-      if (response) {
+        // Kiểm tra xem checkoutData có đầy đủ thông tin cần thiết không
+        if (
+          !checkoutData.accountId ||
+          !checkoutData.addressId ||
+          checkoutData.cartItems.length === 0
+        ) {
+          throw new Error("Thông tin thanh toán không đầy đủ.");
+        }
+
+        // Log để kiểm tra dữ liệu checkout
+        console.log("Dữ liệu checkout gửi đi:", checkoutData);
+
+        return await checkoutCart(checkoutData);
+      });
+
+      // Chờ tất cả các đơn hàng được xử lý
+      const responses = await Promise.all(checkoutPromises);
+
+      if (responses) {
         setIsOrderSuccess(true);
         setCartItems([]);
-        localStorage.removeItem('cartItems');
+        localStorage.removeItem("cartItems");
       }
     } catch (error) {
       console.error("Lỗi khi thanh toán:", error);
       Modal.error({
-        title: 'Lỗi',
-        content: 'Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!',
-        okText: 'Đồng ý',
+        title: "Lỗi",
+        content:
+          error.message || "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!",
+        okText: "Đồng ý",
         centered: true,
         okButtonProps: {
-          className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-        }
+          className:
+            "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+        },
       });
     }
   };
@@ -288,7 +309,10 @@ const Checkout = () => {
     // console.log("Shipping fees updated:", fees); // Debug
   };
 
-  const totalShippingFee = Object.values(shippingFees).reduce((total, fee) => total + (fee || 0), 0);
+  const totalShippingFee = Object.values(shippingFees).reduce(
+    (total, fee) => total + (fee || 0),
+    0
+  );
 
   const finalTotalAmount = totalAmount + totalShippingFee;
 

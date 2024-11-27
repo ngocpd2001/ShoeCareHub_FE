@@ -10,7 +10,14 @@ import { getBranchByBranchId } from "../../api/branch";
 import { calculateShippingFee } from "../../api/cart";
 import { Modal, Image } from "antd";
 
-const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, defaultAddress, onShippingFeesChange = () => {}, notes = {} }) => {
+const CheckoutCart = ({
+  cartItems,
+  onDeliveryOptionChange,
+  onNoteChange,
+  defaultAddress,
+  onShippingFeesChange = () => {},
+  notes: initialNotes = {},
+}) => {
   const user = JSON.parse(localStorage.getItem("user"));
   // console.log("cart", cartItems);
   const [branchDataList, setBranchDataList] = useState({});
@@ -19,7 +26,9 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
   const [deliveryOptions, setDeliveryOptions] = useState({});
   const [shippingFees, setShippingFees] = useState({});
   const [loadingShippingFees, setLoadingShippingFees] = useState({});
-  const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] = useState(false);
+  const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] =
+    useState(false);
+  const [notes, setNotes] = useState(initialNotes);
 
   useEffect(() => {
     const fetchBranchData = async () => {
@@ -60,12 +69,12 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
 
   useEffect(() => {
     if (cartItems && Array.isArray(cartItems)) {
-      cartItems.forEach(shop => {
-        if (deliveryOptions[shop.branchId] === "delivery" && defaultAddress?.id) {
-          const totalQuantity = shop.services.reduce((total, service) => {
-            return total + (service?.quantity || 0);
-          }, 0);
-          calculateShippingFeeForBranch(shop.branchId, totalQuantity, defaultAddress.id);
+      cartItems.forEach((shop) => {
+        if (
+          deliveryOptions[shop.branchId] === "delivery" &&
+          defaultAddress?.id
+        ) {
+          calculateShippingFeeForBranch(shop.branchId, defaultAddress.id);
         }
       });
     }
@@ -83,12 +92,17 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
       return;
     }
 
-    const allShopsSelected = cartItems.every(shop => 
-      deliveryOptions[shop.branchId] === 'delivery' || deliveryOptions[shop.branchId] === 'pickup'
+    const allShopsSelected = cartItems.every(
+      (shop) =>
+        deliveryOptions[shop.branchId] === "delivery" ||
+        deliveryOptions[shop.branchId] === "pickup"
     );
-    
+
     setAllShopsHaveDeliveryOption(allShopsSelected);
-    onDeliveryOptionChange({ isValid: allShopsSelected, options: deliveryOptions });
+    onDeliveryOptionChange({
+      isValid: allShopsSelected,
+      options: deliveryOptions,
+    });
   }, [deliveryOptions, cartItems]);
 
   const handleDeliveryOptionChange = (branchId, value) => {
@@ -97,104 +111,127 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
         ...prevOptions,
         [branchId]: value,
       };
-      
-      onDeliveryOptionChange({ 
-        isValid: true, 
+
+      onDeliveryOptionChange({
+        isValid: true,
         options: newOptions,
-        deliveryType: value 
+        deliveryType: value,
       });
-      
+
       return newOptions;
     });
 
     if (value === "delivery" && defaultAddress?.id) {
-      const shop = cartItems.find(item => item.branchId === branchId);
+      const shop = cartItems.find((item) => item.branchId === branchId);
       if (shop) {
-        const totalQuantity = shop.services.reduce((total, service) => {
-          return total + (service?.quantity || 0);
-        }, 0);
-        calculateShippingFeeForBranch(branchId, totalQuantity, defaultAddress.id);
+        calculateShippingFeeForBranch(branchId, defaultAddress.id);
       }
     } else {
-      setShippingFees(prev => ({...prev, [branchId]: 0}));
+      setShippingFees((prev) => ({ ...prev, [branchId]: 0 }));
     }
   };
 
-  const handleNoteChange = (e, branchId) => {
+  const handleNoteChange = (e, branchId, serviceId) => {
     const newNote = e.target.value;
-    onNoteChange({ branchId, note: newNote });
+    onNoteChange({ branchId, serviceId, note: newNote });
+
+    // Cập nhật ghi chú trong notes
+    setNotes((prevNotes) => ({
+      ...prevNotes,
+      [serviceId]: newNote, // Cập nhật ghi chú cho serviceId tương ứng
+    }));
+
+    const cartItem = cartItems.find((item) => item.branchId === branchId);
+    if (cartItem) {
+      const service = cartItem.services.find(
+        (service) => service.id === serviceId
+      );
+      if (service) {
+        service.note = newNote;
+      }
+    }
   };
 
-  const calculateShippingFeeForBranch = async (branchId, totalQuantity, selectedAddressId) => {
+  const calculateShippingFeeForBranch = async (branchId, selectedAddressId) => {
     if (!selectedAddressId) {
       console.log("Không có địa chỉ!");
       return;
     }
-    
-    setLoadingShippingFees(prev => ({...prev, [branchId]: true}));
+
+    const quantity =
+      cartItems.find((shop) => shop.branchId === branchId)?.services.length ||
+      0;
+
+    setLoadingShippingFees((prev) => ({ ...prev, [branchId]: true }));
     try {
       console.log("Gửi request tính phí ship với:", {
         addressId: selectedAddressId,
         branchId,
-        quantity: totalQuantity
+        quantity,
       });
 
       const fee = await calculateShippingFee({
         addressId: selectedAddressId,
         branchId,
-        quantity: totalQuantity
+        quantity,
       });
-      
+
       console.log("Kết quả tính phí ship:", {
         branchId,
         fee,
-        totalQuantity,
-        addressId: selectedAddressId
+        addressId: selectedAddressId,
       });
 
       // Kiểm tra nếu API trả về lỗi không hỗ trợ ship
-      if (fee.error && fee.error.includes('Không hỗ trợ ship')) {
+      if (fee.error && fee.error.includes("Không hỗ trợ ship")) {
         Modal.warning({
-          title: 'Thông báo',
-          content: 'Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.',
-          okText: 'Đồng ý',
+          title: "Thông báo",
+          content:
+            "Không hỗ trợ giao hàng cho khu vực này. Vui lòng chọn hình thức nhận hàng tại cửa hàng hoặc chọn địa chỉ khác.",
+          okText: "Đồng ý",
           centered: true,
           okButtonProps: {
-            className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-          }
+            className:
+              "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+          },
         });
-        
+
         // Tự động chuyển về pickup
         handleDeliveryOptionChange(branchId, "pickup");
         return;
       }
-      
-      setShippingFees(prev => ({...prev, [branchId]: fee}));
+
+      setShippingFees((prev) => ({ ...prev, [branchId]: fee }));
     } catch (error) {
       console.error("Lỗi khi tính phí ship:", error);
       // Xử lý lỗi và hiển thị thông báo
       Modal.error({
-        title: 'Lỗi',
-        content: 'Có lỗi xảy ra khi tính phí giao hàng. Vui lòng thử lại sau.',
-        okText: 'Đồng ý',
+        title: "Lỗi",
+        content: "Có lỗi xảy ra khi tính phí giao hàng. Vui lòng thử lại sau.",
+        okText: "Đồng ý",
         centered: true,
         okButtonProps: {
-          className: 'bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white'
-        }
+          className:
+            "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+        },
       });
     } finally {
-      setLoadingShippingFees(prev => ({...prev, [branchId]: false}));
+      setLoadingShippingFees((prev) => ({ ...prev, [branchId]: false }));
     }
+  };
+
+  const getMaterialById = async (materialId) => {
+    // Giả sử bạn có một API để lấy thông tin vật liệu
+    const response = await fetch(`/api/materials/${materialId}`);
+    const data = await response.json();
+    return data.price; // Trả về giá của vật liệu
   };
 
   return (
     <div className="px-4 py-4 bg-white mb-4">
-      <div className="grid grid-cols-4 items-center justify-center p-4 h-15">
+      <div className="grid grid-cols-3 items-center justify-center p-4 h-15">
         <div className="font-semibold text-xl text-center">Dịch vụ</div>
         <div className="font-semibold text-xl text-center">Đơn giá</div>
-        <div className="font-semibold text-xl text-center">
-          Số lượng (đôi giày)
-        </div>
         <div className="font-semibold text-xl text-center">Thành tiền</div>
       </div>
 
@@ -219,7 +256,7 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
             service.promotion && service.promotion.newPrice !== undefined
               ? service.promotion.newPrice
               : service.price;
-          return shopTotal + price * (service.quantity || 0);
+          return shopTotal + price + (service.materialPrice || 0);
         }, 0);
 
         return (
@@ -259,12 +296,12 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                 service.promotion && service.promotion.newPrice !== undefined
                   ? service.promotion.newPrice
                   : service.price;
-              const totalPrice = price * (service.quantity || 0);
+              const totalPrice = price + (service.materialPrice || 0);
 
               return (
                 <div
                   key={service.id}
-                  className="grid grid-cols-4 items-center justify-center mt-2 py-2"
+                  className="grid grid-cols-3 items-center justify-center mt-2 py-2"
                 >
                   <div className="flex items-center">
                     <div className="w-16 h-16 mr-4">
@@ -280,13 +317,28 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                         />
                       ) : (
                         <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded">
-                          <span className="text-gray-400 text-xs text-center">Không có ảnh</span>
+                          <span className="text-gray-400 text-xs text-center">
+                            Không có ảnh
+                          </span>
                         </div>
                       )}
                     </div>
-                    <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      {service.name}
-                    </span>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                        {service.name}
+                      </span>
+                      {service.material && (
+                        <span className="text-gray-600">
+                          Vật liệu: {service.material}
+                        </span>
+                      )}
+                      {service.materialPrice > 0 && (
+                        <div className="text-sm text-gray-600">
+                          Giá vật liệu: {service.materialPrice.toLocaleString()}{" "}
+                          đ
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   <div className="items-center justify-center text-center">
@@ -295,14 +347,21 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
                     </span>
                   </div>
 
-                  <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    <span className="text-black"> {service.quantity || 0}</span>
-                  </div>
-
-                  <div className="items-center justify-center text-center max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                    <span className="text-[#002278] text-right">
+                  <div className="items-center justify-center text-center">
+                    <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
                       {totalPrice.toLocaleString()} đ
                     </span>
+                  </div>
+
+                  <div className="col-span-3 mt-2">
+                    <textarea
+                      className="w-full p-2 border border-gray-300 rounded h-20"
+                      placeholder="Lưu ý cho dịch vụ..."
+                      onChange={(e) =>
+                        handleNoteChange(e, shop.branchId, service.id)
+                      }
+                      value={notes[service.id] || ""}
+                    />
                   </div>
                 </div>
               );
@@ -315,105 +374,97 @@ const CheckoutCart = ({ cartItems, onDeliveryOptionChange, onNoteChange, default
               </span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 mt-2 border-t border-gray-300 p-4">
-              <div className="mr-8">
-                <h2 className="text-lg font-bold mb-2">Lời nhắn</h2>
-                <textarea
-                  className="w-full p-2 border border-gray-300 rounded h-34"
-                  placeholder="Lưu ý cho cửa hàng..."
-                  onChange={(e) => handleNoteChange(e, shop.branchId)}
-                  value={notes[shop.branchId] || ''}
-                />
-              </div>
-
-              <div>
-                <h2 className="text-lg font-bold mb-2">Tùy chọn giao hàng</h2>
-                <div className="flex flex-col">
-                  <div
-                    className={`mb-4 p-4 rounded-md ${
-                      deliveryOptions[shop.branchId] === "delivery"
-                        ? "bg-[#002278] text-white"
-                        : "bg-white text-black"
-                    } flex items-center justify-between`}
-                  >
-                    <div className="flex flex-col">
-                      <label className="flex items-center font-semibold text-xl">
-                        <input
-                          type="radio"
-                          value="delivery"
-                          checked={
-                            deliveryOptions[shop.branchId] === "delivery"
-                          }
-                          onChange={() =>
-                            handleDeliveryOptionChange(
-                              shop.branchId,
-                              "delivery"
-                            )
-                          }
-                          className="mr-2"
-                        />
-                        Giao hàng
-                      </label>
-                      <p
-                        className={`ml-4 ${
-                          deliveryOptions[shop.branchId] === "delivery"
-                            ? "text-white"
-                            : "text-black"
-                        }`}
-                      >
-                        Đơn hàng sẽ giao tại địa chỉ của bạn
-                      </p>
-                    </div>
-                    {deliveryOptions[shop.branchId] === "delivery" && (
-                      <div className="text-right">
-                        {loadingShippingFees[shop.branchId] ? (
-                          <span className="font-medium"></span>
-                        ) : (
-                          <>
-                            {/* {console.log("Hiển thị phí ship:", {
-                              branchId: shop.branchId,
-                              fee: shippingFees[shop.branchId]
-                            })} */}
-                            <span className="font-medium">
-                              {shippingFees[shop.branchId]?.toLocaleString() || "0"} đ
-                            </span>
-                          </>
-                        )}
-                      </div>
-                    )}
+            <div className="mt-2 border-t border-gray-300 p-4">
+              {/* <div className="mr-8">
+                <h2 className="text-lg font-bold mb-2">Lời nhắn cho dịch vụ</h2>
+                {(shop.services || []).map((service) => (
+                  <div key={service.id} className="mb-2">
+                    <span className="font-semibold">{service.name}</span>
+                    <textarea
+                      className="w-full p-2 border border-gray-300 rounded h-20"
+                      placeholder="Lưu ý cho dịch vụ..."
+                      onChange={(e) => handleNoteChange(e, service.id)}
+                      value={notes[service.id] || ""}
+                    />
                   </div>
+                ))}
+              </div> */}
 
-                  <div
-                    className={`p-4 rounded-md ${
-                      deliveryOptions[shop.branchId] === "pickup"
-                        ? "bg-[#002278] text-white"
-                        : "bg-white text-black"
-                    } flex items-center justify-between`}
-                  >
-                    <div className="flex flex-col">
-                      <label className="flex items-center font-semibold text-xl">
-                        <input
-                          type="radio"
-                          value="pickup"
-                          checked={deliveryOptions[shop.branchId] === "pickup"}
-                          onChange={() =>
-                            handleDeliveryOptionChange(shop.branchId, "pickup")
-                          }
-                          className="mr-2"
-                        />
-                        Lấy tại cửa hàng
-                      </label>
-                      <p
-                        className={`ml-4 ${
-                          deliveryOptions[shop.branchId] === "pickup"
-                            ? "text-white"
-                            : "text-black"
-                        }`}
-                      >
-                        Nhận hàng tại cửa hàng
-                      </p>
+              <h2 className="text-lg font-bold mb-2">Tùy chọn giao hàng</h2>
+              <div className="flex justify-between">
+                <div
+                  className={`mb-4 p-4 rounded-md w-1/2 mr-2 ${
+                    deliveryOptions[shop.branchId] === "delivery"
+                      ? "bg-[#002278] text-white"
+                      : "bg-white text-black"
+                  } flex items-center justify-between`}
+                >
+                  <div className="flex flex-col">
+                    <label className="flex items-center font-semibold text-xl">
+                      <input
+                        type="radio"
+                        value="delivery"
+                        checked={deliveryOptions[shop.branchId] === "delivery"}
+                        onChange={() =>
+                          handleDeliveryOptionChange(shop.branchId, "delivery")
+                        }
+                        className="mr-2"
+                      />
+                      Giao hàng
+                    </label>
+                    <p
+                      className={`ml-4 ${
+                        deliveryOptions[shop.branchId] === "delivery"
+                          ? "text-white"
+                          : "text-black"
+                      }`}
+                    >
+                      Đơn hàng sẽ giao tại địa chỉ của bạn
+                    </p>
+                  </div>
+                  {deliveryOptions[shop.branchId] === "delivery" && (
+                    <div className="text-right">
+                      {loadingShippingFees[shop.branchId] ? (
+                        <span className="font-medium"></span>
+                      ) : (
+                        <span className="font-medium">
+                          {shippingFees[shop.branchId]?.toLocaleString() || "0"}{" "}
+                          đ
+                        </span>
+                      )}
                     </div>
-                    {/* <p className="font-medium">Free</p> */}
+                  )}
+                </div>
+
+                <div
+                  className={`mb-4 p-4 rounded-md w-1/2 ml-2 ${
+                    deliveryOptions[shop.branchId] === "pickup"
+                      ? "bg-[#002278] text-white"
+                      : "bg-white text-black"
+                  } flex items-center justify-between`}
+                >
+                  <div className="flex flex-col">
+                    <label className="flex items-center font-semibold text-xl">
+                      <input
+                        type="radio"
+                        value="pickup"
+                        checked={deliveryOptions[shop.branchId] === "pickup"}
+                        onChange={() =>
+                          handleDeliveryOptionChange(shop.branchId, "pickup")
+                        }
+                        className="mr-2"
+                      />
+                      Lấy tại cửa hàng
+                    </label>
+                    <p
+                      className={`ml-4 ${
+                        deliveryOptions[shop.branchId] === "pickup"
+                          ? "text-white"
+                          : "text-black"
+                      }`}
+                    >
+                      Nhận hàng tại cửa hàng
+                    </p>
                   </div>
                 </div>
               </div>

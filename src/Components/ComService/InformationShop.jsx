@@ -6,12 +6,14 @@ import { useLocation, useParams, useNavigate } from "react-router-dom";
 import { FaStar } from "react-icons/fa";
 import { getBusinessById } from "../../api/businesses";
 import { getBranchByBusinessId } from "../../api/branch";
+import { getServiceByBusinessId } from "../../api/service";
 
 const InformationShop = ({ businessId, onBranchSelect }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
   const [business, setBusiness] = useState(null);
   const [branches, setBranches] = useState([]);
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const [servicesCount, setServicesCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -47,6 +49,9 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
           ? branchData.data.filter(branch => branch.status !== "INACTIVE")
           : [];
         setBranches(activeBranches);
+
+        const serviceData = await getServiceByBusinessId(businessId);
+        setServicesCount(serviceData.data.totalCount);
       } catch (error) {
         console.error("Lỗi khi lấy thông tin:", error.errors || error);
       }
@@ -240,7 +245,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         </div>
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Dịch vụ</span>
-          <span className="text-lg text-[#002278] font-normal">1</span>
+          <span className="text-lg text-[#002278] font-normal">{servicesCount}</span>
         </div>
       </div>
 

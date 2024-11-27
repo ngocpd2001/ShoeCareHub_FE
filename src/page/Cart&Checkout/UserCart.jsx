@@ -5,6 +5,7 @@ import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getUserCart, deleteCartItem } from "../../api/cart";
 import { getServiceById } from "../../api/service";
+import { getMaterialById } from "../../api/material";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -19,35 +20,40 @@ const UserCart = () => {
 
   const calculateTotalAmount = (items) => {
     return items.reduce((total, shop) => {
-      return total + shop.services.reduce((serviceTotal, service) => {
-        if (service.selected) {
+      return (
+        total +
+        shop.services.reduce((serviceTotal, service) => {
+          const materialPrice = service.materialPrice || 0;
           const price = service.promotion?.newPrice || service.price;
-          const quantity = service.quantity || 1;
-          return serviceTotal + (price * quantity);
-        }
-        return serviceTotal;
-      }, 0);
+          return serviceTotal + (price + materialPrice);
+        }, 0)
+      );
     }, 0);
   };
 
   const fetchCartItems = async () => {
     try {
       const data = await getUserCart(userId);
-      const dataArray = Array.isArray(data) ? data : [];
+      if (!data || !Array.isArray(data)) {
+        throw new Error("Dữ liệu giỏ hàng không hợp lệ");
+      }
+      const dataArray = data;
       setBranches(dataArray);
 
       const detailedItems = await Promise.all(
         dataArray.flatMap((branch) =>
           (branch.items || []).map(async (item) => {
             const serviceDetails = await getServiceById(item.serviceId);
-            const imageUrl = serviceDetails.assetUrls?.[0]?.url || '';
-            
-            // console.log('Service Details:', {
-            //   serviceId: item.serviceId,
-            //   assetUrls: serviceDetails.assetUrls,
-            //   firstImageUrl: imageUrl
-            // });
-            
+            const imageUrl = serviceDetails.assetUrls?.[0]?.url || "";
+            let materialPrice = 0;
+
+            if (item.materialId) {
+              const materialResponse = await getMaterialById(item.materialId);
+              materialPrice = materialResponse.data
+                ? materialResponse.data.price
+                : 0;
+            }
+
             return {
               id: item.id,
               branchId: branch.branchId,
@@ -60,7 +66,9 @@ const UserCart = () => {
               quantity: item.quantity,
               selected: false,
               status: serviceDetails.status,
-              isAvailable: serviceDetails.status !== 'UNAVAILABLE'
+              isAvailable: serviceDetails.status !== "UNAVAILABLE",
+              material: item.materialName || "",
+              materialPrice: materialPrice,
             };
           })
         )
@@ -97,7 +105,7 @@ const UserCart = () => {
 
   useEffect(() => {
     if (location.state?.service) {
-      const newService = { ...location.state.service, quantity: 1 };
+      const newService = { ...location.state.service };
       setCartItems((prevItems) => {
         const shopIndex = prevItems.findIndex(
           (shop) => shop.shopName === newService.shopName
@@ -133,9 +141,18 @@ const UserCart = () => {
   useEffect(() => {
     const calculateTotalAmount = () => {
       return cartItems.reduce((sum, shop) => {
-        return sum + shop.services.reduce((serviceSum, service) => {
-          return serviceSum + (service.selected ? (service.promotion?.newPrice || service.price) * service.quantity : 0);
-        }, 0);
+        return (
+          sum +
+          shop.services.reduce((serviceSum, service) => {
+            return (
+              serviceSum +
+              (service.selected
+                ? (service.promotion?.newPrice || service.price) +
+                  (service.materialPrice || 0)
+                : 0)
+            );
+          }, 0)
+        );
       }, 0);
     };
 
@@ -155,13 +172,15 @@ const UserCart = () => {
   }, [cartItems]);
 
   const handleCheckout = () => {
-    const selectedItems = cartItems.filter((shop) => shop.services.some((service) => service.selected)).map((shop) => ({
-      branchId: shop.branchId,
-      shopName: shop.shopName,
-      shopAddress: shop.shopAddress,
-      services: shop.services.filter((service) => service.selected),
-    }));
-  
+    const selectedItems = cartItems
+      .filter((shop) => shop.services.some((service) => service.selected))
+      .map((shop) => ({
+        branchId: shop.branchId,
+        shopName: shop.shopName,
+        shopAddress: shop.shopAddress,
+        services: shop.services.filter((service) => service.selected),
+      }));
+
     if (selectedItems.length === 0) {
       setShowPopup(true);
     } else {
@@ -175,10 +194,14 @@ const UserCart = () => {
     try {
       await deleteCartItem(serviceId);
       setCartItems((prevShops) =>
-        prevShops.map((shop) => ({
-          ...shop,
-          services: shop.services.filter((service) => service.id !== serviceId),
-        })).filter((shop) => shop.services.length > 0)
+        prevShops
+          .map((shop) => ({
+            ...shop,
+            services: shop.services.filter(
+              (service) => service.id !== serviceId
+            ),
+          }))
+          .filter((shop) => shop.services.length > 0)
       );
       // console.log("Item removed successfully");
     } catch (error) {
@@ -199,14 +222,15 @@ const UserCart = () => {
               ...shop,
               services: shop.services.map((service) => ({
                 ...service,
-                selected: service.isAvailable ? !shop.services.every((s) => s.selected) : false
+                selected: service.isAvailable
+                  ? !shop.services.every((s) => s.selected)
+                  : false,
               })),
             }
           : shop
       )
     );
   };
-
   const handleSelect = (serviceId) => {
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
@@ -215,7 +239,7 @@ const UserCart = () => {
           service.id === serviceId
             ? {
                 ...service,
-                selected: service.isAvailable ? !service.selected : false
+                selected: service.isAvailable ? !service.selected : false,
               }
             : service
         ),
@@ -225,17 +249,17 @@ const UserCart = () => {
 
   const handleSelectAllShops = () => {
     const allSelected = cartItems.every((shop) =>
-      shop.services.every((service) => 
+      shop.services.every((service) =>
         service.isAvailable ? service.selected : true
       )
     );
-    
+
     setCartItems((prevShops) =>
       prevShops.map((shop) => ({
         ...shop,
         services: shop.services.map((service) => ({
           ...service,
-          selected: service.isAvailable ? !allSelected : false
+          selected: service.isAvailable ? !allSelected : false,
         })),
       }))
     );
@@ -243,16 +267,20 @@ const UserCart = () => {
 
   const handleRemoveSelectedItems = async () => {
     const selectedItems = cartItems.flatMap((shop) =>
-      shop.services.filter((service) => service.selected).map((service) => service.id)
+      shop.services
+        .filter((service) => service.selected)
+        .map((service) => service.id)
     );
 
     try {
       await Promise.all(selectedItems.map((itemId) => deleteCartItem(itemId)));
       setCartItems((prevShops) =>
-        prevShops.map((shop) => ({
-          ...shop,
-          services: shop.services.filter((service) => !service.selected),
-        })).filter((shop) => shop.services.length > 0)
+        prevShops
+          .map((shop) => ({
+            ...shop,
+            services: shop.services.filter((service) => !service.selected),
+          }))
+          .filter((shop) => shop.services.length > 0)
       );
       // console.log("Selected items removed successfully");
     } catch (error) {
@@ -262,25 +290,29 @@ const UserCart = () => {
 
   const calculateSavings = (items) => {
     return items.reduce((totalSavings, shop) => {
-      return totalSavings + shop.services.reduce((shopSavings, service) => {
-        if (service.selected) {
-          const originalPrice = service.price;
-          const discountedPrice = service.promotion?.newPrice || service.price;
-          const savingPerUnit = originalPrice - discountedPrice;
-          const quantity = service.quantity || 1;
-          const totalServiceSaving = savingPerUnit * quantity;
-          
-          console.log({
-            serviceName: service.name,
-            savingPerUnit,
-            quantity,
-            totalServiceSaving
-          });
-          
-          return shopSavings + totalServiceSaving;
-        }
-        return shopSavings;
-      }, 0);
+      return (
+        totalSavings +
+        shop.services.reduce((shopSavings, service) => {
+          if (service.selected) {
+            const originalPrice = service.price;
+            const discountedPrice =
+              service.promotion?.newPrice || service.price;
+            const savingPerUnit = originalPrice - discountedPrice;
+            const quantity = service.quantity || 1;
+            const totalServiceSaving = savingPerUnit * quantity;
+
+            console.log({
+              serviceName: service.name,
+              savingPerUnit,
+              quantity,
+              totalServiceSaving,
+            });
+
+            return shopSavings + totalServiceSaving;
+          }
+          return shopSavings;
+        }, 0)
+      );
     }, 0);
   };
 
@@ -290,12 +322,9 @@ const UserCart = () => {
         ...shop,
         services: shop.services.map((service) => {
           if (service.id === id) {
-            // console.log('Service ID:', id);
-            // console.log('Previous quantity:', service.quantity);
-            // console.log('New quantity:', newQuantity);
-            return { 
-              ...service, 
-              quantity: newQuantity 
+            return {
+              ...service,
+              quantity: 1,
             };
           }
           return service;
@@ -306,7 +335,9 @@ const UserCart = () => {
 
   return (
     <div>
-      <h1 className="text-3xl text-[#002278] font-bold bg-white w-full text-center py-4">Giỏ hàng</h1>
+      <h1 className="text-3xl text-[#002278] font-bold bg-white w-full text-center py-4">
+        Giỏ hàng
+      </h1>
       <div className="auto px-4 bg-gray-100 min-h-screen">
         <div className="max-w-7xl mx-auto p-6">
           {cartItems.length === 0 ? (
@@ -322,7 +353,7 @@ const UserCart = () => {
             </div>
           ) : (
             <div>
-              <div className="grid grid-cols-4 h-15 p-4 bg-white border border-[#002278]">
+              <div className="grid grid-cols-3 h-15 p-4 bg-white border border-[#002278]">
                 <div className="font-semibold text-xl text-left flex items-center w-full">
                   <input
                     type="checkbox"
@@ -335,9 +366,6 @@ const UserCart = () => {
                   <h2 className="text-left">Dịch vụ</h2>
                 </div>
                 <div className="font-semibold text-xl text-center">Đơn giá</div>
-                <div className="font-semibold text-xl text-center">
-                  Số lượng (đôi giày)
-                </div>
                 <div className="flex flex-row items-center">
                   <div className="font-semibold text-xl text-center w-[70%] pr-6">
                     Thành tiền
@@ -363,23 +391,27 @@ const UserCart = () => {
           {branches.length > 0 && (
             <div className="flex items-center justify-between bg-white p-4 rounded-lg mt-4">
               <div className="flex items-center text-xl">
-                   <input
-                    type="checkbox"
-                    checked={cartItems.every((shop) =>
-                      shop.services.every((service) => service.selected)
-                    )}
-                    onChange={handleSelectAllShops}
-                    className="mr-4"
-                  />
+                <input
+                  type="checkbox"
+                  checked={cartItems.every((shop) =>
+                    shop.services.every((service) => service.selected)
+                  )}
+                  onChange={handleSelectAllShops}
+                  className="mr-4"
+                />
                 <span className="font-bold">Chọn tất cả</span>
-                <button onClick={handleRemoveSelectedItems} className="ml-4 text-gray-500">
+                <button
+                  onClick={handleRemoveSelectedItems}
+                  className="ml-4 text-gray-500"
+                >
                   Xóa
                 </button>
-
               </div>
               <div className="text-right">
                 <div className="text-xl">
-                  <span>Tổng tiền dịch vụ: {totalAmount.toLocaleString()} đ</span>
+                  <span>
+                    Tổng tiền dịch vụ: {totalAmount.toLocaleString()} đ
+                  </span>
                 </div>
                 <div className="text-lg">
                   <span>({selectedServiceCount} dịch vụ)</span>

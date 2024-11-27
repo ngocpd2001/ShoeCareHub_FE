@@ -57,46 +57,26 @@ export const getCartTotal = async (cartId) => {
 };
 
 // Thêm một mục mới vào giỏ hàng
-export const addItemToCart = async (userId, itemData) => {
+export const addToCart = async ({ userId, serviceId, materialId, branchId }) => {
   try {
-    // Kiểm tra xem là service hay material
-    const isService = 'serviceId' in itemData;
-    const isMaterial = 'materialId' in itemData;
-
-    if (!isService && !isMaterial) {
-      throw new Error('Phải có serviceId hoặc materialId');
-    }
-
-    // Tạo request body với các trường cần thiết
     const requestBody = {
-      branchId: Number(itemData.branchId),
-      quantity: Number(itemData.quantity),
+      serviceId,
+      branchId
     };
 
-    // Thêm serviceId hoặc materialId tùy theo loại
-    if (isService) {
-      requestBody.serviceId = Number(itemData.serviceId);
-    } else {
-      requestBody.materialId = Number(itemData.materialId);
+    // Chỉ thêm materialId vào requestBody nếu nó có giá trị
+    if (materialId) {
+      requestBody.materialId = materialId;
     }
-
-    console.log('Request body for add to cart:', requestBody);
 
     const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, requestBody);
     return response.data;
   } catch (error) {
-    if (error.response) {
-      console.error('Lỗi từ server:', error.response.data);
-      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
-    } else if (error.request) {
-      console.error('Lỗi mạng:', error.request);
-      throw new Error('Network error: No response received');
-    } else {
-      console.error('Lỗi:', error.message);
-      throw new Error(`Error: ${error.message}`);
-    }
+    console.error('Lỗi khi thêm vào giỏ hàng:', error);
+    throw error;
   }
 };
+
 
 // Cập nhật số lượng của một mục trong giỏ hàng
 export const updateCartItem = async (cartId, itemId, quantity) => {
@@ -160,53 +140,37 @@ export const getCartItemById = async (id) => {
 };
 
 // Thực hiện thanh toán giỏ hàng
-export const checkoutCart = async ({
-  cartItems, // Mảng các cart items được chọn
-  accountId,
-  addressId,
-  isAutoReject = false,
-  notes = {}, // Object chứa note cho từng cart
-  deliveryOptions = {} // Object chứa delivery option cho từng cart
-}) => {
+export const checkoutCart = async (checkoutData) => {
   try {
-    // Kiểm tra và đảm bảo cartItems là mảng hợp lệ
-    if (!cartItems || !Array.isArray(cartItems)) {
-      throw new Error('CartItems không hợp lệ');
+    // Kiểm tra xem checkoutData.cartItems có hợp lệ không
+    if (!checkoutData.cartItems || !Array.isArray(checkoutData.cartItems)) {
+      throw new Error("cartItems không hợp lệ.");
     }
 
-    // Tạo cấu trúc carts theo format mới
-    const carts = cartItems.map(shop => {
-      // Đảm bảo shop.services tồn tại và là mảng
-      const services = shop.services || [];
-      const cartItemIds = services.map(service => service.id).filter(id => id); // Lọc bỏ các id undefined/null
-
-      return {
-        cartItemIds,
-        note: notes[shop.branchId] || '',
-        isShip: deliveryOptions[shop.branchId] === 'delivery'
-      };
-    });
-
     const requestBody = {
-      carts,
-      accountId: Number(accountId),
-      addressId: Number(addressId),
-      isAutoReject: Boolean(isAutoReject)
+      cart: {
+        cartItems: checkoutData.cartItems.map(item => ({
+          cartItemId: item.cartItemId,
+          note: item.note
+        })),
+        isShip: checkoutData.isShip
+      },
+      accountId: checkoutData.accountId,
+      addressId: checkoutData.addressId,
+      isAutoReject: checkoutData.isAutoReject
     };
-
-    console.log('Request body before API call:', requestBody);
 
     const response = await axiosInstances.login.post('/carts/cart/checkout', requestBody);
     return response.data;
   } catch (error) {
     if (error.response) {
-      console.error('Lỗi từ server khi thanh toán:', error.response.data);
+      console.error('Lỗi từ server khi thanh toán giỏ hàng:', error.response.data);
       throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
     } else if (error.request) {
-      console.error('Lỗi mạng khi thanh toán:', error.request);
+      console.error('Lỗi mạng khi thanh toán giỏ hàng:', error.request);
       throw new Error('Network error: No response received');
     } else {
-      console.error('Lỗi khi thiết lập yêu cầu thanh toán:', error.message);
+      console.error('Lỗi khi thiết lập yêu cầu thanh toán giỏ hàng:', error.message);
       throw new Error(`Error: ${error.message}`);
     }
   }
@@ -215,46 +179,24 @@ export const checkoutCart = async ({
 // Thực hiện thanh toán dịch vụ
 export const checkoutService = async (checkoutData) => {
   try {
-    // Đảm bảo dữ liệu đúng format trước khi gửi
-    const formattedData = {
-      items: checkoutData.items.map(item => {
-        const formattedItem = {
-          serviceId: Number(item.serviceId),
-          materialId: Number(item.materialId || 0),
-          branchId: Number(item.branchId),
-          quantity: Number(item.quantity),
-          note: checkoutData.notes[item.branchId] || ''
-        };
-        console.log(`Item ${item.serviceId} note:`, formattedItem.note); // Log để kiểm tra note của từng item
-        return formattedItem;
-      }),
-      accountId: Number(checkoutData.accountId),
-      addressId: checkoutData.addressId ? Number(checkoutData.addressId) : undefined,
-      isAutoReject: Boolean(checkoutData.isAutoReject),
-      isShip: Boolean(checkoutData.isShip)
+    const requestBody = {
+      item: {
+        serviceId: checkoutData.item.serviceId,
+        materialId: checkoutData.item.materialId,
+        branchId: checkoutData.item.branchId
+      },
+      accountId: checkoutData.accountId,
+      addressId: checkoutData.addressId,
+      isAutoReject: checkoutData.isAutoReject,
+      note: checkoutData.note,
+      isShip: checkoutData.isShip
     };
 
-    // Log chi tiết để kiểm tra
-    console.log('Original checkout data:', {
-      items: checkoutData.items,
-      notes: checkoutData.notes
-    });
-    
-    console.log('Formatted checkout data:', JSON.stringify(formattedData, null, 2));
-
-    const response = await axiosInstances.login.post('/services/service/checkout', formattedData);
+    const response = await axiosInstances.login.post('/services/checkout', requestBody);
     return response.data;
   } catch (error) {
-    if (error.response) {
-      console.error('Lỗi từ server khi thanh toán dịch vụ:', error.response.data);
-      throw new Error(`Server error: ${error.response.data.message || 'Unknown error'}`);
-    } else if (error.request) {
-      console.error('Lỗi mạng khi thanh toán dịch vụ:', error.request);
-      throw new Error('Network error: No response received');
-    } else {
-      console.error('Lỗi khi thiết lập yêu cầu thanh toán dịch vụ:', error.message);
-      throw new Error(`Error: ${error.message}`);
-    }
+    console.error('Lỗi khi thanh toán dịch vụ:', error.message);
+    throw error; // Chỉ ném lại lỗi mà không cần xử lý chi tiết
   }
 };
 

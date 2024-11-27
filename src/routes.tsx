@@ -88,6 +88,7 @@ const RequireAuth = ({ children }: { children: JSX.Element }) => {
   const token = localStorage.getItem("token")?.replace(/^["']|["']$/g, "").trim();
 
   if (!token || !isValidToken(token)) {
+    console.log("Redirecting to login due to invalid or missing token.");
     localStorage.setItem("redirectAfterLogin", location.pathname);
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
