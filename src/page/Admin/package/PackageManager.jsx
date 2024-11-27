@@ -8,6 +8,7 @@ import ComModal from "../../../Components/ComModal/ComModal";
 
 import { useStorage } from "../../../hooks/useLocalStorage";
 import { TablePackage } from "./TablePackage";
+import CreatePackage from "./CreatePackage";
 
 export default function PackageManager() {
   const modal = useModalState();
@@ -32,11 +33,9 @@ export default function PackageManager() {
             ]}
           /> */}
         </div>
-        {/* <div>
-          <ComButton onClick={() => modal.handleOpen()}>
-            + Thêm danh mục
-          </ComButton>
-        </div> */}
+        <div>
+          <ComButton onClick={() => modal.handleOpen()}>Thêm gói</ComButton>
+        </div>
       </div>
       <TablePackage ref={tableRef} />
       <ComModal
@@ -44,10 +43,7 @@ export default function PackageManager() {
         isOpen={modal?.isModalOpen}
         onClose={modal?.handleClose}
       >
-        {/* <CreateCategoryService
-          onClose={modal?.handleClose}
-          tableRef={tableRef}
-        /> */}
+        <CreatePackage onClose={modal?.handleClose} tableRef={tableRef} />
       </ComModal>
     </>
   );

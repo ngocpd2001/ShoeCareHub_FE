@@ -85,6 +85,7 @@ import TransactionManager from "./page/Admin/Transaction/TransactionManager";
 import CategoryServiceManager from "./page/Admin/CategoryService/CategoryServiceManager";
 import PackageManager from "./page/Admin/package/PackageManager";
 import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
+import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -181,6 +182,10 @@ export const routers = createBrowserRouter([
           {
             path: "/user/order-history",
             element: <OrderHistory />,
+          },
+          {
+            path: "/user/register-owner",
+            element: <RegisterCustomerToOwner />,
           },
           {
             path: "/user/addresses",
@@ -490,27 +495,27 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/admin/store/update/:id",
-        element: <UpdateBusiness/>,
+        element: <UpdateBusiness />,
       },
       {
         path: "/admin/branch/update/:id",
-        element: <UpdateBranch_Ad/>,
+        element: <UpdateBranch_Ad />,
       },
       {
         path: "/admin/ticket-category",
-        element: <CategoryTicketManager/>,
+        element: <CategoryTicketManager />,
       },
       {
         path: "/admin/ticket",
-        element: <TicketManager_Ad/>,
+        element: <TicketManager_Ad />,
       },
       {
         path: "/admin/ticket/update/:id",
-        element: <UpdateTicket_Ad/>,
+        element: <UpdateTicket_Ad />,
       },
       {
         path: "/admin/transaction",
-        element: <TransactionManager/>,
+        element: <TransactionManager />,
       },
       {
         path: "/admin/feedback",

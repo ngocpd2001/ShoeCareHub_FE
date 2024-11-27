@@ -12,16 +12,15 @@ import ComTextArea from "../../../Components/ComInput/ComTextArea";
 import { YupPackage } from "../../../yup/YupPackage";
 // Thiết lập icon cho Marker (khắc phục vấn đề với icon mặc định của Leaflet)
 
-export default function EditPackage({ onClose, tableRef, selectedData }) {
+export default function CreatePackage({ onClose, tableRef }) {
   const [disabled, setDisabled] = useState(false);
   const { notificationApi } = useNotification();
   const [provinces, setProvinces] = useState([]);
   const methods = useForm({
     resolver: yupResolver(YupPackage),
-    values: selectedData,
   });
   console.log("====================================");
-  console.log(4444, selectedData);
+
   console.log("====================================");
 
   const {
@@ -37,15 +36,18 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-    putData(`/subscription-packs`, selectedData.id, {
+    postData(`/subscription-packs`, {
       ...data,
     })
       .then((response) => {
         console.log("Tạo thành công:", response);
         setDisabled(false);
-        notificationApi("success", "Thành công", "Cập nhật gói thành công.");
+        notificationApi("success", "Thành công", "tạo gói thành công.");
         setTimeout(() => {
-          tableRef();
+          if (tableRef.current) {
+            // Kiểm tra xem ref đã được gắn chưa
+            tableRef.current.reloadData();
+          }
         }, 100);
         onClose();
       })
@@ -138,9 +140,7 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
                       },
                     ]}
                     onChangeValue={(e, value) => {
-                  
-                        setValue("period", value, { shouldValidate: true });
-                    
+                      setValue("period", value, { shouldValidate: true });
                     }}
                     value={watch("period")}
                     {...register("period")}
@@ -158,13 +158,7 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
               </div>
 
               <div className="mt-10 flex justify-end gap-6">
-                {/* <div>
-                  <ComButton
-                    className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
-                  >
-                    <div className="text-black"> Hủy bỏ</div>
-                  </ComButton>
-                </div> */}
+         
                 <div>
                   <ComButton
                     htmlType="submit"
@@ -173,7 +167,7 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
                       disabled ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                   >
-                    {disabled ? "Đang cập nhật..." : "Cập nhật"}
+                    {disabled ? "Đang tạo gói..." : "Tạo gói"}
                   </ComButton>
                 </div>
               </div>

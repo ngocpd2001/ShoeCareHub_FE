@@ -16,7 +16,7 @@ const navigation = [
       { name: "Thông tin tài khoản", href: "/user/profile" },
       { name: "Đổi mật khẩu", href: "/user/reset-password" },
       { name: "Địa chỉ nhận hàng", href: "/user/addresses" },
-      { name: "Trở thành nhà cung cấp", href: "/" },
+      { name: "Trở thành nhà cung cấp", href: "/user/register-owner" },
       { name: "Yêu cầu khiếu nại", href: "/user/ticket" },
     ],
   },
@@ -27,7 +27,25 @@ const navigation = [
     children: [{ name: "Đơn hàng", href: "/user/order-history" }],
   },
 ];
-
+const navigation2 = [
+  {
+    name: "Tài khoản",
+    icon: UsersIcon,
+    children: [
+      { name: "Thông tin tài khoản", href: "/user/profile" },
+      { name: "Đổi mật khẩu", href: "/user/reset-password" },
+      { name: "Địa chỉ nhận hàng", href: "/user/addresses" },
+      // { name: "Trở thành nhà cung cấp", href: "/user/register-owner" },
+      { name: "Yêu cầu khiếu nại", href: "/user/ticket" },
+    ],
+  },
+  {
+    name: "Lịch sử mua hàng",
+    icon: UsersIcon,
+    current: false,
+    children: [{ name: "Đơn hàng", href: "/user/order-history" }],
+  },
+];
 function classNames(...classes) {
   return classes.filter(Boolean).join(" ");
 }
@@ -58,52 +76,100 @@ export default function ComHeaderUser({ children }) {
             </div>
             <nav className="flex flex-1 flex-col">
               <ul role="list" className="flex flex-1 flex-col gap-y-7">
-                {navigation.map((item) => (
-                  <li key={item.name}>
-                    <Disclosure as="div" defaultOpen={true}>
-                      {({ open }) => (
-                        <>
-                          <DisclosureButton
-                            className={classNames(
-                              "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700",
-                              item.children
-                                ? "hover:bg-gray-50 hover:text-[#002278]"
-                                : ""
-                            )}
-                          >
-                            <ChevronRightIcon
-                              className={`h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 ${
-                                open ? "rotate-90" : ""
-                              }`}
-                            />
-                            <item.icon
-                              aria-hidden="true"
-                              className="h-6 w-6 shrink-0"
-                            />
-                            {item.name}
-                          </DisclosureButton>
-                          <DisclosurePanel as="ul" className="mt-1">
-                            {item.children.map((subItem) => (
-                              <li key={subItem.name}>
-                                <Link
-                                  to={subItem.href}
-                                  className={classNames(
-                                    subItem.href === activeCategory
-                                      ? "text-[#002278]"
-                                      : "hover:text-[#002278] text-black",
-                                    "block rounded-md py-2 pl-9 pr-2 text-sm leading-6 my-2"
-                                  )}
-                                >
-                                  {subItem.name}
-                                </Link>
-                              </li>
-                            ))}
-                          </DisclosurePanel>
-                        </>
-                      )}
-                    </Disclosure>
-                  </li>
-                ))}
+                {user.role === "OWNER" &&
+                  navigation2.map((item) => (
+                    <li key={item.name}>
+                      <Disclosure as="div" defaultOpen={true}>
+                        {({ open }) => (
+                          <>
+                            <DisclosureButton
+                              className={classNames(
+                                "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700",
+                                item.children
+                                  ? "hover:bg-gray-50 hover:text-[#002278]"
+                                  : ""
+                              )}
+                            >
+                              <ChevronRightIcon
+                                className={`h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 ${
+                                  open ? "rotate-90" : ""
+                                }`}
+                              />
+                              <item.icon
+                                aria-hidden="true"
+                                className="h-6 w-6 shrink-0"
+                              />
+                              {item.name}
+                            </DisclosureButton>
+                            <DisclosurePanel as="ul" className="mt-1">
+                              {item.children.map((subItem) => (
+                                <li key={subItem.name}>
+                                  <Link
+                                    to={subItem.href}
+                                    className={classNames(
+                                      subItem.href === activeCategory
+                                        ? "text-[#002278]"
+                                        : "hover:text-[#002278] text-black",
+                                      "block rounded-md py-2 pl-9 pr-2 text-sm leading-6 my-2"
+                                    )}
+                                  >
+                                    {subItem.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </DisclosurePanel>
+                          </>
+                        )}
+                      </Disclosure>
+                    </li>
+                  ))}
+                {user.role !== "OWNER" &&
+                  navigation.map((item) => (
+                    <li key={item.name}>
+                      <Disclosure as="div" defaultOpen={true}>
+                        {({ open }) => (
+                          <>
+                            <DisclosureButton
+                              className={classNames(
+                                "group flex w-full items-center gap-x-3 rounded-md p-2 text-left text-sm font-semibold leading-6 text-gray-700",
+                                item.children
+                                  ? "hover:bg-gray-50 hover:text-[#002278]"
+                                  : ""
+                              )}
+                            >
+                              <ChevronRightIcon
+                                className={`h-5 w-5 shrink-0 text-gray-400 transition-transform duration-200 ${
+                                  open ? "rotate-90" : ""
+                                }`}
+                              />
+                              <item.icon
+                                aria-hidden="true"
+                                className="h-6 w-6 shrink-0"
+                              />
+                              {item.name}
+                            </DisclosureButton>
+                            <DisclosurePanel as="ul" className="mt-1">
+                              {item.children.map((subItem) => (
+                                <li key={subItem.name}>
+                                  <Link
+                                    to={subItem.href}
+                                    className={classNames(
+                                      subItem.href === activeCategory
+                                        ? "text-[#002278]"
+                                        : "hover:text-[#002278] text-black",
+                                      "block rounded-md py-2 pl-9 pr-2 text-sm leading-6 my-2"
+                                    )}
+                                  >
+                                    {subItem.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </DisclosurePanel>
+                          </>
+                        )}
+                      </Disclosure>
+                    </li>
+                  ))}
               </ul>
             </nav>
           </div>

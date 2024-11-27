@@ -30,29 +30,7 @@ const sortOptions = [
   { name: "Đăng xuất", href: "login" },
 ];
 const subCategories = [
-  {
-    name: "Quản lý viện",
-    href: "/manager/institute",
-    icon: BuildingOffice2Icon,
-  },
-  { name: "Khách hàng", href: "/manager/user", icon: UserIcon },
-  { name: "Người cao tuổi", href: "/manager/elder", icon: UsersIcon },
-  { name: "Nhân viên", href: "/manager/employee", icon: BriefcaseIcon },
-  {
-    name: "Lịch hẹn",
-    href: "/manager/appointmentSchedule",
-    icon: CalendarDaysIcon,
-  },
-  {
-    name: "Quản lý gói dưỡng lão",
-    href: "/manager/nursingPackage",
-    icon: ClipboardDocumentListIcon,
-  },
-  {
-    name: "Quản lý dịch vụ",
-    href: "/manager/servicePackage",
-    icon: Bars3Icon,
-  },
+ 
 ];
 
 export default function ComHeaderManager({ children }) {

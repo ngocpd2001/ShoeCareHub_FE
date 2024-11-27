@@ -5,7 +5,7 @@ import { postData } from "../../../api/api";
 
 const paymentMethods = [
   { id: "VnPay", name: "VNPay", icon: CreditCard },
-  { id: "zalopay", name: "ZaloPay", icon: CreditCard },
+  { id: "Momo", name: "Momo", icon: CreditCard },
 ];
 
 export default function InvoiceDisplay({ packageInfo, onClose }) {

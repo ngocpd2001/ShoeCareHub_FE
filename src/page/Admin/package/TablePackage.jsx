@@ -141,7 +141,7 @@ export const TablePackage = forwardRef((props, ref) => {
       title: "",
       key: "operation",
       fixed: "right",
-      width: 100,
+      width: 50,
       render: (_, record) => (
         <div className="flex items-center flex-col">
           <ComMenuButonTable
