@@ -45,10 +45,10 @@ export default function CategoryServiceManager() {
         isOpen={modal?.isModalOpen}
         onClose={modal?.handleClose}
       >
-        {/* <CreateCategoryService
+        <CreateCategoryService
           onClose={modal?.handleClose}
           tableRef={tableRef}
-        /> */}
+        />
       </ComModal>
     </>
   );

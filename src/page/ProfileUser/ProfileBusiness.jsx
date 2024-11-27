@@ -8,6 +8,8 @@ import { useNotification } from "../../Notification/Notification";
 import { getData, putData } from "../../api/api";
 import { firebaseImg } from "./../../upImgFirebase/firebaseImg";
 import { useStorage } from "../../hooks/useLocalStorage";
+import { yupResolver } from "@hookform/resolvers/yup";
+import * as yup from "yup";
 
 const BusinessProfileForm = () => {
   const [isEditing, setIsEditing] = useState(false);
@@ -16,8 +18,16 @@ const BusinessProfileForm = () => {
   const { notificationApi } = useNotification();
   const [disabled, setDisabled] = useState(false);
   const [user, setUser] = useStorage("user", null);
-
-  const methods = useForm();
+  const CreateProductMessenger = yup.object({
+    name: yup
+      .string()
+      .required("Vui lòng nhập tên")
+      .min(2, "Tên quá ngắn, vui lòng nhập tối thiểu 2 ký tự")
+      .max(50, "Tên quá dài, vui lòng nhập tối đa 50 ký tự"),
+  });
+  const methods = useForm({
+    resolver: yupResolver(CreateProductMessenger),
+  });
   const { handleSubmit, register, setFocus, watch, setValue, reset } = methods;
 
   // Lấy thông tin doanh nghiệp từ API
@@ -40,32 +50,71 @@ const BusinessProfileForm = () => {
   }, [reset, user.businessId]);
 
   const handleImageChange = (data) => {
-    setImage(data);
+    const selectedImages = data;
+    console.log([selectedImages]);
+    setImage(selectedImages);
   };
 
-  const onSubmit = async (data) => {
+  const onSubmit = (data) => {
     setDisabled(true);
-    try {
-      const updatedImageUrl = image.length
-        ? await firebaseImg(image) // Upload ảnh mới nếu có
-        : business.imageUrl; // Giữ ảnh cũ nếu không thay đổi
 
-      const updatedBusiness = { ...data, imageUrl: updatedImageUrl };
+    console.log(image);
 
-      await putData(`/businesses/${business.id}`, updatedBusiness);
-      notificationApi(
-        "success",
-        "Cập nhật thành công",
-        "Thông tin doanh nghiệp đã được cập nhật"
-      );
-      setBusiness(updatedBusiness);
-      setIsEditing(false);
-    } catch (error) {
-      console.error("Lỗi khi cập nhật thông tin doanh nghiệp:", error);
-      notificationApi("error", "Cập nhật thất bại", "Vui lòng thử lại");
-    } finally {
-      setDisabled(false);
-    }
+    firebaseImg(image).then((dataImg) => {
+      console.log(dataImg);
+      if (dataImg) {
+        const updatedBusiness = { ...data, imageUrl: dataImg };
+        console.log(123, updatedBusiness);
+
+        putData(`/businesses`, business.id, updatedBusiness)
+          .then((e) => {
+           
+            notificationApi(
+              "success",
+              "Cập nhật thành công",
+              "Thông tin doanh nghiệp đã được cập nhật"
+            );
+            setBusiness(updatedBusiness);
+            setIsEditing(false);
+
+            setDisabled(false);
+          })
+          .catch((e) => {
+            console.log(e);
+            setDisabled(false);
+            notificationApi(
+              "error",
+              "Cập nhật không thành công",
+              "Đã cập nhật không thành công"
+            );
+          });
+      } else {
+        const updatedBusiness = { ...data };
+
+        putData(`/businesses`, business.id, updatedBusiness)
+          .then((e) => {
+        
+            notificationApi(
+              "success",
+              "Cập nhật thành công",
+              "Thông tin doanh nghiệp đã được cập nhật"
+            );
+            setBusiness(updatedBusiness);
+            setIsEditing(false);
+
+            setDisabled(false);
+          })
+          .catch((e) => {
+            console.log(e);
+            setDisabled(false);
+            notificationApi(
+              "error",
+              "Cập nhật không thành công",
+              "Đã cập nhật không thành công"
+            );
+          });
+      }
+    });
   };
 
   if (!business) {
@@ -105,6 +154,7 @@ const BusinessProfileForm = () => {
                 label="Xếp hạng"
                 type="number"
                 readOnly
+                disabled={isEditing}
                 value={business.rank || ""}
               />
             </div>
@@ -114,6 +164,7 @@ const BusinessProfileForm = () => {
                 label="Đánh giá"
                 type="number"
                 readOnly
+                disabled={isEditing}
                 value={
                   business.rating !== undefined
                     ? business.rating.toFixed(1)
@@ -126,6 +177,7 @@ const BusinessProfileForm = () => {
                 label={"Ngày tạo"}
                 placeholder={"Ngày tạo"}
                 readOnly
+                disabled={isEditing}
                 value={
                   business?.createdDate
                     ? new Date(business.createdDate).toLocaleDateString(
@@ -146,6 +198,7 @@ const BusinessProfileForm = () => {
                   label={"Ngày đăng ký"}
                   placeholder={"Ngày đăng ký"}
                   readOnly={!isEditing}
+                  disabled={isEditing}
                   value={
                     business.registeredTime
                       ? new Date(business.registeredTime).toLocaleDateString(
@@ -166,6 +219,7 @@ const BusinessProfileForm = () => {
                 <ComInput
                   label={"Ngày hết hạn"}
                   placeholder={"Ngày hết hạn"}
+                  disabled={isEditing}
                   readOnly={!isEditing}
                   value={
                     business.expiredTime
@@ -183,25 +237,47 @@ const BusinessProfileForm = () => {
               </div>
             </div>
             <div className="mb-6">
-              <ComSelect
-                size="large"
-                style={{
-                  width: "100%",
-                  backgroundColor: "#fff", // Giữ nền bình thường
-                  pointerEvents: "none", // Ngăn người dùng tương tác
-                  borderColor: "#d9d9d9", // Giữ đường viền như bình thường
-                }}
-                label="Trạng thái"
-                placeholder="Trạng thái"
-                value={watch("status") || business.status || ""}
-                options={[
-                  { value: "ACTIVE", label: "Hoạt động" },
-                  { value: "INACTIVE", label: "Không hoạt động" },
-                ]}
-                readOnly={!isEditing}
-                required={isEditing}
-                onChangeValue={(value) => setValue("status", value)}
-              />
+              {isEditing ? (
+                <ComSelect
+                  size="large"
+                  style={{
+                    width: "100%",
+                  }}
+                  label="Trạng thái"
+                  // mode="default"
+                  placeholder="Trạng thái"
+                  value={watch("status")}
+                  options={[
+                    { value: "ACTIVE", label: "Hoạt động" },
+                    { value: "INACTIVE", label: "Không hoạt động" },
+                  ]}
+                  readOnly={!isEditing}
+                  // open={!isEditing}
+                  // required={isEditing}
+                  onChangeValue={(e, value) => setValue("status", value)}
+                />
+              ) : (
+                <ComSelect
+                  size="large"
+                  style={{
+                    width: "100%",
+                  }}
+                  label="Trạng thái"
+                  // mode="default"
+                  placeholder="Trạng thái"
+                  value={watch("status")}
+                  options={[
+                    { value: "ACTIVE", label: "Hoạt động" },
+                    { value: "INACTIVE", label: "Không hoạt động" },
+                    { value: "SUSPENDED", label: "Bị khóa" },
+                    { value: "EXPIRED", label: "Hết hạn gói" },
+                  ]}
+                  readOnly={!isEditing}
+                  open={false}
+                  // required={isEditing}
+                  onChangeValue={(e, value) => setValue("status", value)}
+                />
+              )}
             </div>
             {isEditing && (
               <div className="flex justify-center">
@@ -243,16 +319,30 @@ const BusinessProfileForm = () => {
       </div>
       {!isEditing && (
         <div className="flex justify-center">
-          {/* <button
-            type="button"
-            onClick={() => {
-              setIsEditing(true);
-              setFocus("name");
-            }}
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-          >
-            Cập nhật thông tin
-          </button> */}
+          {watch("status") === "ACTIVE" && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(true);
+                setFocus("name");
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Cập nhật thông tin
+            </button>
+          )}
+          {watch("status") === "INACTIVE" && (
+            <button
+              type="button"
+              onClick={() => {
+                setIsEditing(true);
+                setFocus("name");
+              }}
+              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+            >
+              Cập nhật thông tin
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useNotification } from "../../../Notification/Notification";
 import ComInput from "../../../Components/ComInput/ComInput";
@@ -30,10 +30,14 @@ export default function CreateSevice() {
 
   const methods = useForm({
     resolver: yupResolver(YupSevice),
-    defaultValues: {
+    values: {
       title: "",
       content: "",
       newPrice: null,
+      serviceProcesses: [{
+        process: " ",
+        processOrder: 1,
+      },]
     },
   });
   useEffect(() => {
@@ -51,7 +55,7 @@ export default function CreateSevice() {
         console.error("Lỗi ", error);
       });
 
-    getData("/categories?PageIndex=1&PageSize=999999")
+    getData("/categories?Status=AVAILABLE&PageIndex=1&PageSize=999999")
       .then((response) => {
         console.log("Categories:", response?.data?.data);
         setCategories(
@@ -69,9 +73,13 @@ export default function CreateSevice() {
     handleSubmit,
     register,
     setValue,
+    control,
     formState: { errors },
   } = methods;
-
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "serviceProcesses",
+  });
   // Hàm thay đổi hình ảnh
   const onChange = (data) => {
     const selectedImages = data;
@@ -112,9 +120,17 @@ export default function CreateSevice() {
           };
 
           // Gửi yêu cầu tạo dịch vụ
+          const serviceProcesses = data.serviceProcesses.map(
+            (process, index) => ({
+              process: process.process,
+              processOrder: index + 1, // Thứ tự của quy trình (index bắt đầu từ 0, vì vậy + 1)
+            })
+          );
           console.log(serviceData);
-
-          postData(`services`, serviceData)
+          postData(`services`, {
+            ...serviceData,
+            serviceProcesses: serviceProcesses,
+          })
             .then((response) => {
               console.log("Tạo dịch vụ thành công:", response);
               setDisabled(false);
@@ -302,6 +318,47 @@ export default function CreateSevice() {
                     />
                   </div>
                 </div>
+              </div>
+              <div className="sm:col-span-1 bg-white  rounded border-[#E0E2E7] border p-5 mt-7">
+                {fields.map((description, index) => (
+                  <div className="sm:col-span-2" key={index}>
+                    <div className="mt-2.5">
+                      <ComInput
+                        id={`description-${index}`}
+                        label={`Bước ${index + 1} của dịch vụ`}
+                        placeholder="Vui lòng nhập chi tiết"
+                        {...register(`serviceProcesses.${index}.process`)}
+                        required
+                      />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => remove(index)}
+                      className={`text-red-500 mt-1 ${
+                        fields.length === 1 ? "hidden" : ""
+                      }`} // Ẩn nút xóa khi chỉ có một phần tử
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {errors.descriptions?.message && (
+                <p className="text-red-600">{errors.descriptions?.message}</p>
+              )}
+              {errors.descriptions &&
+                !fields.some((field) => field.value !== "") && (
+                  <p>{errors.descriptions.message}</p>
+                )}
+              <div className="sm:col-span-2">
+                <button
+                  type="button"
+                  onClick={() => append({ process: "" })}
+                  className="mt-4  bg-blackpointer-events-auto rounded-md bg-[#0F296D] px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white hover:bg-[#0F296D] hover:text-white"
+                >
+                  Thêm bước làm dịch vụ
+                </button>
               </div>
               <div className="mt-10 flex justify-end gap-6">
                 <div>

@@ -9,7 +9,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FieldError } from "../../Components/FieldError/FieldError";
 import { useStorage } from "../../hooks/useLocalStorage";
 import logo2 from "../../assets/images/logo2.webp";
-
+import { getMessaging, getToken } from "firebase/messaging";
 import { getData, postData } from "../../api/api";
 import { message } from "antd";
 export default function LoginPage(props) {
@@ -26,6 +26,8 @@ export default function LoginPage(props) {
     email: yup.string().trim().required("Mail đăng nhập không được để trống"),
     password: yup.string().required("Mật khẩu không được để trống"),
   });
+  const messaging = getMessaging();
+  getToken(messaging, { vapidKey: "BKagOny0KF_2pCJQ3m....moL0ewzQ8rZu" });
   const LoginRequestDefault = {
     email: "",
     password: "",

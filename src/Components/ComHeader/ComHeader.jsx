@@ -29,6 +29,12 @@ const userNavigation = [
   { name: "Đơn mua của tôi", href: "/user/order-history" },
   { name: "Đăng xuất", href: "/login" },
 ];
+const userNavigationOwner = [
+  { name: "Cửa hàng của tôi", href: "/owner/dashboard" },
+  { name: "Hồ sơ của tôi", href: "/user/profile" },
+  { name: "Đơn mua của tôi", href: "/user/order-history" },
+  { name: "Đăng xuất", href: "/login" },
+];
 
 export default function ComHeader({ children }) {
   const [headerNavigation, setheaderNavigation] = useState(navigation);
@@ -192,32 +198,58 @@ export default function ComHeader({ children }) {
                           </MenuButton>
                           <MenuItems
                             transition
-                            className="absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                            className="absolute right-0 z-10 mt-2.5 w-40 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
                           >
-                            {userNavigation.map((item) => (
-                              <MenuItem key={item.name}>
-                                {item.name === "Đăng xuất" ? (
-                                  <button
-                                    onClick={() => {
-                                      setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
-                                      setTimeout(() => {
-                                        navigate("/login");
-                                      }, 300);
-                                    }}
-                                    className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
-                                  >
-                                    {item.name}
-                                  </button>
-                                ) : (
-                                  <Link
-                                    to={item.href}
-                                    className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
-                                  >
-                                    {item.name}
-                                  </Link>
-                                )}
-                              </MenuItem>
-                            ))}
+                            {user.role !== "OWNER" &&
+                              userNavigation.map((item) => (
+                                <MenuItem key={item.name}>
+                                  {item.name === "Đăng xuất" ? (
+                                    <button
+                                      onClick={() => {
+                                        setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
+                                        setTimeout(() => {
+                                          navigate("/login");
+                                        }, 300);
+                                      }}
+                                      className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                    >
+                                      {item.name}
+                                    </button>
+                                  ) : (
+                                    <Link
+                                      to={item.href}
+                                      className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                    >
+                                      {item.name}
+                                    </Link>
+                                  )}
+                                </MenuItem>
+                              ))}
+                            {user.role === "OWNER" &&
+                              userNavigationOwner.map((item) => (
+                                <MenuItem key={item.name}>
+                                  {item.name === "Đăng xuất" ? (
+                                    <button
+                                      onClick={() => {
+                                        setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
+                                        setTimeout(() => {
+                                          navigate("/login");
+                                        }, 300);
+                                      }}
+                                      className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                    >
+                                      {item.name}
+                                    </button>
+                                  ) : (
+                                    <Link
+                                      to={item.href}
+                                      className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                                    >
+                                      {item.name}
+                                    </Link>
+                                  )}
+                                </MenuItem>
+                              ))}
                           </MenuItems>
                         </Menu>
                       </>

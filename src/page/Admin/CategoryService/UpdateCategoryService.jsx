@@ -6,8 +6,8 @@ import ComInput from "../../../Components/ComInput/ComInput";
 import ComButton from "../../../Components/ComButton/ComButton";
 import { getData, postData, putData } from "../../../api/api";
 
-import { YupBranch } from "./../../../yup/YupBranch";
 import ComSelect from "../../../Components/ComInput/ComSelect";
+import { YupServiceCategory } from "./../../../yup/YupServiceCategory";
 // Thiết lập icon cho Marker (khắc phục vấn đề với icon mặc định của Leaflet)
 
 export default function UpdateCategoryService({
@@ -21,7 +21,7 @@ export default function UpdateCategoryService({
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
   const methods = useForm({
-    resolver: yupResolver(YupBranch),
+    resolver: yupResolver(YupServiceCategory),
     values: selectedData,
   });
   console.log("====================================");
@@ -41,8 +41,10 @@ export default function UpdateCategoryService({
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     // console.log(provinces);
+    const status = data.status === "Hoạt Động" ? "AVAILABLE" : "UNAVAILABLE";
     putData(`/categories`, selectedData.id, {
       ...data,
+      status: status,
     })
       .then((response) => {
         console.log("Tạo thành công:", response);
@@ -60,78 +62,10 @@ export default function UpdateCategoryService({
       .catch((error) => {
         setDisabled(false);
         console.error("Lỗi:", error);
-        notificationApi("error", "Lỗi", `${error.data.message}`);
+        notificationApi("error", "Lỗi", `${error?.data?.message}`);
       });
   };
 
-  //   useEffect(() => {
-  //     getData("locations/provinces")
-  //       .then((e) => {
-  //         console.log(e.data);
-  //         const dataForSelect = e?.data?.map((item) => ({
-  //           value: item.provinceID,
-  //           label: item.provinceName,
-  //           data: item,
-  //         }));
-  //         setProvinces(dataForSelect);
-  //       })
-  //       .catch(() => {
-  //         setProvinces([]);
-  //       });
-  //   }, []);
-  //   useEffect(() => {
-  //     setValue("districtId", null);
-  //     getData(`locations/${watch("provinceId")}/districts`)
-  //       .then((e) => {
-  //         console.log(e.data);
-  //         const dataForSelect = e?.data?.map((item) => ({
-  //           value: item.districtID,
-  //           label: item.districtName,
-  //           data: item,
-  //         }));
-  //         setDistricts(dataForSelect);
-  //       })
-  //       .catch(() => {
-  //         setDistricts([]);
-  //       });
-  //   }, [watch("provinceId")]);
-  //   console.log(1111, watch("province"));
-  //   console.log("districts", watch("districtId"));
-
-  //   useEffect(() => {
-  //     setValue("wardCode", null);
-  //     getData(`locations/${watch("districtId")}/wards`)
-  //       .then((e) => {
-  //         console.log(e.data);
-  //         const dataForSelect = e?.data?.map((item) => ({
-  //           value: item.wardCode,
-  //           label: item.wardName,
-  //           data: item,
-  //         }));
-  //         setWards(dataForSelect);
-  //       })
-  //       .catch(() => {
-  //         setWards([]);
-  //       });
-  //   }, [watch("districtId")]);
-
-  //   useEffect(() => {
-  //     setValue("districtId", selectedData.districtId);
-  //     setValue("wardCode", selectedData.wardCode);
-  //     getData(`locations/${selectedData.districtId}/wards`)
-  //       .then((e) => {
-  //         console.log(e.data);
-  //         const dataForSelect = e?.data?.map((item) => ({
-  //           value: item.wardCode,
-  //           label: item.wardName,
-  //           data: item,
-  //         }));
-  //         setWards(dataForSelect);
-  //       })
-  //       .catch(() => {
-  //         setWards([]);
-  //       });
-  //   }, [selectedData]);
   return (
     <div>
       <h2 className="text-xl font-semibold text-blue-800 mb-4 ml-4">
@@ -152,73 +86,7 @@ export default function UpdateCategoryService({
                     {...register("name")}
                   />
                 </div>
-                {/* <div className="mt-2.5 sm:col-span-2">
-                  <ComSelect
-                    type="text"
-                    label={"Tỉnh/Thành phố"}
-                    value={watch("provinceId")}
-                    options={provinces}
-                    placeholder={"Tỉnh/Thành phố"}
-                    showSearch
-                    size={"large"}
-                    onChangeValue={(e, value) => {
-                      setValue(e, value, { shouldValidate: true });
-                      console.log(55555, value);
-                    }}
-                    style={{
-                      width: "100%",
-                    }}
-                    required
-                    {...register("provinceId")}
-                  />
-                </div> */}
-                {/* <div className="mt-2.5 sm:col-span-2">
-                  <ComSelect
-                    type="text"
-                    label={"Quận/Huyện"}
-                    options={districts}
-                    value={watch("districtId")}
-                    size={"large"}
-                    showSearch
-                    style={{
-                      width: "100%",
-                    }}
-                    onChangeValue={(e, value) => {
-                      setValue(e, value);
-                    }}
-                    placeholder={"Quận/Huyện"}
-                    required
-                    {...register("districtId")}
-                  />
-                </div>
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComSelect
-                    type="text"
-                    value={watch("wardCode")}
-                    label={"Phường/Xã"}
-                    options={wards}
-                    size={"large"}
-                    showSearch
-                    style={{
-                      width: "100%",
-                    }}
-                    onChangeValue={(e, value) => {
-                      setValue(e, value);
-                    }}
-                    placeholder={"Phường/Xã"}
-                    required
-                    {...register("wardCode")}
-                  />
-                </div>
-                <div className="mt-2.5 sm:col-span-2">
-                  <ComInput
-                    type="text"
-                    label={"Địa chỉ"}
-                    placeholder={"Địa chỉ"}
-                    required
-                    {...register("address")}
-                  />
-                </div> */}
+
                 <div className="mt-2.5 sm:col-span-2">
                   <ComSelect
                     type="text"
@@ -226,12 +94,12 @@ export default function UpdateCategoryService({
                     label={"Trạng thái"}
                     options={[
                       {
-                        value: "AVAILABLE",
-                        label: "Hoạt động",
+                        value: "Hoạt Động",
+                        label: "Hoạt Động",
                       },
                       {
-                        value: "UNAVAILABLE",
-                        label: "Tạm ngưng",
+                        value: "Ngưng Hoạt Động",
+                        label: "Ngưng Hoạt Động",
                       },
                     ]}
                     size={"large"}
@@ -242,7 +110,6 @@ export default function UpdateCategoryService({
                     onChangeValue={(e, value) => {
                       setValue(e, value);
                     }}
-                    // placeholder={"Phường"}
                     required
                     {...register("status")}
                   />

@@ -13,14 +13,21 @@ import { putData } from "../../api/api";
 
 const CartItem = ({ item }) => (
   <div className="flex items-center py-4 border-b">
-    <img
-      src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
-      alt={item.name}
-      className="w-20 h-20 object-cover mr-4"
-    />
+    <Link to={`/servicedetail/${item?.service?.id}`}>
+      <img
+        src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
+        alt={item.name}
+        className="w-20 h-20 object-cover mr-4"
+      />
+    </Link>
     <div className="flex-grow">
-      <h3 className="font-medium">{item?.service?.name}</h3>
-      <p className="text-sm text-gray-500">x{item.quantity}</p>
+      <Link to={`/servicedetail/${item?.service?.id}`} className="font-medium">
+        {item?.service?.name}
+      </Link>
+      {/* <p className="text-sm text-gray-500">{item.quantity}</p> */}
+      <p className="text-sm text-gray-500 max-w-50 truncate">
+        {item?.service?.description}
+      </p>
     </div>
     <div className="text-right">
       <p className="text-sm text-gray-500 line-through">
@@ -76,7 +83,7 @@ export default function OrderCard({ order, reloadData }) {
             Chat
           </button>
           <Link
-            to={`/branch/${
+            to={`/provider-landingpage/${
               order?.orderDetails && order?.orderDetails[0].branch.businessId
             }`}
             className="bg-white text-[#4e4e4e] border border-[#555555] px-3 py-1 rounded-md text-sm flex items-center mr-2"
@@ -143,9 +150,9 @@ export default function OrderCard({ order, reloadData }) {
         )}
         {order.status === "Hoàn thành" && (
           <div className="flex justify-end gap-2">
-            <button className="bg-[#002278] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+            {/* <button className="bg-[#002278] text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
               Đặt lại
-            </button>
+            </button> */}
             {order?.orderDetails && order?.orderDetails[0]?.feedback ? (
               <button
                 onClick={modalViewFeedback.handleOpen}

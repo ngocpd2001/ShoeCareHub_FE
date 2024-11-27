@@ -62,9 +62,6 @@ export const TableService = forwardRef((props, ref) => {
       width: 150,
       render: (data, record) => {
         // Chuyển đổi dữ liệu ảnh từ mảng đối tượng sang mảng URL
-
-        console.log(1111, data);
-
         const imageUrls = data?.map((image) => image?.url);
         // image?.type === "video"
 
