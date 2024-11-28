@@ -237,7 +237,9 @@ const BusinessProfileForm = () => {
               </div>
             </div>
             <div className="mb-6">
-              {isEditing ? (
+              {isEditing &
+              (watch("status") === "ACTIVE" ||
+                watch("status") === "INACTIVE") ? (
                 <ComSelect
                   size="large"
                   style={{
@@ -265,12 +267,14 @@ const BusinessProfileForm = () => {
                   label="Trạng thái"
                   // mode="default"
                   placeholder="Trạng thái"
+                  disabled={isEditing}
                   value={watch("status")}
                   options={[
                     { value: "ACTIVE", label: "Hoạt động" },
                     { value: "INACTIVE", label: "Không hoạt động" },
                     { value: "SUSPENDED", label: "Bị khóa" },
                     { value: "EXPIRED", label: "Hết hạn gói" },
+                    { value: "UNREGISTERED", label: "Chưa đăng ký gói" },
                   ]}
                   readOnly={!isEditing}
                   open={false}
@@ -319,7 +323,7 @@ const BusinessProfileForm = () => {
       </div>
       {!isEditing && (
         <div className="flex justify-center">
-          {watch("status") === "ACTIVE" && (
+          {/* {watch("status") === "ACTIVE" && (
             <button
               type="button"
               onClick={() => {
@@ -330,19 +334,17 @@ const BusinessProfileForm = () => {
             >
               Cập nhật thông tin
             </button>
-          )}
-          {watch("status") === "INACTIVE" && (
-            <button
-              type="button"
-              onClick={() => {
-                setIsEditing(true);
-                setFocus("name");
-              }}
-              className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
-            >
-              Cập nhật thông tin
-            </button>
-          )}
+          )} */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsEditing(true);
+              setFocus("name");
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors"
+          >
+            Cập nhật thông tin
+          </button>
         </div>
       )}
     </div>
