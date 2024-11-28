@@ -100,21 +100,21 @@ export const TableMaterial = forwardRef((props, ref) => {
         </div>
       ),
     },
-    // {
-    //   title: "Số lượng trong kho",
-    //   dataIndex: "branchMaterials",
-    //   key: "storage",
-    //   width: 150,
-    //   render: (branchMaterials) => (
-    //     <ul>
-    //       {branchMaterials?.map((bm, index) => (
-    //         <li key={index}>
-    //           {bm.storage}
-    //         </li>
-    //       ))}
-    //     </ul>
-    //   ),
-    // },
+    {
+      title: "Số lượng trong kho",
+      dataIndex: "branchMaterials",
+      key: "storage",
+      width: 150,
+      render: (branchMaterials) => (
+        <ul>
+          {branchMaterials?.map((bm, index) => (
+            <li key={index}>
+              {bm.storage}
+            </li>
+          ))}
+        </ul>
+      ),
+    },
     {
       title: "Trạng thái",
       dataIndex: "status",
