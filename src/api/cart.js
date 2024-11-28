@@ -192,7 +192,7 @@ export const checkoutService = async (checkoutData) => {
       isShip: checkoutData.isShip
     };
 
-    const response = await axiosInstances.login.post('/services/checkout', requestBody);
+    const response = await axiosInstances.login.post('/services/service/checkout', requestBody);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi thanh toán dịch vụ:', error.message);

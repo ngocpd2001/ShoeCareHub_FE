@@ -284,9 +284,12 @@ const ServiceDetail = () => {
         shopAddress: selectedBranch.address,
       };
 
-      // Thêm materialId nếu có
+      // Thêm materialId, materialName và materialPrice nếu có
       if (selectedMaterials.length > 0) {
         checkoutService.materialId = selectedMaterials[0];
+        const selectedMaterial = materials.find(m => m.id === selectedMaterials[0]);
+        checkoutService.materialName = selectedMaterial ? selectedMaterial.name : '';
+        checkoutService.materialPrice = selectedMaterial ? selectedMaterial.price : 0;
       }
 
       // Log dữ liệu checkoutService

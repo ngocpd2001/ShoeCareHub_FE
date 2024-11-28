@@ -327,10 +327,16 @@ const CheckoutCart = ({
                       <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
                         {service.name}
                       </span>
-                      {service.material && (
+                      {service.materialName ? (
                         <span className="text-gray-600">
-                          Vật liệu: {service.material}
+                          Vật liệu: {service.materialName}
                         </span>
+                      ) : (
+                        service.material && (
+                          <span className="text-gray-600">
+                            Vật liệu: {service.material}
+                          </span>
+                        )
                       )}
                       {service.materialPrice > 0 && (
                         <div className="text-sm text-gray-600">

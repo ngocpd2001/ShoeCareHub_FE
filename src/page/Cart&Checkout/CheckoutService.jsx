@@ -29,6 +29,7 @@ const CheckoutService = () => {
   const [userInfo, setUserInfo] = useState(null);
   const [shippingFees, setShippingFees] = useState({});
   const [deliveryOptions, setDeliveryOptions] = useState({});
+  const [selectedMaterials, setSelectedMaterials] = useState([]);
 
   const user = JSON.parse(localStorage.getItem("user"));
   const accountId = user?.id;
@@ -181,9 +182,8 @@ const CheckoutService = () => {
       const shopTotal = shop.services.reduce((shopTotal, service) => {
         const servicePrice =
           service?.promotion?.newPrice || service?.price || 0;
-        const serviceQuantity = service?.quantity || 1;
         const materialPrice = service?.materialPrice || 0;
-        return shopTotal + (servicePrice + materialPrice) * serviceQuantity;
+        return shopTotal + (servicePrice + materialPrice);
       }, 0);
       return total + shopTotal;
     }
@@ -293,32 +293,31 @@ const CheckoutService = () => {
             branchId: Number(service.branchId),
             addressId: defaultAddress?.id ? Number(defaultAddress.id) : null,
             note: notes[service.branchId] || "",
+            // Thêm materialId nếu có
+            ...(service.materialId && { materialId: Number(service.materialId) }),
           };
-
-          // Thêm materialId nếu có
-          if (service.materialId) {
-            item.materialId = Number(service.materialId);
-          }
 
           return item;
         })
       );
 
       // Log dữ liệu checkoutItems
-      console.log("Checkout Items:", JSON.stringify(checkoutItems, null, 2));
+      console.log("Dữ liệu gửi đi:", JSON.stringify(checkoutItems, null, 2));
 
+      // Cập nhật cấu trúc checkoutData
       let checkoutData = {
-        items: checkoutItems,
+        item: checkoutItems[0], // Lấy item đầu tiên
         accountId: Number(accountId),
+        addressId: defaultAddress?.id ? Number(defaultAddress.id) : null,
         isAutoReject: false,
         notes: notes,
         isShip: isShip,
       };
 
       // Log dữ liệu checkoutData
-      console.log("Checkout Data:", JSON.stringify(checkoutData, null, 2));
+      console.log("Dữ liệu checkout:", JSON.stringify(checkoutData, null, 2));
 
-      const response = await CheckoutService(checkoutData);
+      const response = await checkoutService(checkoutData); // Sửa tên hàm gọi
       console.log("Response from API:", response);
 
       if (response) {
@@ -401,6 +400,10 @@ const CheckoutService = () => {
 
     fetchMaterialData();
   }, [cartItems]); // Gọi lại khi cartItems thay đổi
+
+  const handleMaterialChange = (checkedValues) => {
+    setSelectedMaterials(checkedValues);
+  };
 
   return (
     <>

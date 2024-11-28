@@ -78,20 +78,24 @@ export default function CreateMaterial() {
         ]);
 
         if (branchResponse?.data) {
-          const branchOptions = branchResponse.data.map((branch) => ({
-            value: branch.id,
-            label: branch.name,
-            description: `${branch.address}, ${branch.ward}, ${branch.province}`,
-            className: "whitespace-normal break-words py-2",
-          }));
+          const branchOptions = branchResponse.data
+            .filter((branch) => branch.status === "ACTIVE")
+            .map((branch) => ({
+              value: branch.id,
+              label: branch.name,
+              description: `${branch.address}, ${branch.ward}, ${branch.province}`,
+              className: "whitespace-normal break-words py-2",
+            }));
           setBranches(branchOptions);
         }
 
         if (serviceResponse?.data?.items) {
-          const serviceOptions = serviceResponse.data.items.map((service) => ({
-            value: service.id,
-            label: service.name,
-          }));
+          const serviceOptions = serviceResponse.data.items
+            .filter((service) => service.status === "Hoạt Động")
+            .map((service) => ({
+              value: service.id,
+              label: service.name,
+            }));
           setServices(serviceOptions);
         }
       } catch (error) {

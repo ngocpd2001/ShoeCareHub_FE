@@ -301,12 +301,12 @@ const UserCart = () => {
             const quantity = service.quantity || 1;
             const totalServiceSaving = savingPerUnit * quantity;
 
-            console.log({
-              serviceName: service.name,
-              savingPerUnit,
-              quantity,
-              totalServiceSaving,
-            });
+            // console.log({
+            //   serviceName: service.name,
+            //   savingPerUnit,
+            //   quantity,
+            //   totalServiceSaving,
+            // });
 
             return shopSavings + totalServiceSaving;
           }
