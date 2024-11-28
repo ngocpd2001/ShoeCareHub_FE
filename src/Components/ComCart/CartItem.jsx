@@ -30,9 +30,9 @@ const CartItem = ({
       const fetchMaterialData = async () => {
         try {
           const materialData = await getMaterialById(service.materialId);
-          // Xử lý dữ liệu vật liệu ở đây
+          // Xử lý dữ liệu phụ kiện ở đây
         } catch (error) {
-          console.error("Lỗi khi lấy thông tin vật liệu:", error);
+          console.error("Lỗi khi lấy thông tin phụ kiện:", error);
         }
       };
       fetchMaterialData();
@@ -82,11 +82,11 @@ const CartItem = ({
           {service.material && (
             <div className="flex flex-col">
               <span className="text-sm text-gray-800">
-                Vật liệu: {service.material}
+                Phụ kiện: {service.material}
               </span>
               {materialPrice > 0 && (
                 <div className="text-sm text-gray-600">
-                  Giá vật liệu: {materialPrice.toLocaleString()} đ
+                  Giá phụ kiện: {materialPrice.toLocaleString()} đ
                 </div>
               )}
             </div>

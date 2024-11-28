@@ -221,10 +221,10 @@ const CheckoutCart = ({
   };
 
   const getMaterialById = async (materialId) => {
-    // Giả sử bạn có một API để lấy thông tin vật liệu
+    // Giả sử bạn có một API để lấy thông tin phụ kiện  
     const response = await fetch(`/api/materials/${materialId}`);
     const data = await response.json();
-    return data.price; // Trả về giá của vật liệu
+    return data.price; // Trả về giá của phụ kiện
   };
 
   return (
@@ -329,18 +329,18 @@ const CheckoutCart = ({
                       </span>
                       {service.materialName ? (
                         <span className="text-gray-600">
-                          Vật liệu: {service.materialName}
+                          Phụ kiện: {service.materialName}
                         </span>
                       ) : (
                         service.material && (
                           <span className="text-gray-600">
-                            Vật liệu: {service.material}
+                            Phụ kiện: {service.material}
                           </span>
                         )
                       )}
                       {service.materialPrice > 0 && (
                         <div className="text-sm text-gray-600">
-                          Giá vật liệu: {service.materialPrice.toLocaleString()}{" "}
+                          Giá phụ kiện: {service.materialPrice.toLocaleString()}{" "}
                           đ
                         </div>
                       )}

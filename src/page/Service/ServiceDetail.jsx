@@ -106,7 +106,7 @@ const ServiceDetail = () => {
     const fetchMaterialData = async () => {
       try {
         const materials = await getMaterialByServiceId(serviceId);
-        console.log("Vật liệu:", materials);
+        console.log("Phụ kiện:", materials);
         const allMaterials = materials.data.items.map((item) => ({
           id: item.id,
           name: item.name,
@@ -114,10 +114,10 @@ const ServiceDetail = () => {
           assetUrls: item.assetUrls,
           status: item.status,
         }));
-        // console.log("Tất c vật liệu:", allMaterials);
+        // console.log("Tất cả phụ kiện:", allMaterials);
         setMaterials(allMaterials);
       } catch (error) {
-        console.error("Lỗi khi tải vật liệu:", error);
+        console.error("Lỗi khi tải phụ kiện:", error);
       }
     };
 
@@ -202,15 +202,15 @@ const ServiceDetail = () => {
         materialId: selectedMaterials.length > 0 ? selectedMaterials[0] : undefined,
       };
 
-      // Kiểm tra và ghi lại thông tin vật liệu
-      console.log("Thông tin vật liệu được gửi:", selectedMaterials);
+      // Kiểm tra và ghi lại thông tin phụ kiện
+      console.log("Thông tin phụ kiện được gửi:", selectedMaterials);
 
-      // Kiểm tra xem có vật liệu nào được chọn không
+      // Kiểm tra xem có phụ kiện nào được chọn không
       if (selectedMaterials.length > 0) {
         // Xử lý thêm nếu cần
-        console.log("Có vật liệu được chọn:", selectedMaterials);
+        console.log("Có phụ kiện được chọn:", selectedMaterials);
       } else {
-        console.log("Không có vật liệu nào được chọn.");
+        console.log("Không có phụ kiện nào được chọn.");
       }
 
       console.log("Add to cart data:", itemData);
@@ -553,9 +553,9 @@ const ServiceDetail = () => {
                 </Select>
               </div>
 
-              {/* Chọn vật liệu - đã di chuyển xuống dưới */}
+              {/* Chọn phụ kiện - đã di chuyển xuống dưới */}
               <div className="mt-5 border-t pt-4">
-                <h2 className="text-xl font-semibold mb-4">Chọn vật liệu</h2>
+                <h2 className="text-xl font-semibold mb-4">Chọn phụ kiện</h2>
                 <Select
                   mode="default"
                   value={
@@ -571,7 +571,7 @@ const ServiceDetail = () => {
                     }
                   }}
                   className="w-full border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400 h-12"
-                  placeholder={<span className="text-lg">Chọn vật liệu</span>}
+                  placeholder={<span className="text-lg">Chọn phụ kiện</span>}
                   allowClear
                 >
                   {materials
@@ -602,7 +602,7 @@ const ServiceDetail = () => {
                     ))}
                 </Select>
 
-                {/* Hiển thị tổng tiền chỉ khi có vật liệu được chọn */}
+                {/* Hiển thị tổng tiền chỉ khi có phụ kiện được chọn */}
                 {selectedMaterials.length > 0 && (
                   <div className="mt-4">
                     <span className="text-xl font-semibold">Tổng tiền: </span>
