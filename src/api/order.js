@@ -188,3 +188,28 @@ export const getOrderShipStatus = async (orderCode) => {
     throw error;
   }
 };
+
+export const updateOrderDetail = async (id, processState, assetUrls) => {
+  try {
+    const requestBody = {
+      processState,
+      assetUrls
+    };
+
+    const response = await axiosInstances.login.patch(`/orderdetails/${id}`, requestBody);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật chi tiết đơn hàng", error);
+    throw error;
+  }
+};
+
+export const deleteOrderDetail = async (id) => {
+  try {
+    const response = await axiosInstances.login.delete(`/orderdetails/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi xóa chi tiết đơn hàng", error);
+    throw error;
+  }
+};

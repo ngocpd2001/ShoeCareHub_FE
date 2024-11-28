@@ -52,7 +52,7 @@ const CreateOrderDetailPopup = ({
   };
 
   useEffect(() => {
-    console.log("Order ID:", orderId);
+    // console.log("Order ID:", orderId);
     form.setFieldsValue({ orderId, branchId });
   }, [orderId, branchId, form]);
 

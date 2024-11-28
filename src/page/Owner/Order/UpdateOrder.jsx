@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Truck, MapPin } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
-import { Breadcrumb, Popconfirm, Image } from "antd";
+import { Breadcrumb, Popconfirm, Image, Dropdown, Menu } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -27,12 +27,16 @@ import {
   faTimesCircle,
   faCheckCircle,
   faEllipsisVertical,
+  faPenNib,
+  faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   getOrderById,
   updateOrder,
   updateOrderStatus,
   updateShipCode,
+  updateOrderDetail,
+  deleteOrderDetail,
 } from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
@@ -507,6 +511,33 @@ const UpdateOrder = () => {
     }
   };
 
+  const handleUpdate = async (OrderDetailId) => {
+    try {
+      const processState = "NEW_STATE";
+      const assetUrls = ["url1", "url2"];
+      const result = await updateOrderDetail(
+        OrderDetailId,
+        processState,
+        assetUrls
+      );
+      console.log("Cập nht thành công:", result);
+    } catch (error) {
+      console.error("Cập nhật thất bại:", error);
+    }
+  };
+
+  const handleDelete = async (OrderDetailId) => {
+    try {
+      const result = await deleteOrderDetail(OrderDetailId);
+      console.log("Xóa thành công:", result);
+    } catch (error) {
+      console.error("Xóa thất bại:", error);
+      // Hiển thị thông báo lỗi cụ thể cho người dùng
+      const errorMessage = error.response?.data?.message || "Không thể xóa dịch vụ này vì đơn hàng cần ít nhất một dịch vụ!";
+      message.error(errorMessage);
+    }
+  };
+
   if (!orderData) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -580,64 +611,31 @@ const UpdateOrder = () => {
               </tr>
             </thead>
             <tbody>
-              {orderDetails.map((item) => (
-                <React.Fragment key={item.id}>
-                  <tr className="border-t">
-                    <td className="py-3">
-                      <div className="flex items-center">
-                        <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
-                          {item.service.assetUrls &&
-                          item.service.assetUrls.length > 0 ? (
-                            <Image.PreviewGroup
-                              preview={{
-                                onChange: (current, prev) =>
-                                  console.log(
-                                    `Switched from preview ${prev} to ${current}`
-                                  ),
-                              }}
-                            >
-                              <Image
-                                src={item.service.assetUrls[0].url} // Hình ảnh của service
-                                alt={item.service.name}
-                                className="object-cover w-full h-full"
-                                fallback="data:image/png;base64,..."
-                              />
-                            </Image.PreviewGroup>
-                          ) : (
-                            <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                              <span className="text-gray-400">No image</span>
-                            </div>
-                          )}
-                        </div>
-                        <span className="break-words">{item.service.name}</span>
-                      </div>
-                    </td>
-                    <td className="text-right">
-                      {item.service.promotion &&
-                      item.service.promotion.status === "Hoạt Động"
-                        ? item.service.promotion.newPrice.toLocaleString() + "đ"
-                        : item.service.price.toLocaleString() + "đ"}
-                    </td>
-                    <td className="text-right">
-                      {item.price.toLocaleString()}đ
-                    </td>
-                    <td className="text-right pl-3">
-                      <FontAwesomeIcon icon={faEllipsisVertical} />
-                    </td>
-                  </tr>
-                  {item.material && (
-                    <tr>
+              {orderDetails.map((item) => {
+                console.log("Order Detail ID:", item.id); // Thêm log để kiểm tra từng orderDetailId
+                return (
+                  <React.Fragment key={item.id}>
+                    <tr className="border-t">
                       <td className="py-3">
                         <div className="flex items-center">
                           <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
-                            {item.material.assetUrls &&
-                            item.material.assetUrls.length > 0 ? (
-                              <Image
-                                src={item.material.assetUrls[0].url} // Hình ảnh của material
-                                alt={item.material.name}
-                                className="object-cover w-full h-full"
-                                fallback="data:image/png;base64,..."
-                              />
+                            {item.service.assetUrls &&
+                            item.service.assetUrls.length > 0 ? (
+                              <Image.PreviewGroup
+                                preview={{
+                                  onChange: (current, prev) =>
+                                    console.log(
+                                      `Switched from preview ${prev} to ${current}`
+                                    ),
+                                }}
+                              >
+                                <Image
+                                  src={item.service.assetUrls[0].url} // Hình ảnh của service
+                                  alt={item.service.name}
+                                  className="object-cover w-full h-full"
+                                  fallback="data:image/png;base64,..."
+                                />
+                              </Image.PreviewGroup>
                             ) : (
                               <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
                                 <span className="text-gray-400">No image</span>
@@ -645,38 +643,96 @@ const UpdateOrder = () => {
                             )}
                           </div>
                           <span className="break-words">
-                            {item.material.name}
+                            {item.service.name}
                           </span>
                         </div>
                       </td>
                       <td className="text-right">
-                        {item.material.price.toLocaleString()}đ
+                        {item.service.promotion &&
+                        item.service.promotion.status === "Hoạt Động"
+                          ? item.service.promotion.newPrice.toLocaleString() +
+                            "đ"
+                          : item.service.price.toLocaleString() + "đ"}
                       </td>
                       <td className="text-right">
-                        {/* {item.price.toLocaleString()}đ */}
+                        {item.price.toLocaleString()}đ
                       </td>
-                      {/* <td
-                        className="text-right pl-3"
-                        onClick={() => setIsEditing(!isEditing)}
-                      >
-                        <FontAwesomeIcon
-                          icon={
-                            isEditing
-                              ? "fa-solid fa-pen-nib"
-                              : faEllipsisVertical
+                      <td className="text-right pl-3">
+                        <Dropdown
+                          overlay={
+                            <Menu>
+                              <Menu.Item key="update" onClick={handleUpdate}>
+                                <FontAwesomeIcon
+                                  icon={faPenNib}
+                                  className="text-[#002278]"
+                                />{" "}
+                                Cập nhật
+                              </Menu.Item>
+                              <Menu.Item key="delete">
+                                <Popconfirm
+                                  title="Bạn có chắc chắn muốn xóa dịch vụ này?"
+                                  onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
+                                  okText="Đồng ý"
+                                  cancelText="Hủy"
+                                >
+                                  <FontAwesomeIcon
+                                    icon={faTrashCan}
+                                    className="text-[#002278]"
+                                  />{" "}
+                                  Xóa
+                                </Popconfirm>
+                              </Menu.Item>
+                            </Menu>
                           }
-                        />
-                      </td> */}
+                          trigger={["click"]}
+                        >
+                          <FontAwesomeIcon
+                            icon={faEllipsisVertical}
+                            className="cursor-pointer text-[#002278]"
+                          />
+                        </Dropdown>
+                      </td>
                     </tr>
-                  )}
-                  {/* Hiển thị ghi chú cho từng dịch vụ */}
-                  <tr>
-                    <td className="text-gray-600 italic py-4">
-                      Ghi chú: {item.note || "Không có ghi chú"}
-                    </td>
-                  </tr>
-                </React.Fragment>
-              ))}
+                    {item.material && (
+                      <tr>
+                        <td className="py-3">
+                          <div className="flex items-center">
+                            <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
+                              {item.material.assetUrls &&
+                              item.material.assetUrls.length > 0 ? (
+                                <Image
+                                  src={item.material.assetUrls[0].url} // Hình ảnh của material
+                                  alt={item.material.name}
+                                  className="object-cover w-full h-full"
+                                  fallback="data:image/png;base64,..."
+                                />
+                              ) : (
+                                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                                  <span className="text-gray-400">
+                                    No image
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                            <span className="break-words">
+                              {item.material.name}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="text-right">
+                          {item.material.price.toLocaleString()}đ
+                        </td>
+                      </tr>
+                    )}
+                    {/* Hiển thị ghi chú cho tng dịch vụ */}
+                    <tr>
+                      <td className="text-gray-600 italic py-4">
+                        Ghi chú: {item.note || "Không có ghi chú"}
+                      </td>
+                    </tr>
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
 
@@ -696,12 +752,6 @@ const UpdateOrder = () => {
               <span>Tổng thanh toán</span>
               <span>{orderData.totalPrice?.toLocaleString()}₫</span>
             </div>
-            {/* <div className="border-t pt-4 mt-2">
-              <p className="text-gray-600 mb-2">Ghi chú:</p>
-              <p className="text-gray-800 italic">
-                {orderData.note || "Không có ghi chú"}
-              </p>
-            </div> */}
           </div>
         </div>
 
