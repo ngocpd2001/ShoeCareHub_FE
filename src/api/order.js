@@ -111,7 +111,14 @@ export const updateOrder = async (id, orderData) => {
 
 export const createOrderDetail = async (orderDetailData) => {
   try {
-    const response = await axiosInstances.login.post('/orderdetails', orderDetailData);
+    const requestBody = {
+      orderId: orderDetailData.orderId || 0,
+      branchId: orderDetailData.branchId || 0,
+      serviceId: orderDetailData.serviceId || 0,
+      materialId: orderDetailData.materialId || 0
+    };
+
+    const response = await axiosInstances.login.post('/orderdetails', requestBody);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi tạo chi tiết đơn hàng", error);
@@ -157,5 +164,27 @@ export const updateOrderStatus = async (orderId, newStatus) => {
   } catch (error) {
     console.error("Lỗi khi cập nhật trạng thái đơn hàng", error.response?.data || error);
     throw error.response?.data || error;
+  }
+};
+
+export const updateShipCode = async (id, shipCode) => {
+  try {
+    const response = await axiosInstances.login.put(`/orders/${id}/ship-code`, { shipCode });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi cập nhật mã vận chuyển", error.response?.data || error);
+    throw error.response?.data || error;
+  }
+};
+
+export const getOrderShipStatus = async (orderCode) => {
+  try {
+    const response = await axiosInstances.login.get('/api/order-ship/status', {
+      params: { orderCode }
+    });
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API trạng thái vận chuyển đơn hàng", error);
+    throw error;
   }
 };

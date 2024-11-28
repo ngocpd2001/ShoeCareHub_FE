@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import {Truck, MapPin} from "lucide-react";
+import { Truck, MapPin } from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
 import { Breadcrumb, Popconfirm, Image } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -32,6 +32,7 @@ import {
   getOrderById,
   updateOrder,
   updateOrderStatus,
+  updateShipCode,
 } from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
@@ -493,6 +494,18 @@ const UpdateOrder = () => {
     }
   };
 
+  const handleUpdateShipCode = async () => {
+    try {
+      const orderId = orderData.id; // Lấy orderId từ orderData
+      console.log("Order ID:", orderId); // Console log orderId để kiểm tra
+      const shipCode = formData.shippingCode;
+      await updateShipCode(orderId, shipCode);
+      // Có thể thêm thông báo thành công hoặc cập nhật lại dữ liệu nếu cần
+    } catch (error) {
+      console.error("Lỗi khi cập nhật mã vận chuyển", error);
+    }
+  };
+
   if (!orderData) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -895,14 +908,17 @@ const UpdateOrder = () => {
                     <label className="block text-gray-700 mb-2">
                       Mã vận chuyển
                     </label>
-                    <input
-                      type="text"
-                      name="shippingCode"
-                      value={formData.shippingCode}
-                      onChange={handleFormChange}
-                      className="w-full p-2 border rounded"
-                      disabled={!isShip}
-                    />
+                    {formData.shippingCode ? ( // Kiểm tra nếu có shippingCode
+                        <span className="text-gray-900">{formData.shippingCode}</span> // Hiển thị mã vận chuyển
+                    ) : (
+                        <button
+                            type="button"
+                            onClick={handleUpdateShipCode} // Gọi hàm cập nhật mã vận chuyển
+                            className="w-full p-2 border rounded bg-blue-500 text-white"
+                        >
+                            Nhập mã vận chuyển
+                        </button>
+                    )}
                   </div>
 
                   <div>

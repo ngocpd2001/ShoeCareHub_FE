@@ -5,14 +5,22 @@ import { getServiceByBranchId } from "../../../api/branch";
 
 const { Option } = Select;
 
-const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServiceAdded }) => {
+const CreateOrderDetailPopup = ({
+  visible,
+  onCancel,
+  orderId,
+  branchId,
+  onServiceAdded,
+}) => {
   const [form] = Form.useForm();
   const [services, setServices] = useState([]);
 
   const fetchServices = async (branchId) => {
     try {
       const response = await getServiceByBranchId(branchId);
-      const activeServices = response.data.items.filter(service => service.status !== "INACTIVE");
+      const activeServices = response.data.items.filter(
+        (service) => service.status !== "INACTIVE"
+      );
       setServices(activeServices);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách dịch vụ:", error);
@@ -32,7 +40,12 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
 
   const onCreate = async (values) => {
     try {
-      const payload = { ...values, orderId, branchId };
+      const payload = {
+        orderId: orderId || 0,
+        branchId: branchId || 0,
+        serviceId: values.serviceId || 0,
+        materialId: values.materialId || 0,
+      };
       console.log("Payload gửi đi:", payload);
       const response = await createOrderDetail(payload);
       console.log("Chi tiết đơn hàng đã được tạo:", response);
@@ -68,11 +81,13 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
           label="Dịch vụ"
           rules={[{ required: true, message: "Vui lòng chọn dịch vụ!" }]}
         >
-          <Select 
+          <Select
             placeholder="Chọn dịch vụ"
             showSearch
             filterOption={(input, option) =>
-              (option?.children ?? '').toLowerCase().includes(input.toLowerCase())
+              (option?.children ?? "")
+                .toLowerCase()
+                .includes(input.toLowerCase())
             }
           >
             {services.map((service) => (
@@ -83,11 +98,11 @@ const CreateOrderDetailPopup = ({ visible, onCancel, orderId, branchId, onServic
           </Select>
         </Form.Item>
         <Form.Item
-          name="quantity" 
-          label="Quantity"
-          rules={[{ required: true, message: "Vui lòng nhập số lượng!" }]}
+          name="materialId"
+          label="Mã vật liệu"
+          rules={[{ required: true, message: "Vui lòng nhập mã vật liệu!" }]}
         >
-          <Input type="number" />
+          <Input />
         </Form.Item>
       </Form>
     </Modal>
