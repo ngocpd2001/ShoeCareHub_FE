@@ -42,6 +42,7 @@ import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
 import { useNotification } from "../../../Notification/Notification";
 import { message, Modal } from "antd";
+import UpdateOrderDetailModal from "./UpdateOrderDetailModal";
 
 const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
@@ -150,6 +151,8 @@ const UpdateOrder = () => {
   const [newStatus, setNewStatus] = useState(null);
   const [isShip, setIsShip] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
+  const [updateDetailVisible, setUpdateDetailVisible] = useState(false);
+  const [currentOrderDetailId, setCurrentOrderDetailId] = useState(null);
 
   useEffect(() => {
     if (orderData) {
@@ -538,6 +541,11 @@ const UpdateOrder = () => {
     }
   };
 
+  const handleUpdateClick = (OrderDetailId) => {
+    setCurrentOrderDetailId(OrderDetailId);
+    setUpdateDetailVisible(true);
+  };
+
   if (!orderData) {
     return <div>Đang tải dữ liệu...</div>;
   }
@@ -545,6 +553,10 @@ const UpdateOrder = () => {
   const orderDetails = orderData.orderDetails || [];
 
   const branchId = orderDetails.length > 0 ? orderDetails[0].branch.id : null;
+
+  // Trước khi gọi modal, thêm log để kiểm tra serviceId
+  const serviceId = orderDetails.length > 0 ? orderDetails[0].service.id : null;
+  // console.log("Service ID truyền vào modal:", serviceId); // Log serviceId
 
   return (
     <div className="max-w-6xl mx-auto p-4 bg-gray-50">
@@ -661,7 +673,7 @@ const UpdateOrder = () => {
                         <Dropdown
                           overlay={
                             <Menu>
-                              <Menu.Item key="update" onClick={handleUpdate}>
+                              <Menu.Item key="update" onClick={() => handleUpdateClick(item.id)}>
                                 <FontAwesomeIcon
                                   icon={faPenNib}
                                   className="text-[#002278]"
@@ -1017,8 +1029,16 @@ const UpdateOrder = () => {
         branchId={branchId}
         onServiceAdded={fetchOrderData}
       />
+      <UpdateOrderDetailModal
+        visible={updateDetailVisible}
+        onClose={() => setUpdateDetailVisible(false)}
+        orderDetailId={currentOrderDetailId}
+        fetchOrderData={fetchOrderData}
+        serviceId={serviceId}
+      />
     </div>
   );
 };
 
 export default UpdateOrder;
+
