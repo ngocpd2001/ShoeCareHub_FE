@@ -111,9 +111,13 @@ export default function CreateMaterial() {
   //   console.log("Branches state:", branches);
 
   const onChange = (data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
-    setImages(newImages);
+    if (Array.isArray(data)) {
+        const newImages = data.map((file) => file.originFileObj);
+        setImages(newImages);
+    } else {
+        console.error("Dữ liệu hình ảnh không hợp lệ:", data);
+        setImages([]);
+    }
   };
 
   useEffect(() => {

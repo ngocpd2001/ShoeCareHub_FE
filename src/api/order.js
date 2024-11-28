@@ -33,7 +33,7 @@ export const getOrderByAccountId = async (accountId) => {
 export const getOrderDetailById = async (id) => {
   try {
     const response = await axiosInstances.login.get(`/orderdetails/${id}`);
-    return response.data.data;
+    return response.data;
   } catch (error) {
     console.error("Lỗi khi gọi API chi tiết đơn hàng", error);
     throw error;
@@ -210,6 +210,16 @@ export const deleteOrderDetail = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Lỗi khi xóa chi tiết đơn hàng", error);
+    throw error;
+  }
+};
+
+export const getProcessesByServiceId = async (serviceId) => {
+  try {
+    const response = await axiosInstances.login.get(`/processes/by-service/${serviceId}?pageIndex=1&pageSize=10`);
+    return response.data;
+  } catch (error) {
+    console.error("Lỗi khi gọi API lấy quá trình của dịch vụ", error);
     throw error;
   }
 };
