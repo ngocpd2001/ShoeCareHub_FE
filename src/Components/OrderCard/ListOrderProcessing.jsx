@@ -15,8 +15,8 @@ export default function ListOrderProcessing({ activeKey }) {
       `/orders/accounts/${user.id}?status=processing&orderBy=CreateDateAsc`
     )
       .then((data) => {
-        setData(data?.data.data);
-        console.log(data.data.data);
+        setData(data?.data?.data || []);
+        console.log(data?.data?.data || []);
       })
       .catch((error) => {
         console.log(error);

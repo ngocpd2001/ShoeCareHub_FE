@@ -8,44 +8,69 @@ import ServiceViewReviewForm from "./ServiceViewReviewForm";
 import { useStorage } from "../../hooks/useLocalStorage";
 import { isWithin7Days } from "../../utils/dateUtils";
 import confirm from "antd/es/modal/confirm";
-import { message, Modal } from "antd";
+import { message, Modal, Steps } from "antd";
 import { putData } from "../../api/api";
+import StepsDetail from "./StepsDetail";
+import StepsDetailProcess from "./StepsDetailProcess";
 
-const CartItem = ({ item }) => (
-  <div className="flex items-center py-4 border-b">
-    <Link to={`/servicedetail/${item?.service?.id}`}>
-      <img
-        src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
-        alt={item.name}
-        className="w-20 h-20 object-cover mr-4"
-      />
-    </Link>
-    <div className="flex-grow">
-      <Link to={`/servicedetail/${item?.service?.id}`} className="font-medium">
-        {item?.service?.name}
+const CartItem = ({ item }) => {
+  const modalDetailProcess = useModalState();
+  return (
+    <div className="flex items-center py-4 border-b">
+      <ComModal
+        isOpen={modalDetailProcess?.isModalOpen}
+        onClose={modalDetailProcess?.handleClose}
+        width={700}
+      >
+        <StepsDetailProcess orderCode={item} />
+      </ComModal>
+      <Link to={`/servicedetail/${item?.service?.id}`}>
+        <img
+          src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
+          alt={item.name}
+          className="w-20 h-20 object-cover mr-4"
+        />
       </Link>
-      {/* <p className="text-sm text-gray-500">{item.quantity}</p> */}
-      <p className="text-sm text-gray-500 max-w-50 truncate">
-        {item?.service?.description}
-      </p>
+      <div className="flex-grow">
+        <Link
+          to={`/servicedetail/${item?.service?.id}`}
+          className="font-medium"
+        >
+          {item?.service?.name}
+        </Link>
+        {/* <p className="text-sm text-gray-500">{item.quantity}</p> */}
+        <p className="text-sm text-gray-500 max-w-50 truncate">
+          {item?.service?.description}
+        </p>
+      </div>
+      <div className="text-right">
+        <button
+          onClick={modalDetailProcess.handleOpen}
+          className="text-blue-600 mb-4"
+        >
+          Chi tiết
+        </button>
+        <p className="text-sm text-gray-500 line-through">
+          {item?.service?.price.toLocaleString()}đ
+        </p>
+        <p className="font-bold text-blue-600">
+          {item.price.toLocaleString()}đ
+        </p>
+      </div>
     </div>
-    <div className="text-right">
-      <p className="text-sm text-gray-500 line-through">
-        {item?.service?.price.toLocaleString()}đ
-      </p>
-      <p className="font-bold text-blue-600">{item.price.toLocaleString()}đ</p>
-    </div>
-  </div>
-);
+  );
+};
 
 export default function OrderCard({ order, reloadData }) {
   const [user, setUser] = useStorage("user", null);
   const modalFeedback = useModalState();
+  const modalDetail = useModalState();
+
   const modalViewFeedback = useModalState();
   const modalCanceled = useModalState();
   const navigate = useNavigate();
 
-  console.log(order);
+  console.log(123, order);
   const showConfirm = () => {
     Modal.confirm({
       title: "Bạn có chắc chắn muốn hủy đơn hàng không?",
@@ -106,7 +131,14 @@ export default function OrderCard({ order, reloadData }) {
             )}
         </div>
         <div className="flex gap-1">
-          <span className=" font-medium text-center">Chi tiết</span>
+          {order?.shippingCode && (
+            <button
+              onClick={modalDetail.handleOpen}
+              className=" font-medium text-center"
+            >
+              Chi tiết
+            </button>
+          )}
           <span className=" font-medium">|</span>
           <span className="text-blue-800 font-medium text-center">
             {order.status}
@@ -171,6 +203,15 @@ export default function OrderCard({ order, reloadData }) {
           </div>
         )}
       </div>
+
+      <ComModal
+        isOpen={modalDetail?.isModalOpen}
+        onClose={modalDetail?.handleClose}
+        width={700}
+      >
+        <StepsDetail orderCode={order?.shippingCode} />
+      </ComModal>
+
       <ComModal
         isOpen={modalFeedback?.isModalOpen}
         onClose={modalFeedback?.handleClose}

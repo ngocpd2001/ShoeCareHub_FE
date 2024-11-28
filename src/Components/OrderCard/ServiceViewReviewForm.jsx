@@ -97,15 +97,27 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
       {data?.orderDetails &&
         data?.orderDetails.map((value) => (
           <div key={value?.id} className="mb-10 border-b">
-            <div className="flex items-center mb-4">
-              <img
-                src={
-                  value?.service?.assetUrls && value?.service?.assetUrls[0]?.url
-                }
-                alt={value?.service?.name}
-                className="w-24 h-24 object-cover mr-4 border"
-              />
-              <p className="font-semibold">{value?.service?.name}</p>
+            <div className="flex justify-between">
+              <div className="flex items-center mb-4">
+                <img
+                  src={
+                    value?.service?.assetUrls &&
+                    value?.service?.assetUrls[0]?.url
+                  }
+                  alt={value?.service?.name}
+                  className="w-24 h-24 object-cover mr-4 border"
+                />
+                <p className="font-semibold">{value?.service?.name}</p>
+              </div>
+              {value?.feedback?.status === "ACTIVE" && (
+                <p className="text-blue-600">Đã duyệt</p>
+              )}
+              {value?.feedback?.status === "PENDING" && (
+                <p className="text-blue-600">Chờ duyệt</p>
+              )}
+              {value?.feedback?.status === "SUSPENDED" && (
+                <p className="text-red-600">Từ chối</p>
+              )}
             </div>
             <div className="mb-4">
               <p className="mb-2">Chất lượng dịch vụ</p>
@@ -158,6 +170,9 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
                 </Image.PreviewGroup>
               </div>
             </div>
+                {value?.feedback?.status === "SUSPENDED" && (
+                  <p className="text-red-600 p-8">Đánh giá bị từ chối vì vi phạm tiêu chuẩn nội dung.</p>
+                )}
           </div>
         ))}
     </div>

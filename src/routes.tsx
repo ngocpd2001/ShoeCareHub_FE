@@ -86,6 +86,7 @@ import CategoryServiceManager from "./page/Admin/CategoryService/CategoryService
 import PackageManager from "./page/Admin/package/PackageManager";
 import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
 import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
+import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -264,7 +265,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service",
-        element: <ServiceManager />,
+        element: <PopupHandler><ServiceManager /></PopupHandler>,
       },
       {
         path: "/owner/package",
@@ -284,19 +285,19 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service/create",
-        element: <CreateSevice />,
+        element: <PopupHandler><CreateSevice /></PopupHandler>,
       },
       {
         path: "/owner/service/:id",
-        element: <DetailService />,
+        element: <PopupHandler><DetailService /></PopupHandler>,
       },
       {
         path: "/owner/order",
-        element: <OrderManager />,
+        element: <PopupHandler><OrderManager /></PopupHandler>,
       },
       {
         path: "/owner/order/:id",
-        element: <OrderDetail />,
+        element: <PopupHandler><OrderDetail /></PopupHandler>,
       },
       {
         path: "/owner/order/update/:id",
@@ -304,7 +305,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/branch",
-        element: <BranchManager />,
+        element: <PopupHandler><BranchManager /></PopupHandler>,
       },
       // {
       //   path: "/owner/branch/create",
@@ -324,19 +325,19 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/employee",
-        element: <EmployeeManager />,
+        element: <PopupHandler><EmployeeManager /></PopupHandler>,
       },
       {
         path: "/owner/employee/:id",
-        element: <EmployeeDetail />,
+        element: <PopupHandler><EmployeeDetail /></PopupHandler>,
       },
       {
         path: "/owner/employee/create",
-        element: <CreateEmployee />,
+        element: <PopupHandler><CreateEmployee /></PopupHandler>,
       },
       {
         path: "/owner/ticket",
-        element: <TicketManager />,
+        element: <PopupHandler><TicketManager /></PopupHandler>,
       },
       // {
       //   path: "/owner/ticket/:id",
@@ -348,7 +349,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/material",
-        element: <MaterialManager />,
+        element: <PopupHandler><MaterialManager /></PopupHandler>,
       },
       {
         path: "/owner/material/update/:id",

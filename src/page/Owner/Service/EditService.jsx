@@ -250,7 +250,7 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
         console.error("Lỗi ", error);
       });
 
-    getData("/categories?PageIndex=1&PageSize=999999")
+    getData("/categories?Status=AVAILABLE&PageIndex=1&PageSize=999999")
       .then((response) => {
         console.log("Categories:", response?.data?.data);
         setCategories(
