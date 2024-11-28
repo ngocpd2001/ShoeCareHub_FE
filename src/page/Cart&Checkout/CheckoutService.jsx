@@ -390,10 +390,10 @@ const CheckoutService = () => {
             return materials;
           });
           const materialsData = await Promise.all(materialsPromises);
-          console.log("Dữ liệu vật liệu:", materialsData);
-          // Xử lý dữ liệu vật liệu ở đây nếu cần
+          console.log("Dữ liệu phụ kiện:", materialsData);
+          // Xử lý dữ liệu phụ kiện ở đây nếu cần
         } catch (error) {
-          console.error("Lỗi khi lấy dữ liệu vật liệu:", error);
+          console.error("Lỗi khi lấy dữ liệu phụ kiện:", error);
         }
       }
     };

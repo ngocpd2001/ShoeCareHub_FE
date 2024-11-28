@@ -145,6 +145,7 @@ const UpdateOrder = () => {
   const [statusHistory, setStatusHistory] = useState([]);
   const [newStatus, setNewStatus] = useState(null);
   const [isShip, setIsShip] = useState(true);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (orderData) {
@@ -651,14 +652,29 @@ const UpdateOrder = () => {
                       <td className="text-right">
                         {item.material.price.toLocaleString()}đ
                       </td>
+                      <td className="text-right">
+                        {/* {item.price.toLocaleString()}đ */}
+                      </td>
+                      {/* <td
+                        className="text-right pl-3"
+                        onClick={() => setIsEditing(!isEditing)}
+                      >
+                        <FontAwesomeIcon
+                          icon={
+                            isEditing
+                              ? "fa-solid fa-pen-nib"
+                              : faEllipsisVertical
+                          }
+                        />
+                      </td> */}
                     </tr>
                   )}
-                  {/* <tr>
-                    <td className="font-semibold">Thành tiền:</td>
-                    <td className="text-end">
-                      {item.price.toLocaleString()}đ
+                  {/* Hiển thị ghi chú cho từng dịch vụ */}
+                  <tr>
+                    <td className="text-gray-600 italic py-4">
+                      Ghi chú: {item.note || "Không có ghi chú"}
                     </td>
-                  </tr> */}
+                  </tr>
                 </React.Fragment>
               ))}
             </tbody>
@@ -680,12 +696,12 @@ const UpdateOrder = () => {
               <span>Tổng thanh toán</span>
               <span>{orderData.totalPrice?.toLocaleString()}₫</span>
             </div>
-            <div className="border-t pt-4 mt-2">
+            {/* <div className="border-t pt-4 mt-2">
               <p className="text-gray-600 mb-2">Ghi chú:</p>
               <p className="text-gray-800 italic">
                 {orderData.note || "Không có ghi chú"}
               </p>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -909,15 +925,17 @@ const UpdateOrder = () => {
                       Mã vận chuyển
                     </label>
                     {formData.shippingCode ? ( // Kiểm tra nếu có shippingCode
-                        <span className="text-gray-900">{formData.shippingCode}</span> // Hiển thị mã vận chuyển
+                      <span className="text-gray-900">
+                        {formData.shippingCode}
+                      </span> // Hiển thị mã vận chuyển
                     ) : (
-                        <button
-                            type="button"
-                            onClick={handleUpdateShipCode} // Gọi hàm cập nhật mã vận chuyển
-                            className="w-full p-2 border rounded bg-blue-500 text-white"
-                        >
-                            Nhập mã vận chuyển
-                        </button>
+                      <button
+                        type="button"
+                        onClick={handleUpdateShipCode} // Gọi hàm cập nhật mã vận chuyển
+                        className="w-full p-2 border rounded bg-blue-500 text-white"
+                      >
+                        Tạo mã vận chuyển
+                      </button>
                     )}
                   </div>
 

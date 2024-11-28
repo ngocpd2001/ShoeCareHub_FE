@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Modal, Form, Input, Select, Button } from "antd";
 import { createOrderDetail } from "../../../api/order";
 import { getServiceByBranchId } from "../../../api/branch";
+import { getMaterialByServiceId } from "../../../api/material";
 
 const { Option } = Select;
 
@@ -14,6 +15,7 @@ const CreateOrderDetailPopup = ({
 }) => {
   const [form] = Form.useForm();
   const [services, setServices] = useState([]);
+  const [materials, setMaterials] = useState([]);
 
   const fetchServices = async (branchId) => {
     try {
@@ -24,6 +26,28 @@ const CreateOrderDetailPopup = ({
       setServices(activeServices);
     } catch (error) {
       console.error("Lỗi khi lấy danh sách dịch vụ:", error);
+    }
+  };
+
+  const fetchMaterials = async (serviceId) => {
+    console.log("serviceId gửi vào:", serviceId);
+    if (!serviceId) {
+      console.warn("serviceId không hợp lệ");
+      setMaterials([]);
+      return;
+    }
+    try {
+      const response = await getMaterialByServiceId(serviceId);
+      console.log("Dữ liệu vật liệu nhận được:", response.data);
+      if (Array.isArray(response.data.items)) {
+        setMaterials(response.data.items);
+      } else {
+        console.warn("Dữ liệu không phải là mảng:", response.data);
+        setMaterials([]);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách vật liệu:", error);
+      setMaterials([]);
     }
   };
 
@@ -84,6 +108,7 @@ const CreateOrderDetailPopup = ({
           <Select
             placeholder="Chọn dịch vụ"
             showSearch
+            onChange={fetchMaterials}
             filterOption={(input, option) =>
               (option?.children ?? "")
                 .toLowerCase()
@@ -102,7 +127,26 @@ const CreateOrderDetailPopup = ({
           label="Mã vật liệu"
           rules={[{ required: true, message: "Vui lòng nhập mã vật liệu!" }]}
         >
-          <Input />
+          <Select
+            placeholder="Chọn vật liệu"
+            showSearch
+            disabled={materials.length === 0}
+            filterOption={(input, option) =>
+              (option?.children ?? "")
+                .toLowerCase()
+                .includes(input.toLowerCase())
+            }
+          >
+            {materials.length === 0 ? (
+              <Option disabled>{`Dịch vụ không có vật liệu`}</Option>
+            ) : (
+              materials.map((material) => (
+                <Option key={material.id} value={material.id}>
+                  {material.name}
+                </Option>
+              ))
+            )}
+          </Select>
         </Form.Item>
       </Form>
     </Modal>
