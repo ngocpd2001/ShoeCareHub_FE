@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Truck, MapPin, FileText, CheckCircle, Home } from "lucide-react";
+import {Truck, MapPin} from "lucide-react";
 import ComButton from "../../../Components/ComButton/ComButton";
 import { Breadcrumb, Popconfirm, Image } from "antd";
 import { Link, useNavigate, useParams } from "react-router-dom";
@@ -26,6 +26,7 @@ import {
   faBoxOpen,
   faTimesCircle,
   faCheckCircle,
+  faEllipsisVertical,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   getOrderById,
@@ -76,59 +77,32 @@ const getAvailableStatuses = (currentStatus) => {
       ];
 
     case "APPROVED":
-      return [
-        { value: "Đã nhận", className: "bg-green-50 text-green-700" },
-        { value: "Đang xử lý", className: "bg-orange-50 text-orange-700" },
-        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
-        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
-        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
-      ];
+      return [{ value: "Đã nhận", className: "bg-green-50 text-green-700" }];
 
     case "RECEIVED":
       return [
         { value: "Đang xử lý", className: "bg-orange-50 text-orange-700" },
-        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
-        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
-        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
       ];
 
     case "PROCESSING":
       return [
-        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
         { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
         { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
         { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
       ];
 
     case "STORAGE":
-      return [
-        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
-        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
-      ];
+      return [];
     case "SHIPPING":
       return [
         { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-        { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
       ];
 
     case "DELIVERED":
       return [{ value: "Hoàn thành", className: "bg-green-50 text-green-700" }];
 
     case "ABANDONED":
-      return [
-        { value: "Lưu trữ", className: "bg-gray-50 text-gray-700" },
-        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
-        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
-        { value: "Hoàn thành", className: "bg-green-50 text-green-700" },
-      ];
+      return [{ value: "Lưu trữ", className: "bg-gray-50 text-gray-700" }];
 
     case "FINISHED":
       return [];
@@ -569,14 +543,16 @@ const UpdateOrder = () => {
                 {orderDetails.length} dịch vụ
               </span>
             </div>
-            <div className="flex items-center space-x-4">
-              <button
-                className="bg-[#002278] text-white w-10 h-10 flex items-center justify-center rounded-full"
-                onClick={handleButtonClick}
-              >
-                <FontAwesomeIcon icon={faPlus} />
-              </button>
-            </div>
+            {orderStatus === "Đã nhận" && ( // Thêm điều kiện kiểm tra trạng thái
+              <div className="flex items-center space-x-4">
+                <button
+                  className="bg-[#002278] text-white w-10 h-10 flex items-center justify-center rounded-full"
+                  onClick={handleButtonClick}
+                >
+                  <FontAwesomeIcon icon={faPlus} />
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Order Items */}
@@ -584,55 +560,93 @@ const UpdateOrder = () => {
             <thead className="text-gray-500 text-sm">
               <tr>
                 <th className="text-left py-2">Dịch vụ</th>
-                <th className="text-right">Số lượng gói</th>
                 <th className="text-right">Đơn giá</th>
                 <th className="text-right">Thành tiền</th>
+                <th className="text-right"></th>
               </tr>
             </thead>
             <tbody>
               {orderDetails.map((item) => (
-                <tr key={item.id} className="border-t">
-                  <td className="py-3">
-                    <div className="flex items-center">
-                      <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
-                        {item.service.assetUrls &&
-                        item.service.assetUrls.length > 0 ? (
-                          <Image.PreviewGroup
-                            preview={{
-                              onChange: (current, prev) =>
-                                console.log(
-                                  `Switched from preview ${prev} to ${current}`
-                                ),
-                            }}
-                          >
-                            <Image
-                              src={item.service.assetUrls[0].url} // Thay đổi ở đây
-                              alt={item.service.name}
-                              className="object-cover w-full h-full"
-                              fallback="data:image/png;base64,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"
+                <React.Fragment key={item.id}>
+                  <tr className="border-t">
+                    <td className="py-3">
+                      <div className="flex items-center">
+                        <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
+                          {item.service.assetUrls &&
+                          item.service.assetUrls.length > 0 ? (
+                            <Image.PreviewGroup
                               preview={{
-                                mask: "Xem ảnh",
-                                urls: item.service.assetUrls.map(
-                                  (asset) => asset.url
-                                ), // Thay đổi ở đây
+                                onChange: (current, prev) =>
+                                  console.log(
+                                    `Switched from preview ${prev} to ${current}`
+                                  ),
                               }}
-                            />
-                          </Image.PreviewGroup>
-                        ) : (
-                          <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                            <span className="text-gray-400">No image</span>
-                          </div>
-                        )}
+                            >
+                              <Image
+                                src={item.service.assetUrls[0].url} // Hình ảnh của service
+                                alt={item.service.name}
+                                className="object-cover w-full h-full"
+                                fallback="data:image/png;base64,..."
+                              />
+                            </Image.PreviewGroup>
+                          ) : (
+                            <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                              <span className="text-gray-400">No image</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="break-words">{item.service.name}</span>
                       </div>
-                      <span>{item.service.name}</span>
-                    </div>
-                  </td>
-                  <td className="text-center">{item.quantity}</td>
-                  <td className="text-right">{item.price.toLocaleString()}đ</td>
-                  <td className="text-right">
-                    {(item.price * item.quantity).toLocaleString()}đ
-                  </td>
-                </tr>
+                    </td>
+                    <td className="text-right">
+                      {item.service.promotion &&
+                      item.service.promotion.status === "Hoạt Động"
+                        ? item.service.promotion.newPrice.toLocaleString() + "đ"
+                        : item.service.price.toLocaleString() + "đ"}
+                    </td>
+                    <td className="text-right">
+                      {item.price.toLocaleString()}đ
+                    </td>
+                    <td className="text-right pl-3">
+                      <FontAwesomeIcon icon={faEllipsisVertical} />
+                    </td>
+                  </tr>
+                  {item.material && (
+                    <tr>
+                      <td className="py-3">
+                        <div className="flex items-center">
+                          <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
+                            {item.material.assetUrls &&
+                            item.material.assetUrls.length > 0 ? (
+                              <Image
+                                src={item.material.assetUrls[0].url} // Hình ảnh của material
+                                alt={item.material.name}
+                                className="object-cover w-full h-full"
+                                fallback="data:image/png;base64,..."
+                              />
+                            ) : (
+                              <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                                <span className="text-gray-400">No image</span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="break-words">
+                            {item.material.name}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="text-right">
+                        {item.material.price.toLocaleString()}đ
+                      </td>
+                    </tr>
+                  )}
+                  {/* <tr>
+                    <td className="font-semibold">Thành tiền:</td>
+                    <td className="text-end">
+                      {item.price.toLocaleString()}đ
+                    </td>
+                  </tr> */}
+                </React.Fragment>
               ))}
             </tbody>
           </table>

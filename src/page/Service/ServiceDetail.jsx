@@ -16,11 +16,12 @@ import InformationShop from "../../Components/ComService/InformationShop";
 import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import { addItemToCart, getUserCart, getCartItemById } from "../../api/cart";
-import { Select, message } from "antd";
+import { addToCart } from "../../api/cart";
+import { Select, message, Checkbox } from "antd";
+import { getMaterialByServiceId } from "../../api/material";
 
 const ServiceDetail = () => {
-  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [service, setService] = useState(null);
@@ -35,6 +36,9 @@ const ServiceDetail = () => {
   const location = useLocation();
   const [businessId, setBusinessId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
+  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [materials, setMaterials] = useState([]);
+  const [selectedMaterialId, setSelectedMaterialId] = useState(null);
 
   // console.log("Business ID:", businessId);
 
@@ -44,7 +48,7 @@ const ServiceDetail = () => {
     const fetchServiceData = async () => {
       try {
         const fetchedService = await getServiceById(serviceId);
-        console.log("Fetched service:", fetchedService);
+        console.log("Dữ liệu dịch vụ:", fetchedService);
         setService(fetchedService);
 
         // Lấy businessId từ dữ liệu dịch vụ
@@ -98,6 +102,30 @@ const ServiceDetail = () => {
     }
   }, [service]);
 
+  useEffect(() => {
+    const fetchMaterialData = async () => {
+      try {
+        const materials = await getMaterialByServiceId(serviceId);
+        console.log("Vật liệu:", materials);
+        const allMaterials = materials.data.items.map((item) => ({
+          id: item.id,
+          name: item.name,
+          price: item.price,
+          assetUrls: item.assetUrls,
+          status: item.status,
+        }));
+        // console.log("Tất c vật liệu:", allMaterials);
+        setMaterials(allMaterials);
+      } catch (error) {
+        console.error("Lỗi khi tải vật liệu:", error);
+      }
+    };
+
+    if (serviceId) {
+      fetchMaterialData();
+    }
+  }, [serviceId]);
+
   if (loading) return <div>Đang tải thông tin dịch vụ...</div>;
   if (error) return <div>{error}</div>;
 
@@ -116,15 +144,15 @@ const ServiceDetail = () => {
       ]
     : [];
 
-  // const nextImage = () => {
-  //   setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
-  // };
+  const nextImage = () => {
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % combinedData.length);
+  };
 
-  // const prevImage = () => {
-  //   setCurrentImageIndex(
-  //     (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
-  //   );
-  // };
+  const prevImage = () => {
+    setCurrentImageIndex(
+      (prevIndex) => (prevIndex - 1 + combinedData.length) % combinedData.length
+    );
+  };
 
   const toggleDescription = () => {
     setIsExpanded(!isExpanded);
@@ -149,12 +177,11 @@ const ServiceDetail = () => {
     ? service.description.length > MAX_LENGTH
     : false;
 
-  const handleAddToCart = async () => {
-    if (!service || service.id === 0 || !selectedBranch) {
-      console.error("Service not found or branch not selected");
-      return;
-    }
+  const handleMaterialChange = (checkedValues) => {
+    setSelectedMaterials(checkedValues);
+  };
 
+  const handleAddToCart = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
@@ -162,15 +189,32 @@ const ServiceDetail = () => {
       return;
     }
 
+    if (!service || service.id === 0 || !selectedBranch) {
+      console.error("Service not found or branch not selected");
+      return;
+    }
+
     try {
       const itemData = {
         serviceId: Number(service.id),
         branchId: Number(selectedBranch.id),
-        quantity: Number(quantity),
+        userId: user.id,
+        materialId: selectedMaterials.length > 0 ? selectedMaterials[0] : undefined,
       };
 
+      // Kiểm tra và ghi lại thông tin vật liệu
+      console.log("Thông tin vật liệu được gửi:", selectedMaterials);
+
+      // Kiểm tra xem có vật liệu nào được chọn không
+      if (selectedMaterials.length > 0) {
+        // Xử lý thêm nếu cần
+        console.log("Có vật liệu được chọn:", selectedMaterials);
+      } else {
+        console.log("Không có vật liệu nào được chọn.");
+      }
+
       console.log("Add to cart data:", itemData);
-      await addItemToCart(user.id, itemData);
+      await addToCart(itemData);
 
       // Hiển thị thông báo thành công
       message.success({
@@ -239,6 +283,21 @@ const ServiceDetail = () => {
         shopName: selectedBranch.name,
         shopAddress: selectedBranch.address,
       };
+
+      // Thêm materialId, materialName và materialPrice nếu có
+      if (selectedMaterials.length > 0) {
+        checkoutService.materialId = selectedMaterials[0];
+        const selectedMaterial = materials.find(m => m.id === selectedMaterials[0]);
+        checkoutService.materialName = selectedMaterial ? selectedMaterial.name : '';
+        checkoutService.materialPrice = selectedMaterial ? selectedMaterial.price : 0;
+      }
+
+      // Log dữ liệu checkoutService
+      console.log(
+        "Checkout Service Data:",
+        JSON.stringify(checkoutService, null, 2)
+      );
+
       navigate("/checkout-service", {
         state: {
           selectedItems: [
@@ -268,6 +327,8 @@ const ServiceDetail = () => {
     setSelectedBranch(branch);
   };
 
+  // console.log("Materials:", materials);
+
   return (
     <div className="bg-gray-100 min-h-screen">
       <div className="max-w-7xl mx-auto p-6">
@@ -277,56 +338,67 @@ const ServiceDetail = () => {
             <div className="w-full md:w-1/2 p-6" ref={containerRef}>
               {/* Main Image Display */}
               <div className="relative w-full h-[500px] mb-4">
-                <img
-                  src={
-                    service.assetUrls?.[0]?.url || "/path/to/default-image.jpg"
-                  }
-                  alt="Main preview"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-              </div>
-              {/* <div className="relative w-full h-[500px] mb-4">
-                <img
-                  src={combinedData[currentImageIndex]?.img}
-                  alt="Main preview"
-                  className="w-full h-full object-cover rounded-lg"
-                />
-                {combinedData.length > 1 && (
+                {service.assetUrls?.length > 0 ? (
+                  <img
+                    src={service.assetUrls[currentImageIndex]?.url}
+                    alt="Main preview"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                ) : (
+                  <img
+                    src="/path/to/default-image.jpg"
+                    alt="Default preview"
+                    className="w-full h-full object-cover rounded-lg"
+                  />
+                )}
+                {/* Nút Previous và Nút Next chỉ hiển thị nếu có nhiều hơn 1 ảnh */}
+                {service.assetUrls?.length > 1 && (
                   <>
+                    {/* Nút Previous */}
                     <button
                       onClick={prevImage}
-                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white/50 rounded-full p-2"
+                      className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow"
+                      disabled={currentImageIndex === 0}
                     >
                       <FontAwesomeIcon icon={faChevronLeft} />
                     </button>
+                    {/* Nút Next */}
                     <button
                       onClick={nextImage}
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white/50 rounded-full p-2"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-2 shadow"
+                      disabled={
+                        currentImageIndex === service.assetUrls.length - 1
+                      }
                     >
                       <FontAwesomeIcon icon={faChevronRight} />
                     </button>
                   </>
                 )}
-              </div> */}
+              </div>
 
               {/* Thumbnails */}
-              {/* <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
-                {combinedData.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`relative min-w-[100px] h-[100px] cursor-pointer ${
-                      index === currentImageIndex ? "ring-2 ring-[#3A4980]" : ""
-                    }`}
-                    onClick={() => setCurrentImageIndex(index)}
-                  >
-                    <img
-                      src={item.img}
-                      alt={`Thumbnail ${index + 1}`}
-                      className="w-full h-full object-cover rounded"
-                    />
-                  </div>
-                ))}
-              </div> */}
+              {service.assetUrls?.length > 1 && ( // Chỉ hiển thị thumbnails nếu có nhiều hơn 1 ảnh
+                <div className="flex gap-2 overflow-x-auto py-2 scrollbar-hide">
+                  {service.assetUrls.map((asset, index) => (
+                    <div
+                      key={index}
+                      className={`relative w-[100px] h-[100px] cursor-pointer ${
+                        index === currentImageIndex
+                          ? "ring-2 ring-[#3A4980]"
+                          : ""
+                      }`}
+                      onClick={() => setCurrentImageIndex(index)}
+                    >
+                      <img
+                        src={asset.url}
+                        alt={`Thumbnail ${index + 1}`}
+                        className="w-full h-full object-cover rounded"
+                        style={{ objectFit: "cover" }}
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Right column - Content */}
@@ -393,7 +465,7 @@ const ServiceDetail = () => {
 
               {/* Description */}
               <div className="mt-5 border-t pt-4">
-                <h2 className="text-2xl font-semibold">Mô tả dịch vụ</h2>
+                <h2 className="text-xl font-semibold">Mô tả dịch vụ</h2>
 
                 <div
                   className={`mt-2 text-gray-600 transition-max-height duration-500 ease-in-out ${
@@ -414,7 +486,7 @@ const ServiceDetail = () => {
                     onClick={toggleDescription}
                     className="text-blue-500 mt-2"
                   >
-                    {isExpanded ? "Ẩn bớt..." : "Xem thêm..."}
+                    {isExpanded ? "n bớt..." : "Xem thêm..."}
                   </button>
                 )}
 
@@ -436,8 +508,9 @@ const ServiceDetail = () => {
                 </div>
               </div>
 
+              {/* Chọn chi nhánh */}
               <div className="mt-5 border-t pt-4">
-                <h2 className="text-2xl font-semibold mb-4">Chọn chi nhánh</h2>
+                <h2 className="text-xl font-semibold mb-4">Chọn chi nhánh</h2>
                 <Select
                   value={selectedBranch?.id || ""}
                   onChange={(value) => {
@@ -480,29 +553,75 @@ const ServiceDetail = () => {
                 </Select>
               </div>
 
-              {/* Quantity */}
-              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6"></div>
-                <span className="text-gray-500 text-xl font-semibold">
-                  Số lợng giày:
-                </span>
-                <div className="flex items-center bg-[#F3F3F3] rounded-full py-3 px-8 text-[#3A4980]">
-                  <button
-                    onClick={() => handleQuantityChange(service.id, -1)}
-                    className="mx-2 pr-6 text-xl font-medium"
-                  >
-                    -
-                  </button>
-                  <span className="text-2xl font-semibold">{quantity}</span>
-                  <button
-                    onClick={() => handleQuantityChange(service.id, 1)}
-                    className="mx-2 pl-6 text-2xl font-medium"
-                  >
-                    +
-                  </button>
-                </div>
-              </div> */}
+              {/* Chọn vật liệu - đã di chuyển xuống dưới */}
+              <div className="mt-5 border-t pt-4">
+                <h2 className="text-xl font-semibold mb-4">Chọn vật liệu</h2>
+                <Select
+                  mode="default"
+                  value={
+                    selectedMaterials.length > 0
+                      ? selectedMaterials[0]
+                      : undefined
+                  }
+                  onChange={(value) => {
+                    if (value) {
+                      handleMaterialChange([value]);
+                    } else {
+                      setSelectedMaterials([]); // Đặt lại selectedMaterials nếu không có giá trị
+                    }
+                  }}
+                  className="w-full border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400 h-12"
+                  placeholder={<span className="text-lg">Chọn vật liệu</span>}
+                  allowClear
+                >
+                  {materials
+                    .filter((material) => material.status === "Hoạt Động")
+                    .map((material) => (
+                      <Select.Option key={material.id} value={material.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center">
+                            <img
+                              src={
+                                material.assetUrls &&
+                                material.assetUrls.length > 0
+                                  ? material.assetUrls[0].url
+                                  : "/path/to/default-image.jpg"
+                              }
+                              alt={material.name}
+                              className="w-10 h-10 mr-3"
+                            />
+                            <span className="font-semibold">
+                              {material.name}
+                            </span>
+                          </div>
+                          <span className="text-gray-700 whitespace-nowrap ml-2">
+                            {formatCurrency(material.price)}
+                          </span>
+                        </div>
+                      </Select.Option>
+                    ))}
+                </Select>
 
-              <div className="flex items-center mt-5 border-t pt-4 space-x-6">
+                {/* Hiển thị tổng tiền chỉ khi có vật liệu được chọn */}
+                {selectedMaterials.length > 0 && (
+                  <div className="mt-4">
+                    <span className="text-xl font-semibold">Tổng tiền: </span>
+                    <span className="text-xl font-bold text-[#3A4980]">
+                      {formatCurrency(
+                        service.price +
+                          selectedMaterials.reduce((total, materialId) => {
+                            const material = materials.find(
+                              (m) => m.id === materialId
+                            );
+                            return total + (material ? material.price : 0);
+                          }, 0)
+                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {/* Quantity */}
+              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6">
                 <span className="text-gray-500 text-xl font-semibold">
                   Số lượng giày:
                 </span>
@@ -521,7 +640,7 @@ const ServiceDetail = () => {
                     +
                   </button>
                 </div>
-              </div>
+              </div> */}
 
               {/* Button cart&checkout */}
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">

@@ -51,7 +51,7 @@ const navigation = [
     current: false,
     children: [
       { name: "Dịch vụ", href: "/owner/service" },
-      // { name: "Phụ kiện", href: "/owner/material" },
+      { name: "Phụ kiện", href: "/owner/material" },
       { name: "Đơn hàng", href: "/owner/order" },
       { name: "Chi nhánh", href: "/owner/branch" },
       { name: "Nhân viên", href: "/owner/employee" },

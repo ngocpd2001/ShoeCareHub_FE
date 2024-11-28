@@ -41,7 +41,7 @@ const ShopCart = ({
           <div className="flex items-center">
             <input
               type="checkbox"
-              checked={shop.services.every(service => service.selected)}
+              checked={shop.services.every((service) => service.selected)}
               onChange={() => onSelectAll(shop.branchId)}
               className="mr-2"
             />
@@ -68,18 +68,16 @@ const ShopCart = ({
       )}
 
       <div className="px-4">
-        {shop.services.map(service => (
+        {shop.services.map((service) => (
           <CartItem
             key={service.id}
             service={service}
             userId={userId}
-            onQuantityChange={onQuantityChange}
             onRemove={onRemove}
             onSelect={onSelect}
-          >
-            <button onClick={() => handleQuantityChange(service.id, 1)}>+</button>
-            <button onClick={() => handleQuantityChange(service.id, -1)}>-</button>
-          </CartItem>
+            material={service.material}
+            materialPrice={service.materialPrice}
+          />
         ))}
       </div>
     </div>

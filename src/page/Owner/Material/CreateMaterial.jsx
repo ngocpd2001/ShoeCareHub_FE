@@ -16,6 +16,7 @@ import { createMaterial } from "../../../api/material";
 import { updateMaterialQuantity } from "../../../api/material";
 import * as yup from "yup";
 import { getBranchByBusinessId } from "../../../api/branch";
+import { getServiceByBusinessId } from "../../../api/service";
 
 // Điều chỉnh schema validation
 const MaterialSchema = yup.object().shape({
@@ -28,14 +29,12 @@ const MaterialSchema = yup.object().shape({
     .number()
     .required("Giá phụ kiện là bắt buộc")
     .min(1000, "Giá tối thiểu là 1000đ"),
-  status: yup
-    .string()
-    .required("Trạng thái là bắt buộc"),
+  status: yup.string().required("Trạng thái là bắt buộc"),
   branchId: yup
     .array()
     .of(yup.string())
     .min(1, "Phải chọn ít nhất một chi nhánh")
-    .required("Vui lòng chọn chi nhánh")
+    .required("Vui lòng chọn chi nhánh"),
 });
 
 export default function CreateMaterial() {
@@ -45,6 +44,7 @@ export default function CreateMaterial() {
   const [branches, setBranches] = useState([]);
   const [user] = useStorage("user", null);
   const navigate = useNavigate();
+  const [services, setServices] = useState([]);
 
   const methods = useForm({
     resolver: yupResolver(MaterialSchema),
@@ -52,7 +52,8 @@ export default function CreateMaterial() {
       name: "",
       price: null,
       status: "",
-      branchId: []
+      branchId: [],
+      serviceId: "", // Khởi tạo là chuỗi rỗng thay vì null
     },
   });
 
@@ -61,38 +62,53 @@ export default function CreateMaterial() {
     register,
     setValue,
     formState: { errors },
+    watch,
   } = methods;
 
-  useEffect(() => {
-    const fetchBranches = async () => {
-      try {
-        const response = await getBranchByBusinessId(user?.businessId);
-        
-        if (!response?.data) return;
+  const serviceId = watch("serviceId");
 
-        const branchOptions = response.data.map((branch) => ({
-          value: branch.id,
-          label: branch.name,
-          description: `${branch.address}, ${branch.ward}, ${branch.province}`,
-          className: "whitespace-normal break-words py-2"
-        }));
-        
-        setBranches(branchOptions);
-        
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.businessId) return;
+
+      try {
+        const [branchResponse, serviceResponse] = await Promise.all([
+          getBranchByBusinessId(user.businessId),
+          getServiceByBusinessId(user.businessId),
+        ]);
+
+        if (branchResponse?.data) {
+          const branchOptions = branchResponse.data
+            .filter((branch) => branch.status === "ACTIVE")
+            .map((branch) => ({
+              value: branch.id,
+              label: branch.name,
+              description: `${branch.address}, ${branch.ward}, ${branch.province}`,
+              className: "whitespace-normal break-words py-2",
+            }));
+          setBranches(branchOptions);
+        }
+
+        if (serviceResponse?.data?.items) {
+          const serviceOptions = serviceResponse.data.items
+            .filter((service) => service.status === "Hoạt Động")
+            .map((service) => ({
+              value: service.id,
+              label: service.name,
+            }));
+          setServices(serviceOptions);
+        }
       } catch (error) {
-        console.error("Chi tiết lỗi:", error);
-        notificationApi("error", "Lỗi", "Không thể lấy danh sách chi nhánh");
-        setBranches([]);
+        console.error("Lỗi khi fetch dữ liệu:", error);
+        notificationApi("error", "Lỗi", "Không thể tải dữ liệu.");
       }
     };
 
-    if (user?.businessId) {
-      fetchBranches();
-    }
+    fetchData();
   }, [user?.businessId, notificationApi]);
-  
+
   // Thêm console.log để kiểm tra branches đã được set chưa
-//   console.log("Branches state:", branches);
+  //   console.log("Branches state:", branches);
 
   const onChange = (data) => {
     const selectedImages = data;
@@ -100,47 +116,73 @@ export default function CreateMaterial() {
     setImages(newImages);
   };
 
+  useEffect(() => {
+    console.log("serviceId hiện tại:", serviceId);
+  }, [serviceId]);
+
   const onSubmit = async (data) => {
-    if (!image) {
-      notificationApi("error", "Hình ảnh không hợp lệ", "Vui lòng chọn hình ảnh.");
+    // Kiểm tra nếu chưa chọn dịch vụ
+    if (!data.serviceId) {
+      notificationApi("error", "Lỗi", "Vui lòng chọn dịch vụ.");
       return;
     }
 
+    // Kiểm tra nếu chưa chọn hình ảnh
+    if (!image || image.length === 0) {
+      notificationApi(
+        "error",
+        "Hình ảnh không hợp lệ",
+        "Vui lòng chọn hình ảnh."
+      );
+      return;
+    }
+
+    // Kiểm tra nếu chưa chọn chi nhánh
     if (!data.branchId || data.branchId.length === 0) {
       notificationApi("error", "Lỗi", "Vui lòng chọn ít nhất một chi nhánh");
       return;
     }
 
-    setDisabled(true);
+    // Tiếp tục với việc gửi dữ liệu
+    const imageUrls = await firebaseImgs(image);
+    if (!imageUrls || imageUrls.length === 0) {
+      notificationApi("error", "Lỗi", "Không thể tải lên hình ảnh.");
+      return;
+    }
+
+    // Chuyển đổi thành cấu trúc đúng cho assetUrls
+    const assetUrls = imageUrls.map((url) => ({
+      url: url,
+      type: "image", // Hỗ trợ tất cả các loại hình ảnh
+    }));
+
+    const materialData = {
+      name: data.name.trim(),
+      price: data.price,
+      status: data.status,
+      branchId: data.branchId.map((id) => id.toString()),
+      serviceId: data.serviceId, // Đảm bảo serviceId được lấy từ data
+      assetUrls: assetUrls,
+    };
+
+    console.log("Dữ liệu gửi đi:", materialData); // Kiểm tra dữ liệu gửi đi
+
+    // Gửi dữ liệu
     try {
-      const uploadedUrls = await firebaseImgs(image);
-      const assetUrls = uploadedUrls.map((url) => ({
-        url: url,
-        type: url.includes("mp4") ? "video" : "image",
-      }));
-
-      const materialData = {
-        name: data.name.trim(),
-        price: data.price,
-        status: data.status,
-        branchId: data.branchId,
-        assetUrls: assetUrls,
-      };
-
-      console.log("Dữ liệu gửi đi:", materialData);
-
-      const response = await createMaterial(null, materialData);
-      
-      console.log("Response từ server:", response);
-
-      notificationApi("success", "Thành công", "Phụ kiện đã được tạo thành công.");
+      const response = await createMaterial(materialData);
+      notificationApi(
+        "success",
+        "Thành công",
+        "Phụ kiện đã được tạo thành công."
+      );
       navigate("/owner/material");
     } catch (error) {
-      console.error("Chi tiết lỗi:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Có lỗi xảy ra khi tạo phụ kiện";
+      console.error("Chi tiết lỗi:", error.response?.data || error.message);
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Có lỗi xảy ra khi tạo phụ kiện";
       notificationApi("error", "Lỗi", errorMessage);
-    } finally {
-      setDisabled(false);
     }
   };
 
@@ -226,7 +268,9 @@ export default function CreateMaterial() {
               </div>
 
               <div className="sm:col-span-2 bg-white rounded border-[#E0E2E7] border p-5">
-                <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                  Chi nhánh & Dịch vụ
+                </h2>
                 <div className="mb-4">
                   <ComSelect
                     size={"large"}
@@ -237,7 +281,10 @@ export default function CreateMaterial() {
                     placeholder="Chọn một hoặc nhiều chi nhánh"
                     onChangeValue={(e, value) => {
                       console.log("Chi nhánh được chọn:", value);
-                      setValue("branchId", Array.isArray(value) ? value : [value]);
+                      setValue(
+                        "branchId",
+                        Array.isArray(value) ? value : [value]
+                      );
                     }}
                     mode="multiple"
                     showSearch
@@ -246,28 +293,48 @@ export default function CreateMaterial() {
                     {...register("branchId")}
                   />
                 </div>
+                <div className="mb-4">
+                  <ComSelect
+                    size={"large"}
+                    style={{ width: "100%" }}
+                    label="Chọn dịch vụ"
+                    placeholder="Chọn dịch vụ"
+                    onChangeValue={(e, value) => {
+                      console.log("Dịch vụ được chọn:", value);
+                      setValue("serviceId", value);
+                      console.log(
+                        "Giá trị serviceId sau khi setValue:",
+                        watch("serviceId")
+                      );
+                    }}
+                    options={services}
+                    {...register("serviceId")}
+                  />
+                </div>
               </div>
             </div>
 
             <div className="mt-10 flex justify-end gap-6">
               <div>
-              <ComButton
-                onClick={() => navigate('/owner/material')}
-                type="button"
-                className="block w-full rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm"
-              >
-                <div className="text-black">Hủy bỏ</div>
-              </ComButton>
+                <ComButton
+                  onClick={() => navigate("/owner/material")}
+                  type="button"
+                  className="block w-full rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm"
+                >
+                  <div className="text-black">Hủy bỏ</div>
+                </ComButton>
               </div>
               <div>
                 <ComButton
                   htmlType="submit"
                   disabled={disabled}
-                  className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${
-                    disabled ? "opacity-50 cursor-not-allowed" : ""
+                  className={`block w-full rounded bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm ${
+                    disabled
+                      ? "opacity-50 cursor-not-allowed"
+                      : "hover:bg-[#0F296D]"
                   }`}
                 >
-                  {disabled ? "Đang tạo..." : "Tạo mới"}
+                  {disabled ? "Đang xử lý..." : "Tạo mới"}
                 </ComButton>
               </div>
             </div>

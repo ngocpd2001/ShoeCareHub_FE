@@ -16,6 +16,11 @@ export const getAllMaterials = async (pageIndex = 1, pageSize = 10) => {
 };
 
 export const getMaterialById = async (id) => {
+  if (!id) {
+    console.error('ID vật liệu không hợp lệ:', id);
+    throw new Error('ID vật liệu không hợp lệ');
+  }
+
   try {
     const response = await axiosInstances.login.get(`/materials/${id}`);
     return response.data;
@@ -25,13 +30,18 @@ export const getMaterialById = async (id) => {
   }
 };
 
-export const createMaterial = async (serviceId, materialData) => {
+export const createMaterial = async (materialData) => {
+  const requestBody = {
+    branchId: materialData.branchId || [0],
+    serviceId: materialData.serviceId,
+    name: materialData.name || "string",
+    price: materialData.price || 0,
+    status: materialData.status || "string",
+    assetUrls: materialData.assetUrls || [{ url: "string", type: "string" }]
+  };
+
   try {
-    const response = await axiosInstances.login.post(`/materials`, materialData, {
-      params: {
-        serviceId: serviceId
-      }
-    });
+    const response = await axiosInstances.login.post(`/materials`, requestBody);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi tạo vật liệu mới:', error);
@@ -93,6 +103,18 @@ export const updateMaterialQuantity = async (branchId, materialId, storage) => {
     return response.data;
   } catch (error) {
     throw error.response?.data || error;
+  }
+};
+
+export const getMaterialByServiceId = async (id, params = {}) => {
+  try {
+    const response = await axiosInstances.login.get(`/materials/services/${id}`, {
+      params
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi lấy vật liệu theo ID dịch vụ:', error);
+    throw error;
   }
 };
 

@@ -100,7 +100,7 @@ const ProviderLandingPage = () => {
 
           <ImageSlider images={images} />
 
-          <div className="grid grid-cols-5 gap-4 mx-auto py-8">
+          {/* <div className="grid grid-cols-5 gap-4 mx-auto py-8">
             <div className="col-span-3 relative h-[450px] flex items-center justify-center">
               <img
                 src={banner2[0]}
@@ -130,7 +130,7 @@ const ProviderLandingPage = () => {
                 </div>
               ))}
             </div>
-          </div>
+          </div> */}
 
           <div className="items-center bg-blue-400 my-8 p-5">
             <h1 className="text-2xl font-bold text-[#002278] text-center pb-5">
