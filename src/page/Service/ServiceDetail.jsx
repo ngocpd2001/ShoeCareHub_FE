@@ -199,7 +199,8 @@ const ServiceDetail = () => {
         serviceId: Number(service.id),
         branchId: Number(selectedBranch.id),
         userId: user.id,
-        materialId: selectedMaterials.length > 0 ? selectedMaterials[0] : undefined,
+        materialId:
+          selectedMaterials.length > 0 ? selectedMaterials[0] : undefined,
       };
 
       // Kiểm tra và ghi lại thông tin phụ kiện
@@ -287,9 +288,15 @@ const ServiceDetail = () => {
       // Thêm materialId, materialName và materialPrice nếu có
       if (selectedMaterials.length > 0) {
         checkoutService.materialId = selectedMaterials[0];
-        const selectedMaterial = materials.find(m => m.id === selectedMaterials[0]);
-        checkoutService.materialName = selectedMaterial ? selectedMaterial.name : '';
-        checkoutService.materialPrice = selectedMaterial ? selectedMaterial.price : 0;
+        const selectedMaterial = materials.find(
+          (m) => m.id === selectedMaterials[0]
+        );
+        checkoutService.materialName = selectedMaterial
+          ? selectedMaterial.name
+          : "";
+        checkoutService.materialPrice = selectedMaterial
+          ? selectedMaterial.price
+          : 0;
       }
 
       // Log dữ liệu checkoutService
@@ -608,7 +615,11 @@ const ServiceDetail = () => {
                     <span className="text-xl font-semibold">Tổng tiền: </span>
                     <span className="text-xl font-bold text-[#3A4980]">
                       {formatCurrency(
-                        service.price +
+                        (service.promotion &&
+                        service.promotion.status === "Hoạt Động" &&
+                        service.promotion.newPrice
+                          ? service.promotion.newPrice
+                          : service.price) +
                           selectedMaterials.reduce((total, materialId) => {
                             const material = materials.find(
                               (m) => m.id === materialId
