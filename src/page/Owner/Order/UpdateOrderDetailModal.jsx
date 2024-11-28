@@ -42,8 +42,6 @@ const UpdateOrderDetailModal = ({
             console.log("Dữ liệu assetUrls nhận được:", fetchedAssetUrls);
             if (fetchedAssetUrls.length > 0) {
               setAssetUrls(fetchedAssetUrls);
-            } else {
-              message.warning("Không có hình ảnh nào được tìm thấy!");
             }
             setImages(orderDetail.data.images || []);
           } else {
@@ -61,17 +59,9 @@ const UpdateOrderDetailModal = ({
 
   const handleUpdateDetail = async () => {
     try {
-      if (!Array.isArray(images) || images.length === 0) {
-        throw new Error("Hình ảnh không hợp lệ!");
-      }
-
-      const imageUrls = await firebaseImgs(images);
-      if (!imageUrls || imageUrls.length === 0) {
-        throw new Error("Không có URL hình ảnh nào được tạo ra!");
-      }
-
+      const imageUrls = images.length > 0 ? await firebaseImgs(images) : [];
       const updatedAssetUrls = [
-        ...assetUrls,
+        ...assetUrls.filter((asset) => asset.url),
         ...imageUrls.map((url) => ({ url, type: "image" })),
       ];
 
@@ -94,7 +84,11 @@ const UpdateOrderDetailModal = ({
   const onChangeImages = (data) => {
     if (Array.isArray(data)) {
       const newImages = data.map((file) => file.originFileObj);
-      setImages(newImages);
+      const uniqueImages = newImages.filter(
+        (newImage) =>
+          !images.some((existingImage) => existingImage.name === newImage.name)
+      );
+      setImages([...images, ...uniqueImages]);
     } else {
       console.error("Dữ liệu hình ảnh không hợp lệ:", data);
       setImages([]);
@@ -136,11 +130,7 @@ const UpdateOrderDetailModal = ({
                     alt={`Asset ${asset.id}`}
                     className="w-auto h-auto mb-2 max-w-[100px] max-h-[100px] mr-2"
                   />
-                ) : (
-                  <p key={asset.id} className="text-red-500">
-                    Không có URL hình ảnh!
-                  </p>
-                )
+                ) : null
               )}
             </div>
             <ComUpImg onChange={onChangeImages} />
