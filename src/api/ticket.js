@@ -224,7 +224,7 @@ export const getAllTicketsMod = async (pageNum = 1, pageSize = 10, sortField = '
   }
 };
 
-export const notifyCustomerForTicket = async (userId) => {
+export const notifyCustomerForTicket = async (accountId, ticketId) => {
   try {
     const token = localStorage.getItem('token');
     if (!token) {
@@ -232,7 +232,7 @@ export const notifyCustomerForTicket = async (userId) => {
     }
 
     const response = await axiosInstances.login.post(
-      `/support-tickets/${userId}/notify-for-customer`,
+      `/support-tickets/notify-for-customer?AccountId=${accountId}&TicketId=${ticketId}`,
       {},
       {
         headers: {

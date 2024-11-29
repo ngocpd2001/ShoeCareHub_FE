@@ -303,7 +303,7 @@ const UpdateTicket_Ad = () => {
                 disabled={loading}
                 style={{ width: 150 }}
               />
-              {ticketDetails.status === "CLOSED" && (
+              {ticketDetails.status === "PROCESSING" && (
                 <button
                   onClick={handleNotifyCustomer}
                   className="ml-2 px-4 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
