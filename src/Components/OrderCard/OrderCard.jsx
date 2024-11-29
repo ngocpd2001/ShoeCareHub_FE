@@ -131,10 +131,10 @@ export default function OrderCard({ order, reloadData }) {
             )}
         </div>
         <div className="flex gap-1">
-          {order?.shippingCode && (
+          {order.status === "Đang giao hàng" && order?.shippingCode && (
             <button
               onClick={modalDetail.handleOpen}
-              className=" font-medium text-center"
+              className="font-medium text-center"
             >
               Chi tiết
             </button>
