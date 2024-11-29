@@ -92,7 +92,8 @@ const GuideModal = ({ onClose }) => {
                 đầy đủ để chúng tôi có thể hỗ trợ bạn tốt nhất. Sau khi nhận
                 được thông báo qua email về việc đóng đơn khiếu nại, nếu bạn
                 không đồng ý với hướng giải quyết, bạn có thể gửi lại phản hồi
-                cho ShoeCareHub để chúng tôi có thể hỗ trợ tốt hơn.
+                cho ShoeCareHub để chúng tôi có thể hỗ trợ tốt hơn. Hoặc có thể
+                liên hệ nhanh với chúng tôi qua <i>HotLine: <u>0123456789</u></i>.
               </p>
             </div>
           </div>
