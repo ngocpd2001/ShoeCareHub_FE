@@ -152,6 +152,11 @@ export default function LoginPage(props) {
                         Quên mật khẩu
                       </Link>
                     </div>
+                    <div className="flex justify-end">
+                      <Link to="/login-otp" className=" text-sky-600">
+                        Đăng nhập bằng OPT
+                      </Link>
+                    </div>
                     <div className="mt-4 text-center gap-3 flex flex-col">
                       <ComButton
                         disabled={disabled}

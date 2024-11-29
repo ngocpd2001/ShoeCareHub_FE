@@ -87,6 +87,7 @@ import PackageManager from "./page/Admin/package/PackageManager";
 import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
 import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
 import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
+import LoginOtp from "./page/login/LoginOtp";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -142,6 +143,10 @@ export const routers = createBrowserRouter([
       {
         path: "/reset-password",
         element: <ResetPassword />,
+      },
+      {
+        path: "/login-otp",
+        element: <LoginOtp />,
       },
       {
         path: "/request-reset-password",
