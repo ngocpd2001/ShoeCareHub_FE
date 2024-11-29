@@ -159,7 +159,12 @@ const CheckoutUserCart = ({
   };
 
   const calculateShippingFeeForBranch = async (branchId, selectedAddressId) => {
-    console.log("Tính phí giao hàng cho:", branchId, "với địa chỉ:", selectedAddressId);
+    console.log(
+      "Tính phí giao hàng cho:",
+      branchId,
+      "với địa chỉ:",
+      selectedAddressId
+    );
     if (!selectedAddressId) {
       console.log("Không có địa chỉ!");
       return;
@@ -248,8 +253,12 @@ const CheckoutUserCart = ({
         if (shop.branchId) {
           // Dữ liu từ trang Cart
           const branchData = branchDataList[shop.branchId];
-          shopName = branchData ? branchData.data?.name || "Tên cửa hàng không có" : "Tên cửa hàng không có";
-          shopAddress = branchData ? branchData.data?.address || "Địa chỉ không có" : "Địa chỉ không có";
+          shopName = branchData
+            ? branchData.data?.name || "Tên cửa hàng không có"
+            : "Tên cửa hàng không có";
+          shopAddress = branchData
+            ? branchData.data?.address || "Địa chỉ không có"
+            : "Địa chỉ không có";
         } else {
           // Dữ liệu từ trang ServiceDetail
           const branch = shop.services?.[0]?.branchServices?.[0]?.branch;
@@ -376,20 +385,6 @@ const CheckoutUserCart = ({
                       value={notes[service.id] || ""}
                     />
                   </div>
-
-                  <div className="col-span-3 mt-2">
-                    <h3 className="font-semibold">Vật liệu:</h3>
-                    {service.materials && service.materials.length > 0 ? (
-                      service.materials.map((material) => (
-                        <div key={material.id} className="flex justify-between">
-                          <span>{material.name}</span>
-                          <span>{material.price.toLocaleString()} đ</span>
-                        </div>
-                      ))
-                    ) : (
-                      <span className="text-gray-600">Không có vật liệu</span>
-                    )}
-                  </div>
                 </div>
               );
             })}
@@ -402,21 +397,6 @@ const CheckoutUserCart = ({
             </div>
 
             <div className="mt-2 border-t border-gray-300 p-4">
-              {/* <div className="mr-8">
-                <h2 className="text-lg font-bold mb-2">Lời nhắn cho dịch vụ</h2>
-                {(shop.services || []).map((service) => (
-                  <div key={service.id} className="mb-2">
-                    <span className="font-semibold">{service.name}</span>
-                    <textarea
-                      className="w-full p-2 border border-gray-300 rounded h-20"
-                      placeholder="Lưu ý cho dịch vụ..."
-                      onChange={(e) => handleNoteChange(e, service.id)}
-                      value={notes[service.id] || ""}
-                    />
-                  </div>
-                ))}
-              </div> */}
-
               <h2 className="text-lg font-bold mb-2">Tùy chọn giao hàng</h2>
               <div className="flex justify-between">
                 <div
