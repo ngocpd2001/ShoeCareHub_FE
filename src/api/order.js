@@ -179,7 +179,7 @@ export const updateShipCode = async (id, shipCode) => {
 
 export const getOrderShipStatus = async (orderCode) => {
   try {
-    const response = await axiosInstances.login.get('/api/order-ship/status', {
+    const response = await axiosInstances.login.get('/order-ship/status', {
       params: { orderCode }
     });
     return response.data;

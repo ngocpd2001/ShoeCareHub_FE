@@ -9,16 +9,15 @@ import {
 import { getBranchByBranchId } from "../../api/branch";
 import { calculateShippingFee } from "../../api/cart";
 import { Modal, Image } from "antd";
-import { getMaterialById } from "../../api/material";
+import { getCartItems } from "../../api/cart";
 
-const CheckoutCart = ({
+const CheckoutUserCart = ({
   cartItems,
   onDeliveryOptionChange,
   onNoteChange,
   defaultAddress,
   onShippingFeesChange = () => {},
   notes: initialNotes = {},
-  materials,
 }) => {
   const user = JSON.parse(localStorage.getItem("user"));
   // console.log("cart", cartItems);
@@ -31,12 +30,12 @@ const CheckoutCart = ({
   const [allShopsHaveDeliveryOption, setAllShopsHaveDeliveryOption] =
     useState(false);
   const [notes, setNotes] = useState(initialNotes);
-  const [materialData, setMaterialData] = useState({});
 
   useEffect(() => {
     const fetchBranchData = async () => {
+      console.log("Dữ liệu giỏ hàng:", cartItems);
       if (!cartItems || !Array.isArray(cartItems)) {
-        // console.log("Không có dữ liệu giỏ hàng");
+        console.log("Không có dữ liệu giỏ hàng");
         return;
       }
 
@@ -44,20 +43,23 @@ const CheckoutCart = ({
         if (shop?.branchId) {
           try {
             const data = await getBranchByBranchId(shop.branchId);
-            return { branchId: shop.branchId, data };
+            console.log("Dữ liệu chi nhánh:", data);
+            const cartData = await getCartItems(shop.id);
+            console.log("Dữ liệu giỏ hàng:", cartData);
+            return { branchId: shop.branchId, data, cartData };
           } catch (error) {
             console.error("Lỗi khi lấy dữ liệu thương hiệu:", error);
-            return { branchId: shop.branchId, data: null };
+            return { branchId: shop.branchId, data: null, cartData: null };
           }
         }
-        return { branchId: shop?.branchId || null, data: null };
+        return { branchId: shop?.branchId || null, data: null, cartData: null };
       });
 
       const branchDataResults = await Promise.all(branchDataPromises);
       const branchDataMap = branchDataResults.reduce(
-        (acc, { branchId, data }) => {
+        (acc, { branchId, data, cartData }) => {
           if (branchId) {
-            acc[branchId] = data;
+            acc[branchId] = { data, cartData };
           }
           return acc;
         },
@@ -108,37 +110,18 @@ const CheckoutCart = ({
     });
   }, [deliveryOptions, cartItems]);
 
-  // useEffect(() => {
-  //   // Kiểm tra xem giỏ hàng có vật liệu nào không
-  //   const hasMaterials = cartItems.some(
-  //     (shop) => shop.materials && shop.materials.length > 0
-  //   );
-  //   if (hasMaterials) {
-  //     console.log("Giỏ hàng có vật liệu.");
-  //   } else {
-  //     console.log("Giỏ hàng không có vật liệu.");
-  //   }
-  // }, [cartItems]);
-
   const handleDeliveryOptionChange = (branchId, value) => {
+    console.log("Thay đổi tùy chọn giao hàng:", branchId, value);
     setDeliveryOptions((prevOptions) => {
       const newOptions = {
         ...prevOptions,
         [branchId]: value,
       };
 
-      const materialsIds = cartItems.flatMap(
-        (shop) =>
-          shop.services?.flatMap(
-            (service) => service.materials?.map((material) => material.id) || []
-          ) || []
-      );
-
-      onShippingFeesChange({
+      onDeliveryOptionChange({
         isValid: true,
         options: newOptions,
         deliveryType: value,
-        materialIds: materialsIds,
       });
 
       return newOptions;
@@ -176,6 +159,7 @@ const CheckoutCart = ({
   };
 
   const calculateShippingFeeForBranch = async (branchId, selectedAddressId) => {
+    console.log("Tính phí giao hàng cho:", branchId, "với địa chỉ:", selectedAddressId);
     if (!selectedAddressId) {
       console.log("Không có địa chỉ!");
       return;
@@ -243,80 +227,31 @@ const CheckoutCart = ({
     }
   };
 
-  const handleMaterial = async (materialId) => {
-    try {
-      const materialData = await getMaterialById(materialId);
-      console.log("Dữ liệu vật liệu:", materialData);
-
-      if (
-        materialData &&
-        materialData.data &&
-        Array.isArray(materialData.data.assetUrls)
-      ) {
-        const assetUrls = materialData.data.assetUrls.map((asset) => asset.url);
-        console.log("Asset URLs:", assetUrls);
-        return assetUrls; // Trả về danh sách URL ảnh
-      } else {
-        console.error("Không có assetUrls hợp lệ:", materialId);
-        return [];
-      }
-    } catch (error) {
-      console.error("Lỗi khi fetch vật liệu:", error);
-      return [];
-    }
+  const getMaterialById = async (materialId) => {
+    // Giả sử bạn có một API để lấy thông tin phụ kiện
+    const response = await fetch(`/api/materials/${materialId}`);
+    const data = await response.json();
+    return data.price; // Trả về giá của phụ kiện
   };
-
-  useEffect(() => {
-    const fetchMaterials = async () => {
-      const materialsPromises = cartItems.flatMap((shop) =>
-        shop.services?.flatMap((service) =>
-          service.materials?.map(async (material) => {
-            const data = await handleMaterial(material.id);
-            return { ...material, assetUrls: data }; // Ghi lại dữ liệu vật liệu
-          }) || []
-        ) || []
-      );
-
-      const materialsResults = await Promise.all(materialsPromises);
-      const materialsMap = {};
-      materialsResults.forEach((material) => {
-        if (material) {
-          materialsMap[material.id] = material;
-        }
-      });
-      setMaterialData(materialsMap); // Lưu trữ dữ liệu vật liệu vào state
-    };
-
-    fetchMaterials();
-  }, [cartItems]);
-
-  cartItems.forEach((shop) => {
-    shop.services.forEach((service) => {
-      if (service.materials) {
-        service.materials.forEach((material) => {
-          console.log("Material ID:", material.id);
-        });
-      }
-    });
-  });
 
   return (
     <div className="px-4 py-4 bg-white mb-4">
-      <div className="grid grid-cols-2 items-center justify-center p-4 h-15">
+      <div className="grid grid-cols-3 items-center justify-center p-4 h-15">
         <div className="font-semibold text-xl text-center">Dịch vụ</div>
         <div className="font-semibold text-xl text-center">Đơn giá</div>
+        <div className="font-semibold text-xl text-center">Thành tiền</div>
       </div>
 
       {cartItems.map((shop) => {
         let shopName, shopAddress;
 
         if (shop.branchId) {
-          // Dữ liệu t trang Cart
+          // Dữ liu từ trang Cart
           const branchData = branchDataList[shop.branchId];
-          shopName = branchData ? branchData.name : "Tên cửa hàng không có";
-          shopAddress = branchData ? branchData.address : "Địa chỉ không có";
+          shopName = branchData ? branchData.data?.name || "Tên cửa hàng không có" : "Tên cửa hàng không có";
+          shopAddress = branchData ? branchData.data?.address || "Địa chỉ không có" : "Địa chỉ không có";
         } else {
-          // D liệu từ trang ServiceDetail
+          // Dữ liệu từ trang ServiceDetail
           const branch = shop.services?.[0]?.branchServices?.[0]?.branch;
           shopName = branch ? branch.name : "Tên cửa hàng không có";
           shopAddress = branch ? branch.address : "Địa chỉ không có";
@@ -324,19 +259,11 @@ const CheckoutCart = ({
 
         const shopTotal = (shop.services || []).reduce((shopTotal, service) => {
           if (!service) return shopTotal;
-          const servicePrice =
+          const price =
             service.promotion && service.promotion.newPrice !== undefined
               ? service.promotion.newPrice
               : service.price;
-
-          const materialsPrice = (service.materials || []).reduce(
-            (total, material) => {
-              return total + (material.price || 0);
-            },
-            0
-          );
-
-          return shopTotal + servicePrice + materialsPrice;
+          return shopTotal + price + (service.materialPrice || 0);
         }, 0);
 
         return (
@@ -370,17 +297,30 @@ const CheckoutCart = ({
               </div>
             </div>
 
-            {shop.services.map((service) => (
-              <div key={service.id} className="mb-4">
-                <div className="grid grid-cols-2 items-center justify-center mt-2 py-2">
+            {(shop.services || []).map((service) => {
+              if (!service) return null;
+              const price =
+                service.promotion && service.promotion.newPrice !== undefined
+                  ? service.promotion.newPrice
+                  : service.price;
+              const totalPrice = price + (service.materialPrice || 0);
+
+              return (
+                <div
+                  key={service.id}
+                  className="grid grid-cols-3 items-center justify-center mt-2 py-2"
+                >
                   <div className="flex items-center">
                     <div className="w-16 h-16 mr-4">
-                      {service.assetUrls && service.assetUrls.length > 0 ? (
+                      {service.image ? (
                         <Image
-                          src={service.assetUrls[0].url}
+                          src={service.image}
                           alt={service.name}
                           className="object-cover w-full h-full rounded"
                           fallback="data:image/png;base64,..."
+                          preview={{
+                            mask: "Xem ảnh",
+                          }}
                         />
                       ) : (
                         <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded">
@@ -394,75 +334,65 @@ const CheckoutCart = ({
                       <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
                         {service.name}
                       </span>
+                      {service.materialName ? (
+                        <span className="text-gray-600">
+                          Phụ kiện: {service.materialName}
+                        </span>
+                      ) : (
+                        service.material && (
+                          <span className="text-gray-600">
+                            Phụ kiện: {service.material}
+                          </span>
+                        )
+                      )}
+                      {service.materialPrice > 0 && (
+                        <div className="text-sm text-gray-600">
+                          Giá phụ kiện: {service.materialPrice.toLocaleString()}{" "}
+                          đ
+                        </div>
+                      )}
                     </div>
                   </div>
+
                   <div className="items-center justify-center text-center">
                     <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                      {service.promotion &&
-                      service.promotion.newPrice !== undefined
-                        ? service.promotion.newPrice.toLocaleString()
-                        : service.price.toLocaleString()}{" "}
-                      đ
+                      {price.toLocaleString()} đ
                     </span>
                   </div>
-                </div>
 
-                {service.materials &&
-                  service.materials.length > 0 &&
-                  service.materials.map((material) => {
-                    const materialInfo = materialData[material.id]; // Lấy dữ liệu từ state
-                    return (
-                      <div
-                        key={material.id}
-                        className="grid grid-cols-2 items-center justify-center mt-2 py-2"
-                      >
-                        <div className="flex items-center">
-                          <div className="w-16 h-16 mr-4">
-                            {materialInfo?.assetUrls && materialInfo.assetUrls.length > 0 ? (
-                              <Image
-                                src={materialInfo.assetUrls[0]}
-                                alt={materialInfo.name}
-                                className="object-cover w-full h-full rounded"
-                                fallback="data:image/png;base64,..."
-                              />
-                            ) : (
-                              <div className="w-16 h-16 bg-gray-200 flex items-center justify-center rounded">
-                                <span className="text-gray-400 text-xs text-center">
-                                  Không có ảnh
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                              {materialInfo?.name}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="items-center justify-center text-center">
-                          <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
-                            {materialInfo?.price
-                              ? materialInfo.price.toLocaleString()
-                              : "0"}{" "}
-                            đ
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  <div className="items-center justify-center text-center">
+                    <span className="text-black text-right max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
+                      {totalPrice.toLocaleString()} đ
+                    </span>
+                  </div>
 
-                <div className="col-span-2 mt-2">
-                  <textarea
-                    className="w-full p-2 border border-gray-300 rounded h-20"
-                    placeholder="Lưu ý cho dịch vụ..."
-                    onChange={(e) =>
-                      handleNoteChange(e, shop.branchId, service.id)
-                    }
-                    value={notes[service.id] || ""}
-                  />
+                  <div className="col-span-3 mt-2">
+                    <textarea
+                      className="w-full p-2 border border-gray-300 rounded h-20"
+                      placeholder="Lưu ý cho dịch vụ..."
+                      onChange={(e) =>
+                        handleNoteChange(e, shop.branchId, service.id)
+                      }
+                      value={notes[service.id] || ""}
+                    />
+                  </div>
+
+                  <div className="col-span-3 mt-2">
+                    <h3 className="font-semibold">Vật liệu:</h3>
+                    {service.materials && service.materials.length > 0 ? (
+                      service.materials.map((material) => (
+                        <div key={material.id} className="flex justify-between">
+                          <span>{material.name}</span>
+                          <span>{material.price.toLocaleString()} đ</span>
+                        </div>
+                      ))
+                    ) : (
+                      <span className="text-gray-600">Không có vật liệu</span>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div className="flex justify-end font-semibold text-xl my-4 pr-3">
               <span className="mr-3">Tổng tiền:</span>
@@ -472,6 +402,21 @@ const CheckoutCart = ({
             </div>
 
             <div className="mt-2 border-t border-gray-300 p-4">
+              {/* <div className="mr-8">
+                <h2 className="text-lg font-bold mb-2">Lời nhắn cho dịch vụ</h2>
+                {(shop.services || []).map((service) => (
+                  <div key={service.id} className="mb-2">
+                    <span className="font-semibold">{service.name}</span>
+                    <textarea
+                      className="w-full p-2 border border-gray-300 rounded h-20"
+                      placeholder="Lưu ý cho dịch vụ..."
+                      onChange={(e) => handleNoteChange(e, service.id)}
+                      value={notes[service.id] || ""}
+                    />
+                  </div>
+                ))}
+              </div> */}
+
               <h2 className="text-lg font-bold mb-2">Tùy chọn giao hàng</h2>
               <div className="flex justify-between">
                 <div
@@ -558,4 +503,4 @@ const CheckoutCart = ({
   );
 };
 
-export default CheckoutCart;
+export default CheckoutUserCart;

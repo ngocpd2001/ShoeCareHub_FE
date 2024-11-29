@@ -18,7 +18,13 @@ const CheckoutService = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedItems: initialCartItems = [] } = location.state || {};
-  const [cartItems, setCartItems] = useState(initialCartItems);
+  const [cartItems, setCartItems] = useState(initialCartItems.map(item => ({
+    ...item,
+    services: item.services.map(service => ({
+      ...service,
+      materials: service.materials || [],
+    })),
+  })));
   const [deliveryOption, setDeliveryOption] = useState(false);
   const [isOrderSuccess, setIsOrderSuccess] = useState(false);
   const [notes, setNotes] = useState({});
@@ -78,15 +84,12 @@ const CheckoutService = () => {
 
               try {
                 const response = await getServiceById(service.id);
-
-                // Log để debug
-                // console.log("Raw response:", response);
+                
+                // Log dữ liệu nhận được từ service detail
+                // console.log("Dữ liệu nhận được từ service detail:", response);
 
                 // Kiểm tra xem response có phải là data trực tiếp không
                 const serviceData = response.data || response;
-
-                // Log để debug
-                // console.log("Service data:", serviceData);
 
                 // Lấy URL ảnh từ assetUrls
                 let imageUrl = null;
@@ -104,15 +107,18 @@ const CheckoutService = () => {
                   imageUrl = foundImageAsset?.url || null;
                 }
 
-                // Log để debug
-                // console.log("Asset URLs:", serviceData.assetUrls);
-                // console.log("Found image asset:", foundImageAsset);
-                // console.log("Final image URL:", imageUrl);
-
+                // Lưu trữ materials nếu có
+                const materials = serviceData.materialIds.map((id, index) => ({
+                  id,
+                  name: serviceData.materialNames[index],
+                  price: serviceData.materialPrices[index],
+                })); // Cập nhật để lưu trữ thông tin vật liệu
+                
                 return {
                   ...service,
                   ...serviceData,
                   image: imageUrl,
+                  materials, // Thêm materials vào service
                 };
               } catch (error) {
                 console.error(
@@ -173,17 +179,24 @@ const CheckoutService = () => {
 
   // Kiểm tra dữ liệu nhận được
   useEffect(() => {
-    console.log("Selected Items:", initialCartItems);
+    // console.log("Selected Items:", initialCartItems);
   }, [initialCartItems]);
 
   // Tính tổng tiền dịch vụ
   const totalAmount = cartItems.reduce((total, shop) => {
     if (shop && Array.isArray(shop.services)) {
       const shopTotal = shop.services.reduce((shopTotal, service) => {
-        const servicePrice =
-          service?.promotion?.newPrice || service?.price || 0;
-        const materialPrice = service?.materialPrice || 0;
-        return shopTotal + (servicePrice + materialPrice);
+        // Tính giá dịch vụ
+        const servicePrice = service.promotion && service.promotion.status === "Hoạt Động" && service.promotion.newPrice
+          ? service.promotion.newPrice
+          : service.price;
+
+        // Tính tổng giá trị của tất cả vật liệu
+        const materialsTotal = (service.materials || []).reduce((totalMaterials, material) => {
+          return totalMaterials + (material.price || 0);
+        }, 0);
+
+        return shopTotal + (servicePrice + materialsTotal); // Cộng cả giá dịch vụ và tổng giá vật liệu
       }, 0);
       return total + shopTotal;
     }
@@ -255,8 +268,7 @@ const CheckoutService = () => {
           okText: "Đồng ý",
           cancelText: "Hủy",
           okButtonProps: {
-            className:
-              "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+            className: "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
           },
           className: "custom-modal mt-[-32%]",
           centered: true,
@@ -277,8 +289,7 @@ const CheckoutService = () => {
           okText: "Đồng ý",
           cancelText: "Hủy",
           okButtonProps: {
-            className:
-              "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+            className: "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
           },
           centered: true,
           className: "custom-antd-modal",
@@ -293,31 +304,36 @@ const CheckoutService = () => {
             branchId: Number(service.branchId),
             addressId: defaultAddress?.id ? Number(defaultAddress.id) : null,
             note: notes[service.branchId] || "",
-            // Thêm materialId nếu có
-            ...(service.materialId && { materialId: Number(service.materialId) }),
+            materialIds: service.materials.map(material => material.id) || [], // Lấy materialIds từ service
           };
 
           return item;
         })
       );
 
-      // Log dữ liệu checkoutItems
-      console.log("Dữ liệu gửi đi:", JSON.stringify(checkoutItems, null, 2));
+      // Lấy tất cả materialIds từ checkoutItems
+      const allMaterialIds = checkoutItems.flatMap(item => item.materialIds);
+      console.log("Tất cả materialIds:", allMaterialIds); // Log tất cả materialIds
 
       // Cập nhật cấu trúc checkoutData
       let checkoutData = {
-        item: checkoutItems[0], // Lấy item đầu tiên
+        item: {
+          accountId: Number(accountId),
+          serviceId: checkoutItems[0].serviceId,
+          materialIds: allMaterialIds, // Lấy tất cả materialIds
+          branchId: checkoutItems[0].branchId,
+        },
         accountId: Number(accountId),
         addressId: defaultAddress?.id ? Number(defaultAddress.id) : null,
         isAutoReject: false,
-        notes: notes,
+        note: notes[checkoutItems[0].branchId] || "", // Lấy ghi chú từ notes
         isShip: isShip,
       };
 
       // Log dữ liệu checkoutData
       console.log("Dữ liệu checkout:", JSON.stringify(checkoutData, null, 2));
 
-      const response = await checkoutService(checkoutData); // Sửa tên hàm gọi
+      const response = await checkoutService(checkoutData); // Gọi hàm checkout
       console.log("Response from API:", response);
 
       if (response) {
@@ -390,7 +406,7 @@ const CheckoutService = () => {
             return materials;
           });
           const materialsData = await Promise.all(materialsPromises);
-          console.log("Dữ liệu phụ kiện:", materialsData);
+          // console.log("Dữ liệu phụ kiện:", materialsData);
           // Xử lý dữ liệu phụ kiện ở đây nếu cần
         } catch (error) {
           console.error("Lỗi khi lấy dữ liệu phụ kiện:", error);
@@ -404,6 +420,14 @@ const CheckoutService = () => {
   const handleMaterialChange = (checkedValues) => {
     setSelectedMaterials(checkedValues);
   };
+
+  // console.log("Dữ liệu cartItems:", cartItems);
+
+  const materialsIds = cartItems.flatMap(shop => 
+      shop.services.flatMap(service => 
+          service.materials.map(material => material.id) // Đảm bảo lấy đúng material.id
+      )
+  );
 
   return (
     <>
@@ -423,7 +447,7 @@ const CheckoutService = () => {
               <div className="flex items-center justify-between">
                 <div className="flex-1 mr-6 font-medium">
                   {userInfo?.fullname || "Tên không có"} (
-                  {userInfo?.phone || "Số iện thoại không có"})
+                  {userInfo?.phone || "Số iện thoai không có"})
                 </div>
                 <div className="flex-1 text-right whitespace-nowrap mr-6">
                   {defaultAddress ? (
@@ -456,6 +480,7 @@ const CheckoutService = () => {
             defaultAddress={defaultAddress}
             onShippingFeesChange={handleShippingFeesChange}
             notes={notes}
+            materials={cartItems.flatMap(shop => shop.services.flatMap(service => service.materials))}
           />
           <div className="border-gray-300 p-4 bg-white">
             <div className="flex justify-end mb-2">

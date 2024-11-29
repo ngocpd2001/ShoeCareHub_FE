@@ -91,7 +91,7 @@ const FeedbackService = () => {
     );
     setCurrentImageIndex(updatedImageIndex);
 
-    // Đặt lại chỉ số video hiện tại cho feedback được ch��n
+    // Đặt lại chỉ số video hiện tại cho feedback được chọn
     const updatedVideoIndex = currentVideoIndex.map(() => null); // Đặt tất cả các video về null
     setCurrentVideoIndex(updatedVideoIndex);
   };
