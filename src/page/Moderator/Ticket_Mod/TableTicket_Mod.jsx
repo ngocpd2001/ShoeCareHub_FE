@@ -74,6 +74,15 @@ import React, {
         width: 200,
         sorter: (a, b) => a.title.localeCompare(b.title),
         ...getColumnSearchProps("title", "Tiêu đề"),
+        render: (text, record) => {
+          const textStyle = record.isSeen ? '' : 'font-bold text-[#002278]';
+
+          return (
+            <span className={textStyle}>
+              {text}
+            </span>
+          );
+        },
       },
       {
         title: "Danh mục",
