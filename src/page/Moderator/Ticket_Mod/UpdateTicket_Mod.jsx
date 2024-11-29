@@ -228,6 +228,7 @@ const UpdateTicket_Mod = () => {
 
   // Thêm hàm xử lý thông báo
   const handleNotifyCustomer = async () => {
+    console.log("Bắt đầu gửi thông báo cho khách hàng");
     try {
       if (!userId) {
         notification.error({
@@ -238,7 +239,9 @@ const UpdateTicket_Mod = () => {
         return;
       }
 
-      await notifyCustomerForTicket(userId);
+      console.log("Gửi thông báo cho khách hàng với accountId:", userId, "và ticketId:", ticketDetails.id);
+
+      await notifyCustomerForTicket(userId, ticketDetails.id);
       notification.success({
         message: "Thành công",
         description: "Đã gửi thông báo cho khách hàng",

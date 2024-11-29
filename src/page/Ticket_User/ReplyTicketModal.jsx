@@ -121,7 +121,7 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
         </div>
 
         <form onSubmit={handleSubmit} className="p-6">
-          {/* <div className="mb-4">
+          <div className="mb-4">
             <label className="block text-gray-700 mb-2">Tiêu đề phản hồi</label>
             <input
               type="text"
@@ -131,7 +131,7 @@ const ReplyTicketModal = ({ ticketId, onClose, onSuccess }) => {
               placeholder="Nhập tiêu đề phản hồi"
               required
             />
-          </div> */}
+          </div>
 
           <div className="mb-4">
             <label className="block text-gray-700 mb-2">Nội dung phản hồi</label>
