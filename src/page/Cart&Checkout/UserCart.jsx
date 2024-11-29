@@ -33,12 +33,14 @@ const UserCart = () => {
 
   const fetchCartItems = async () => {
     try {
-      const data = await getUserCart(userId);
-      if (!data || !Array.isArray(data)) {
-        throw new Error("Dữ liệu giỏ hàng không hợp lệ");
-      }
-      const dataArray = data;
+      console.log("Fetching cart items for userId:", userId);
+      const response = await getUserCart(userId);
+      console.log("Response from getUserCart:", response);
+
+      const dataArray = response.cartItems;
       setBranches(dataArray);
+
+      console.log("Dữ liệu giỏ hàng:", dataArray);
 
       const detailedItems = await Promise.all(
         dataArray.flatMap((branch) =>
@@ -47,11 +49,8 @@ const UserCart = () => {
             const imageUrl = serviceDetails.assetUrls?.[0]?.url || "";
             let materialPrice = 0;
 
-            if (item.materialId) {
-              const materialResponse = await getMaterialById(item.materialId);
-              materialPrice = materialResponse.data
-                ? materialResponse.data.price
-                : 0;
+            if (item.materials && item.materials.length > 0) {
+              materialPrice = item.materials.reduce((total, material) => total + material.price, 0);
             }
 
             return {
@@ -67,12 +66,14 @@ const UserCart = () => {
               selected: false,
               status: serviceDetails.status,
               isAvailable: serviceDetails.status !== "UNAVAILABLE",
-              material: item.materialName || "",
+              material: item.materials.map(m => m.name).join(", ") || "",
               materialPrice: materialPrice,
             };
           })
         )
       );
+
+      console.log("Dữ liệu chi tiết giỏ hàng:", detailedItems);
 
       const groupedItems = detailedItems.reduce((acc, item) => {
         const branch = acc.find((b) => b.branchId === item.branchId);
@@ -93,7 +94,7 @@ const UserCart = () => {
       const newTotal = calculateTotalAmount(groupedItems);
       setTotalAmount(newTotal);
     } catch (error) {
-      console.error("Lỗi khi lấy giỏ hàng:", error);
+      console.error("Lỗi khi lấy giỏ hàng:", error.message);
       setCartItems([]);
       setTotalAmount(0);
     }
@@ -184,6 +185,7 @@ const UserCart = () => {
     if (selectedItems.length === 0) {
       setShowPopup(true);
     } else {
+      console.log("Selected items for checkout:", selectedItems);
       navigate("/checkout", { state: { selectedItems } });
     }
   };

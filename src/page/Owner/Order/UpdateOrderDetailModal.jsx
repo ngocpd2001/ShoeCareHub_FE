@@ -39,7 +39,7 @@ const UpdateOrderDetailModal = ({
           if (orderDetail && orderDetail.data) {
             setProcessState(orderDetail.data.processState);
             const fetchedAssetUrls = orderDetail.data.assetUrls || [];
-            console.log("Dữ liệu assetUrls nhận được:", fetchedAssetUrls);
+            // console.log("Dữ liệu assetUrls nhận được:", fetchedAssetUrls);
             if (fetchedAssetUrls.length > 0) {
               setAssetUrls(fetchedAssetUrls);
             }
@@ -75,6 +75,7 @@ const UpdateOrderDetailModal = ({
       message.success("Cập nhật chi tiết đơn hàng thành công!");
       onClose();
       fetchOrderData();
+      setImages([]);
     } catch (error) {
       console.error("Lỗi khi cập nhật chi tiết đơn hàng:", error);
       message.error("Cập nhật chi tiết đơn hàng thất bại!");

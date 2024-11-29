@@ -505,3 +505,4 @@ export default function EditService({ selectedUpgrede, onClose, tableRef }) {
     </div>
   );
 }
+

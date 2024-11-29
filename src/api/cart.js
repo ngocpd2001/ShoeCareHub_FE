@@ -4,7 +4,13 @@ import { axiosInstances } from '../utils/axios';
 export const getUserCart = async (userId) => {
   try {
     const response = await axiosInstances.login.get(`/user/${userId}/cart`);
-    return response.data.data;
+    // Trả về dữ liệu giỏ hàng bao gồm tổng tiền và danh sách các mục
+    return {
+      id: response.data.data.id,
+      accountId: response.data.data.accountId,
+      totalPrice: response.data.data.totalPrice,
+      cartItems: response.data.data.cartItems,
+    };
   } catch (error) {
     console.error('Lỗi khi lấy thông tin giỏ hàng:', error);
     throw error;
@@ -57,19 +63,16 @@ export const getCartTotal = async (cartId) => {
 };
 
 // Thêm một mục mới vào giỏ hàng
-export const addToCart = async ({ userId, serviceId, materialId, branchId }) => {
+export const addToCart = async ({ accountId, serviceId, materialIds, branchId }) => {
   try {
     const requestBody = {
+      accountId,
       serviceId,
-      branchId
+      branchId,
+      ...(materialIds && materialIds.length > 0 ? { materialIds } : {}),
     };
 
-    // Chỉ thêm materialId vào requestBody nếu nó có giá trị
-    if (materialId) {
-      requestBody.materialId = materialId;
-    }
-
-    const response = await axiosInstances.login.post(`/cartitems?userId=${userId}`, requestBody);
+    const response = await axiosInstances.login.post(`/cartitems`, requestBody);
     return response.data;
   } catch (error) {
     console.error('Lỗi khi thêm vào giỏ hàng:', error);
@@ -181,8 +184,9 @@ export const checkoutService = async (checkoutData) => {
   try {
     const requestBody = {
       item: {
+        accountId: checkoutData.item.accountId,
         serviceId: checkoutData.item.serviceId,
-        materialId: checkoutData.item.materialId,
+        materialIds: checkoutData.item.materialIds,
         branchId: checkoutData.item.branchId
       },
       accountId: checkoutData.accountId,

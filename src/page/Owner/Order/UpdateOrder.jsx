@@ -43,6 +43,8 @@ import CreateOrderDetailPopup from "./ServiceModal";
 import { useNotification } from "../../../Notification/Notification";
 import { message, Modal } from "antd";
 import UpdateOrderDetailModal from "./UpdateOrderDetailModal";
+import { faEye } from "@fortawesome/free-regular-svg-icons";
+import ProcessShippingModal from "./ProcessShippingModal";
 
 const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
@@ -91,14 +93,15 @@ const getAvailableStatuses = (currentStatus) => {
       ];
 
     case "PROCESSING":
+      return [{ value: "Lưu trữ", className: "bg-gray-50 text-gray-700" }];
+
+    case "STORAGE":
       return [
-        { value: "Đang giao hàng", className: "bg-yellow-50 text-yellow-700" },
-        { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Đang giao hàng", className: "bg-green-50 text-green-700" },
+        { value: "Đã giao hàng", className: "bg-red-50 text-red-700" },
         { value: "Quá hạn nhận hàng", className: "bg-red-50 text-red-700" },
       ];
 
-    case "STORAGE":
-      return [];
     case "SHIPPING":
       return [
         { value: "Đã giao hàng", className: "bg-green-50 text-green-700" },
@@ -107,8 +110,8 @@ const getAvailableStatuses = (currentStatus) => {
     case "DELIVERED":
       return [{ value: "Hoàn thành", className: "bg-green-50 text-green-700" }];
 
-    case "ABANDONED":
-      return [{ value: "Lưu trữ", className: "bg-gray-50 text-gray-700" }];
+    // case "ABANDONED":
+    //   return [{ value: "Lưu trữ", className: "bg-gray-50 text-gray-700" }];
 
     case "FINISHED":
       return [];
@@ -153,6 +156,8 @@ const UpdateOrder = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [updateDetailVisible, setUpdateDetailVisible] = useState(false);
   const [currentOrderDetailId, setCurrentOrderDetailId] = useState(null);
+  const [shippingStatus, setShippingStatus] = useState(null);
+  const [isShippingModalVisible, setIsShippingModalVisible] = useState(false);
 
   useEffect(() => {
     if (orderData) {
@@ -165,8 +170,26 @@ const UpdateOrder = () => {
   }, [orderData]);
 
   const fetchOrderData = async () => {
+    // console.log("fetchOrderData được gọi");
     try {
       const data = await getOrderById(id);
+      // console.log("Dữ liệu trả về từ API:", data); // Log dữ liệu trả về
+
+      // Kiểm tra nếu trạng thái là DELIVERED
+      if (data.status === "DELIVERED") {
+        await updateOrderStatus(id, "Đã giao hàng");
+        data.status = "Đã giao hàng"; // Cập nhật trạng thái trong dữ liệu
+      }
+
+      // Cập nhật orderData với thông tin vật liệu
+      setOrderData((prev) => ({
+        ...prev,
+        ...data, // Cập nhật tất cả thông tin từ data
+        materials: data.orderDetails.flatMap(item => {
+          // console.log("Order Detail:", item); // Log từng orderDetail
+          return item.materials || []; // Lấy thông tin vật liệu từ orderDetails
+        }),
+      }));
 
       // Kiểm tra đơn hàng hết hạn
       if (checkOrderExpiration(data.createTime, data.status)) {
@@ -285,7 +308,7 @@ const UpdateOrder = () => {
             console.error("Chi tiết lỗi:", error);
             if (error.response?.status === 401) {
               message.error(
-                "Phiên làm việc đã hết hạn, vui lòng đăng nhập lại!"
+                "Phiên làm việc đã ht hạn, vui lòng đăng nhập lại!"
               );
             } else {
               message.error("Có lỗi xảy ra khi cập nhật đơn hàng!");
@@ -508,7 +531,7 @@ const UpdateOrder = () => {
       console.log("Order ID:", orderId); // Console log orderId để kiểm tra
       const shipCode = formData.shippingCode;
       await updateShipCode(orderId, shipCode);
-      // Có thể thêm thông báo thành công hoặc cập nhật lại dữ liệu nếu cần
+      // Có thể thêm thông báo thành công hoặc cập nhật lại dữ liệu nu cần
     } catch (error) {
       console.error("Lỗi khi cập nhật mã vận chuyển", error);
     }
@@ -534,9 +557,11 @@ const UpdateOrder = () => {
       const result = await deleteOrderDetail(OrderDetailId);
       console.log("Xóa thành công:", result);
     } catch (error) {
-      console.error("Xóa thất bại:", error);
+      console.error("Xóa tht bại:", error);
       // Hiển thị thông báo lỗi cụ thể cho người dùng
-      const errorMessage = error.response?.data?.message || "Không thể xóa dịch vụ này vì đơn hàng cần ít nhất một dịch vụ!";
+      const errorMessage =
+        error.response?.data?.message ||
+        "Không thể xóa dịch vụ này vì đơn hàng cần ít nhất một dịch vụ!";
       message.error(errorMessage);
     }
   };
@@ -544,6 +569,10 @@ const UpdateOrder = () => {
   const handleUpdateClick = (OrderDetailId) => {
     setCurrentOrderDetailId(OrderDetailId);
     setUpdateDetailVisible(true);
+  };
+
+  const handleShowShippingStatus = () => {
+    setIsShippingModalVisible(true);
   };
 
   if (!orderData) {
@@ -618,7 +647,7 @@ const UpdateOrder = () => {
               <tr>
                 <th className="text-left py-2">Dịch vụ</th>
                 <th className="text-right">Đơn giá</th>
-                <th className="text-right">Thành tiền</th>
+                {/* <th className="text-right">Thành tiền</th> */}
                 <th className="text-right"></th>
               </tr>
             </thead>
@@ -666,80 +695,96 @@ const UpdateOrder = () => {
                             "đ"
                           : item.service.price.toLocaleString() + "đ"}
                       </td>
-                      <td className="text-right">
+                      {/* <td className="text-right">
                         {item.price.toLocaleString()}đ
-                      </td>
+                      </td> */}
                       <td className="text-right pl-3">
-                        <Dropdown
-                          overlay={
-                            <Menu>
-                              <Menu.Item key="update" onClick={() => handleUpdateClick(item.id)}>
-                                <FontAwesomeIcon
-                                  icon={faPenNib}
-                                  className="text-[#002278]"
-                                />{" "}
-                                Cập nhật
-                              </Menu.Item>
-                              <Menu.Item key="delete">
-                                <Popconfirm
-                                  title="Bạn có chắc chắn muốn xóa dịch vụ này?"
-                                  onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
-                                  okText="Đồng ý"
-                                  cancelText="Hủy"
+                        {["Đã nhận", "Đang xử lý", "Lưu trữ"].includes(
+                          orderStatus
+                        ) && ( // Kiểm tra trạng thái
+                          <Dropdown
+                            overlay={
+                              <Menu>
+                                <Menu.Item
+                                  key="update"
+                                  onClick={() => handleUpdateClick(item.id)}
                                 >
                                   <FontAwesomeIcon
-                                    icon={faTrashCan}
+                                    icon={faPenNib}
                                     className="text-[#002278]"
                                   />{" "}
-                                  Xóa
-                                </Popconfirm>
-                              </Menu.Item>
-                            </Menu>
-                          }
-                          trigger={["click"]}
-                        >
-                          <FontAwesomeIcon
-                            icon={faEllipsisVertical}
-                            className="cursor-pointer text-[#002278]"
-                          />
-                        </Dropdown>
+                                  Cập nhật
+                                </Menu.Item>
+                                <Menu.Item key="delete">
+                                  {orderStatus === "Đã nhận" && ( // Kiểm tra trạng thái
+                                    <Popconfirm
+                                      title="Bạn có chắc chắn muốn xóa dịch vụ này?"
+                                      onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
+                                      okText="Đồng ý"
+                                      cancelText="Hủy"
+                                    >
+                                      <FontAwesomeIcon
+                                        icon={faTrashCan}
+                                        className="text-[#002278]"
+                                      />{" "}
+                                      Xóa
+                                    </Popconfirm>
+                                  )}
+                                </Menu.Item>
+                              </Menu>
+                            }
+                            trigger={["click"]}
+                          >
+                            <FontAwesomeIcon
+                              icon={faEllipsisVertical}
+                              className="cursor-pointer text-[#002278]"
+                            />
+                          </Dropdown>
+                        )}
                       </td>
                     </tr>
-                    {item.material && (
-                      <tr>
-                        <td className="py-3">
-                          <div className="flex items-center">
-                            <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
-                              {item.material.assetUrls &&
-                              item.material.assetUrls.length > 0 ? (
-                                <Image
-                                  src={item.material.assetUrls[0].url} // Hình ảnh của material
-                                  alt={item.material.name}
-                                  className="object-cover w-full h-full"
-                                  fallback="data:image/png;base64,..."
-                                />
-                              ) : (
-                                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
-                                  <span className="text-gray-400">
-                                    No image
-                                  </span>
-                                </div>
-                              )}
+                    {item.materials &&
+                      item.materials.map((material) => (
+                        <tr key={material.id}>
+                          <td className="py-3">
+                            <div className="flex items-center">
+                              <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
+                                {material.assetUrls &&
+                                material.assetUrls.length > 0 ? (
+                                  <Image
+                                    src={material.assetUrls[0].url} // Hình ảnh của material
+                                    alt={material.name}
+                                    className="object-cover w-full h-full"
+                                    fallback="data:image/png;base64,..."
+                                  />
+                                ) : (
+                                  <div className="w-24 h-24 bg-gray-200 flex items-center justify-center">
+                                    <span className="text-gray-400">
+                                      No image
+                                    </span>
+                                  </div>
+                                )}
+                              </div>
+                              <span className="break-words">
+                                {material.name}
+                              </span>
                             </div>
-                            <span className="break-words">
-                              {item.material.name}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="text-right">
-                          {item.material.price.toLocaleString()}đ
-                        </td>
-                      </tr>
-                    )}
+                          </td>
+                          <td className="text-right">
+                            {material.price.toLocaleString()}đ
+                          </td>
+                        </tr>
+                      ))}
                     {/* Hiển thị ghi chú cho tng dịch vụ */}
                     <tr>
-                      <td className="text-gray-600 italic py-4">
-                        Ghi chú: {item.note || "Không có ghi chú"}
+                      <td className="text-gray-600 italic py-2">
+                        <div className="text-[#002278]">
+                          Ghi chú: {item.note || "Không có ghi chú"}
+                        </div>
+                        <div className="text-[#002278] pt-1">
+                          Trạng thi xử lý của dịch vụ:{" "}
+                          {item.processState || "....."}
+                        </div>
                       </td>
                     </tr>
                   </React.Fragment>
@@ -986,19 +1031,19 @@ const UpdateOrder = () => {
                     <label className="block text-gray-700 mb-2">
                       Mã vận chuyển
                     </label>
-                    {formData.shippingCode ? ( // Kiểm tra nếu có shippingCode
+                    <div className="flex items-center">
                       <span className="text-gray-900">
                         {formData.shippingCode}
-                      </span> // Hiển thị mã vận chuyển
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleUpdateShipCode} // Gọi hàm cập nhật mã vận chuyển
-                        className="w-full p-2 border rounded bg-blue-500 text-white"
-                      >
-                        Tạo mã vận chuyển
-                      </button>
-                    )}
+                      </span>
+                      {["Đã giao hàng", "Hoàn thành", "Đang giao hàng"].includes(orderStatus) && ( // Kiểm tra trạng thái
+                        <button
+                          onClick={handleShowShippingStatus}
+                          className="ml-2"
+                        >
+                          <FontAwesomeIcon icon={faEye} />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   <div>
@@ -1036,9 +1081,13 @@ const UpdateOrder = () => {
         fetchOrderData={fetchOrderData}
         serviceId={serviceId}
       />
+      <ProcessShippingModal
+        visible={isShippingModalVisible}
+        onClose={() => setIsShippingModalVisible(false)}
+        shippingCode={formData.shippingCode}
+      />
     </div>
   );
 };
 
 export default UpdateOrder;
-

@@ -6,6 +6,7 @@ import {
   faHeart,
   faCartShopping,
   faPlay,
+  faChevronDown,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   faStar as regularStar,
@@ -17,7 +18,7 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addToCart } from "../../api/cart";
-import { Select, message, Checkbox } from "antd";
+import { Select, message, Checkbox, Dropdown, Menu } from "antd";
 import { getMaterialByServiceId } from "../../api/material";
 
 const ServiceDetail = () => {
@@ -36,9 +37,8 @@ const ServiceDetail = () => {
   const location = useLocation();
   const [businessId, setBusinessId] = useState(null);
   const [selectedBranch, setSelectedBranch] = useState(null);
-  const [selectedMaterials, setSelectedMaterials] = useState([]);
+  const [selectedMaterialIds, setSelectedMaterialIds] = useState([]);
   const [materials, setMaterials] = useState([]);
-  const [selectedMaterialId, setSelectedMaterialId] = useState(null);
 
   // console.log("Business ID:", businessId);
 
@@ -178,7 +178,7 @@ const ServiceDetail = () => {
     : false;
 
   const handleMaterialChange = (checkedValues) => {
-    setSelectedMaterials(checkedValues);
+    setSelectedMaterialIds(checkedValues);
   };
 
   const handleAddToCart = async () => {
@@ -198,28 +198,37 @@ const ServiceDetail = () => {
       const itemData = {
         serviceId: Number(service.id),
         branchId: Number(selectedBranch.id),
-        userId: user.id,
-        materialId:
-          selectedMaterials.length > 0 ? selectedMaterials[0] : undefined,
+        accountId: user.id,
+        ...(selectedMaterialIds.length > 0 ? { materialIds: selectedMaterialIds } : {}),
+        materials: selectedMaterialIds.map(materialId => {
+          const selectedMaterial = materials.find(m => m.id === materialId);
+          return selectedMaterial ? {
+            id: selectedMaterial.id,
+            name: selectedMaterial.name,
+            price: selectedMaterial.price
+          } : null;
+        }).filter(Boolean), // Lọc các giá trị null
       };
 
       // Kiểm tra và ghi lại thông tin phụ kiện
-      console.log("Thông tin phụ kiện được gửi:", selectedMaterials);
+      console.log("Thông tin phụ kiện được gửi:", selectedMaterialIds);
 
       // Kiểm tra xem có phụ kiện nào được chọn không
-      if (selectedMaterials.length > 0) {
-        // Xử lý thêm nếu cần
-        console.log("Có phụ kiện được chọn:", selectedMaterials);
+      if (selectedMaterialIds.length > 0) {
+        console.log("Có phụ kiện được chọn:", selectedMaterialIds);
       } else {
         console.log("Không có phụ kiện nào được chọn.");
       }
 
-      console.log("Add to cart data:", itemData);
+      console.log("Dữ liệu gửi đến giỏ hàng:", itemData);
       await addToCart(itemData);
+
+      // Reset selected materials after adding to cart
+      setSelectedMaterialIds([]); // Reset selected materials
 
       // Hiển thị thông báo thành công
       message.success({
-        content: "Đã cập nhật trạng thái đơn hàng",
+        content: "Đã thêm vào giỏ hàng",
         duration: 2,
         style: {
           marginTop: "20px",
@@ -279,31 +288,21 @@ const ServiceDetail = () => {
     if (service) {
       const checkoutService = {
         ...service,
-        quantity: quantity || 1,
         branchId: selectedBranch.id,
         shopName: selectedBranch.name,
         shopAddress: selectedBranch.address,
+        materials: selectedMaterialIds.map(materialId => {
+          const selectedMaterial = materials.find(m => m.id === materialId);
+          return selectedMaterial ? {
+            id: selectedMaterial.id,
+            name: selectedMaterial.name,
+            price: selectedMaterial.price
+          } : null;
+        }).filter(Boolean), // Lọc các giá trị null
       };
 
-      // Thêm materialId, materialName và materialPrice nếu có
-      if (selectedMaterials.length > 0) {
-        checkoutService.materialId = selectedMaterials[0];
-        const selectedMaterial = materials.find(
-          (m) => m.id === selectedMaterials[0]
-        );
-        checkoutService.materialName = selectedMaterial
-          ? selectedMaterial.name
-          : "";
-        checkoutService.materialPrice = selectedMaterial
-          ? selectedMaterial.price
-          : 0;
-      }
-
-      // Log dữ liệu checkoutService
-      console.log(
-        "Checkout Service Data:",
-        JSON.stringify(checkoutService, null, 2)
-      );
+      // Log dữ liệu checkoutService để kiểm tra
+      console.log("Dữ liệu checkoutService:", checkoutService);
 
       navigate("/checkout-service", {
         state: {
@@ -334,7 +333,68 @@ const ServiceDetail = () => {
     setSelectedBranch(branch);
   };
 
+  const handleMaterialSelect = (materialId) => {
+    setSelectedMaterialIds((prev) => {
+      if (prev.includes(materialId)) {
+        return prev.filter((id) => id !== materialId); // Bỏ chọn nếu đã chọn
+      } else {
+        return [...prev, materialId]; // Thêm vào nếu chưa chọn
+      }
+    });
+  };
+
+  const materialMenu = (
+    <Menu>
+      {materials
+        .filter((material) => material.status === "Hoạt Động")
+        .map((material) => (
+          <Menu.Item
+            key={material.id}
+            onClick={() => handleMaterialSelect(material.id)}
+            className="hover:bg-gray-100"
+          >
+            <div className="flex items-center p-2 justify-between">
+              <div className="flex items-center">
+                <Checkbox
+                  checked={selectedMaterialIds.includes(material.id)}
+                  onChange={() => handleMaterialSelect(material.id)}
+                  className="mr-2"
+                />
+                <img
+                  src={
+                    material.assetUrls && material.assetUrls.length > 0
+                      ? material.assetUrls[0].url
+                      : "/path/to/default-image.jpg"
+                  }
+                  alt={material.name}
+                  className="w-8 h-8 mr-3 rounded"
+                />
+                <span className="font-semibold text-gray-800">{material.name}</span>
+              </div>
+              <div className="text-gray-700 whitespace-nowrap ml-2">
+                {formatCurrency(material.price)}
+              </div>
+            </div>
+          </Menu.Item>
+        ))}
+    </Menu>
+  );
+
   // console.log("Materials:", materials);
+
+  // Thêm hàm tính tổng tiền
+  const calculateTotalPrice = () => {
+    const servicePrice = service.promotion && service.promotion.status === "Hoạt Động" && service.promotion.newPrice
+      ? service.promotion.newPrice
+      : service.price;
+
+    const materialsPrice = selectedMaterialIds.reduce((total, materialId) => {
+      const material = materials.find(m => m.id === materialId);
+      return total + (material ? material.price : 0);
+    }, 0);
+
+    return servicePrice + materialsPrice;
+  };
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -517,7 +577,7 @@ const ServiceDetail = () => {
 
               {/* Chọn chi nhánh */}
               <div className="mt-5 border-t pt-4">
-                <h2 className="text-xl font-semibold mb-4">Chọn chi nhánh</h2>
+                <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
                 <Select
                   value={selectedBranch?.id || ""}
                   onChange={(value) => {
@@ -560,106 +620,38 @@ const ServiceDetail = () => {
                 </Select>
               </div>
 
-              {/* Chọn phụ kiện - đã di chuyển xuống dưới */}
-              <div className="mt-5 border-t pt-4">
-                <h2 className="text-xl font-semibold mb-4">Chọn phụ kiện</h2>
-                <Select
-                  mode="default"
-                  value={
-                    selectedMaterials.length > 0
-                      ? selectedMaterials[0]
-                      : undefined
-                  }
-                  onChange={(value) => {
-                    if (value) {
-                      handleMaterialChange([value]);
-                    } else {
-                      setSelectedMaterials([]); // Đặt lại selectedMaterials nếu không có giá trị
-                    }
-                  }}
-                  className="w-full border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400 h-12"
-                  placeholder={<span className="text-lg">Chọn phụ kiện</span>}
-                  allowClear
-                >
-                  {materials
-                    .filter((material) => material.status === "Hoạt Động")
-                    .map((material) => (
-                      <Select.Option key={material.id} value={material.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center">
-                            <img
-                              src={
-                                material.assetUrls &&
-                                material.assetUrls.length > 0
-                                  ? material.assetUrls[0].url
-                                  : "/path/to/default-image.jpg"
-                              }
-                              alt={material.name}
-                              className="w-10 h-10 mr-3"
-                            />
-                            <span className="font-semibold">
-                              {material.name}
-                            </span>
-                          </div>
-                          <span className="text-gray-700 whitespace-nowrap ml-2">
-                            {formatCurrency(material.price)}
-                          </span>
-                        </div>
-                      </Select.Option>
-                    ))}
-                </Select>
-
-                {/* Hiển thị tổng tiền chỉ khi có phụ kiện được chọn */}
-                {selectedMaterials.length > 0 && (
-                  <div className="mt-4">
-                    <span className="text-xl font-semibold">Tổng tiền: </span>
-                    <span className="text-xl font-bold text-[#3A4980]">
-                      {formatCurrency(
-                        (service.promotion &&
-                        service.promotion.status === "Hoạt Động" &&
-                        service.promotion.newPrice
-                          ? service.promotion.newPrice
-                          : service.price) +
-                          selectedMaterials.reduce((total, materialId) => {
-                            const material = materials.find(
-                              (m) => m.id === materialId
-                            );
-                            return total + (material ? material.price : 0);
-                          }, 0)
-                      )}
-                    </span>
-                  </div>
-                )}
-              </div>
-              {/* Quantity */}
-              {/* <div className="flex items-center mt-5 border-t pt-4 space-x-6">
-                <span className="text-gray-500 text-xl font-semibold">
-                  Số lượng giày:
-                </span>
-                <div className="flex items-center bg-[#F3F3F3] rounded-full py-3 px-8 text-[#3A4980]">
-                  <button
-                    onClick={decreaseQuantity}
-                    className="mx-2 pr-6 text-xl font-medium"
-                  >
-                    -
-                  </button>
-                  <span className="text-2xl font-semibold">{quantity}</span>
-                  <button
-                    onClick={increaseQuantity}
-                    className="mx-2 pl-6 text-2xl font-medium"
-                  >
-                    +
-                  </button>
+              {/* Chọn ph kiện */}
+              {materials.length > 0 && ( // Kiểm tra xem có material nào không
+                <div className="mt-5 border-t pt-4">
+                  <h2 className="text-xl font-semibold mb-4">Phụ kiện</h2>
+                  <Dropdown overlay={materialMenu} trigger={["click"]}>
+                    <button className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400 text-left pl-3 flex justify-between items-center">
+                      <span>
+                        {selectedMaterialIds.length > 0
+                          ? `${selectedMaterialIds.length} phụ kiện đã chọn`
+                          : "Chọn phụ kiện"}
+                      </span>
+                      <FontAwesomeIcon
+                        icon={faChevronDown}
+                        className="mr-2 text-xs"
+                      />
+                    </button>
+                  </Dropdown>
+                  {selectedMaterialIds.length > 0 && ( // Kiểm tra xem có phụ kiện nào được chọn
+                    <div className="mt-2 text-lg font-semibold">
+                      Tổng tiền: {formatCurrency(calculateTotalPrice())}
+                    </div>
+                  )}
                 </div>
-              </div> */}
+              )}
 
               {/* Button cart&checkout */}
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  disabled={service.status !== "Hoạt Động"}
+                  disabled={!service || service.status !== "Hoạt Động" || !selectedBranch}
                   className={`rounded-xl py-4 px-6 flex items-center ${
-                    service.status === "Hoạt Động"
+                    service.status === "Hoạt Động" && selectedBranch
                       ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
