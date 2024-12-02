@@ -13,8 +13,10 @@ import { putData } from "../../api/api";
 import StepsDetail from "./StepsDetail";
 import StepsDetailProcess from "./StepsDetailProcess";
 
-const CartItem = ({ item }) => {
+const CartItem = ({ order, item }) => {
   const modalDetailProcess = useModalState();
+  console.log("2213", order?.status);
+  const validStatuses = ["Đang xử lý", "Đang vận chuyển", "Hoàn thành"];
   return (
     <div className="flex items-center py-4 border-b">
       <ComModal
@@ -44,13 +46,15 @@ const CartItem = ({ item }) => {
         </p>
       </div>
       <div className="text-right">
-        <button
-          onClick={modalDetailProcess.handleOpen}
-          className="text-blue-600 mb-4"
-        >
-          Chi tiết
-        </button>
-        <p className="text-sm text-gray-500 line-through">
+        {validStatuses.includes(order?.status) && (
+          <button
+            onClick={modalDetailProcess.handleOpen}
+            className="bg-[#002278] text-white px-3 py-2 rounded-md text-sm flex items-center"
+          >
+            Xem quá trình
+          </button>
+        )}
+        <p className="text-sm text-gray-500 line-through mt-2">
           {item?.service?.price.toLocaleString()}đ
         </p>
         <p className="font-bold text-blue-600">
@@ -103,10 +107,10 @@ export default function OrderCard({ order, reloadData }) {
           <h2 className="text-lg font-bold mr-4">
             {order.orderDetails && order.orderDetails[0].branch.name}
           </h2>
-          <button className="bg-[#002278] text-white px-3 py-1 rounded-md text-sm flex items-center mr-2">
+          {/* <button className="bg-[#002278] text-white px-3 py-1 rounded-md text-sm flex items-center mr-2">
             <MessageSquare size={16} className="mr-1" />
             Chat
-          </button>
+          </button> */}
           <Link
             to={`/provider-landingpage/${
               order?.orderDetails && order?.orderDetails[0].branch.businessId
@@ -148,7 +152,7 @@ export default function OrderCard({ order, reloadData }) {
       <div className="p-4">
         {order?.orderDetails &&
           order?.orderDetails.map((item) => (
-            <CartItem key={item.id} item={item} />
+            <CartItem key={item.id} item={item} order={order} />
           ))}
       </div>
       <div className="p-4 bg-white  border-t border-[#7F7F7F]">

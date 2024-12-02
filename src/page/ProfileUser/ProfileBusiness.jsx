@@ -68,7 +68,6 @@ const BusinessProfileForm = () => {
 
         putData(`/businesses`, business.id, updatedBusiness)
           .then((e) => {
-           
             notificationApi(
               "success",
               "Cập nhật thành công",
@@ -93,7 +92,6 @@ const BusinessProfileForm = () => {
 
         putData(`/businesses`, business.id, updatedBusiness)
           .then((e) => {
-        
             notificationApi(
               "success",
               "Cập nhật thành công",
@@ -123,10 +121,10 @@ const BusinessProfileForm = () => {
 
   return (
     <div className="flex-1 px-4 py-0">
-      <h1 className="text-2xl font-bold mb-6">Thông tin doanh nghiệp</h1>
+      <h1 className="text-2xl font-bold mb-6 mt-4">Thông tin doanh nghiệp</h1>
       <div className="flex">
         <FormProvider {...methods}>
-          <form className="flex-1 mr-8" onSubmit={handleSubmit(onSubmit)}>
+          <form className="flex-1 mr-50" onSubmit={handleSubmit(onSubmit)}>
             <div className="mb-4">
               <ComInput
                 type="text"
@@ -137,7 +135,7 @@ const BusinessProfileForm = () => {
                 {...register("name")}
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-4 grid grid-cols-2 gap-4">
               <ComInput
                 placeholder="Nhập số điện thoại"
                 label="Số điện thoại"
@@ -147,18 +145,6 @@ const BusinessProfileForm = () => {
                 required={isEditing}
                 {...register("phone")}
               />
-            </div>
-            <div className="mb-4">
-              <ComInput
-                placeholder="Xếp hạng"
-                label="Xếp hạng"
-                type="number"
-                readOnly
-                disabled={isEditing}
-                value={business.rank || ""}
-              />
-            </div>
-            <div className="mb-4">
               <ComInput
                 placeholder="Đánh giá"
                 label="Đánh giá"
@@ -172,7 +158,7 @@ const BusinessProfileForm = () => {
                 }
               />
             </div>
-            <div className="mb-4">
+            <div className="mb-6 grid grid-cols-3 gap-4">
               <ComInput
                 label={"Ngày tạo"}
                 placeholder={"Ngày tạo"}
@@ -191,50 +177,42 @@ const BusinessProfileForm = () => {
                     : ""
                 }
               />
-            </div>
-            <div className="mb-6">
-              <div className="relative">
-                <ComInput
-                  label={"Ngày đăng ký"}
-                  placeholder={"Ngày đăng ký"}
-                  readOnly={!isEditing}
-                  disabled={isEditing}
-                  value={
-                    business.registeredTime
-                      ? new Date(business.registeredTime).toLocaleDateString(
-                          "vi-VN",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )
-                      : ""
-                  }
-                />
-              </div>
-            </div>
-            <div className="mb-6">
-              <div className="relative">
-                <ComInput
-                  label={"Ngày hết hạn"}
-                  placeholder={"Ngày hết hạn"}
-                  disabled={isEditing}
-                  readOnly={!isEditing}
-                  value={
-                    business.expiredTime
-                      ? new Date(business.expiredTime).toLocaleDateString(
-                          "vi-VN",
-                          {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          }
-                        )
-                      : ""
-                  }
-                />
-              </div>
+              <ComInput
+                label={"Ngày đăng ký"}
+                placeholder={"Ngày đăng ký"}
+                readOnly={!isEditing}
+                disabled={isEditing}
+                value={
+                  business.registeredTime
+                    ? new Date(business.registeredTime).toLocaleDateString(
+                        "vi-VN",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )
+                    : ""
+                }
+              />
+              <ComInput
+                label={"Ngày hết hạn"}
+                placeholder={"Ngày hết hạn"}
+                disabled={isEditing}
+                readOnly={!isEditing}
+                value={
+                  business.expiredTime
+                    ? new Date(business.expiredTime).toLocaleDateString(
+                        "vi-VN",
+                        {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        }
+                      )
+                    : ""
+                }
+              />
             </div>
             <div className="mb-6">
               {isEditing &
@@ -283,6 +261,47 @@ const BusinessProfileForm = () => {
                 />
               )}
             </div>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold mb-4 mt-6 ">Thông tin gói</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <p className="font-medium">Gói doanh nghiệp:</p>
+                  <p
+                    className={`font-semibold ${
+                      business.isIndividual ? "text-red-600" : "text-green-600"
+                    }`}
+                  >
+                    {business.isIndividual ? "Chưa đăng ký" : "Đã đăng ký"}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium">Gói phụ kiện:</p>
+                  <p
+                    className={`font-semibold ${
+                      business.isMaterialSupported
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {business.isMaterialSupported
+                      ? "Đã đăng ký"
+                      : "Chưa đăng ký"}
+                  </p>
+                </div>
+                <div>
+                  <p className="font-medium">Gói giới hạn dịch vụ:</p>
+                  <p
+                    className={`font-semibold ${
+                      business.isLimitServiceNum
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
+                    {business.isLimitServiceNum ? "Đã đăng ký" : "Chưa đăng ký"}
+                  </p>
+                </div>
+              </div>
+            </div>
             {isEditing && (
               <div className="flex justify-center">
                 <button
@@ -300,10 +319,10 @@ const BusinessProfileForm = () => {
             )}
           </form>
         </FormProvider>
-        <div className="w-48 h-50 flex justify-center items-center pl-8">
+        <div className="w-48 h-60 flex justify-center items-center mr-10">
           {!isEditing ? (
             <img
-              className="h-40 w-40 rounded-full border border-gray-400 object-cover"
+              className="h-45 w-45 rounded-full border border-gray-400 object-cover"
               src={business.imageUrl || ""}
               alt="Business Avatar"
             />
@@ -322,7 +341,7 @@ const BusinessProfileForm = () => {
         </div>
       </div>
       {!isEditing && (
-        <div className="flex justify-center">
+        <div className="flex justify-center mt-4">
           {/* {watch("status") === "ACTIVE" && (
             <button
               type="button"

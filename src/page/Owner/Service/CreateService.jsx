@@ -34,10 +34,12 @@ export default function CreateSevice() {
       title: "",
       content: "",
       newPrice: null,
-      serviceProcesses: [{
-        process: " ",
-        processOrder: 1,
-      },]
+      serviceProcesses: [
+        {
+          process: " ",
+          processOrder: 1,
+        },
+      ],
     },
   });
   useEffect(() => {
@@ -354,19 +356,36 @@ export default function CreateSevice() {
               <div className="sm:col-span-2">
                 <button
                   type="button"
-                  onClick={() => append({ process: "" })}
-                  className="mt-4  bg-blackpointer-events-auto rounded-md bg-[#0F296D] px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white hover:bg-[#0F296D] hover:text-white"
+                  onClick={() => {
+                    if (fields.length < 5) {
+                      append({ process: "" });
+                    } else {
+                      notificationApi(
+                        "warning",
+                        "Giới hạn",
+                        "Bạn chỉ được thêm tối đa 5 bước làm dịch vụ."
+                      );
+                    }
+                  }}
+                  className={`mt-4 rounded-md px-3 py-2 text-[0.8125rem] font-semibold leading-5 text-white ${
+                    fields.length >= 5
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-[#0F296D] hover:bg-[#0F296D]"
+                  }`}
+                  disabled={fields.length >= 5}
                 >
-                  Thêm bước làm dịch vụ
+                  {fields.length >= 5
+                    ? "Đã đạt giới hạn"
+                    : "Thêm bước làm dịch vụ"}
                 </button>
               </div>
               <div className="mt-10 flex justify-end gap-6">
                 <div>
-                  <ComButton
+                  {/* <ComButton
                     className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${" bg-[#F0F1F3]"}`}
                   >
                     <div className="text-black"> Hủy bỏ</div>
-                  </ComButton>
+                  </ComButton> */}
                 </div>
                 <div>
                   <ComButton

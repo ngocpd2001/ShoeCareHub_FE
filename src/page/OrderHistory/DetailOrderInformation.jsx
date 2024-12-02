@@ -36,7 +36,7 @@ const DetailOrderInformation = () => {
     },
     {
       key: "4",
-      label: "Đã chấp nhận",
+      label: "Đã xác nhận",
       children: <ListOrderApproved activeKey={activeKey} />,
     },
     {
