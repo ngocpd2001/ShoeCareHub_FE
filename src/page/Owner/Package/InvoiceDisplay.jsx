@@ -5,7 +5,7 @@ import { postData } from "../../../api/api";
 
 const paymentMethods = [
   { id: "VnPay", name: "VNPay", icon: CreditCard },
-  { id: "zalopay", name: "ZaloPay", icon: CreditCard },
+  { id: "MoMo", name: "MoMo", icon: CreditCard },
 ];
 
 export default function InvoiceDisplay({ packageInfo, onClose }) {
@@ -14,10 +14,12 @@ export default function InvoiceDisplay({ packageInfo, onClose }) {
   const handlePaymentMethodChange = (methodId) => {
     setSelectedMethod(methodId);
   };
+  console.log(selectedMethod);
+  
   const payment = () => {
     postData(`/payments/payment-url`, {
       packId: packageInfo.id,
-      payment: selectedMethod.id,
+      payment: selectedMethod,
     })
       .then((e) => {
         // chuyển đường dẫn thanh toán

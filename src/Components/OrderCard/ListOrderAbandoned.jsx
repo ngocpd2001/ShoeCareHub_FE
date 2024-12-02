@@ -15,7 +15,7 @@ export default function ListOrderAbandoned({ activeKey }) {
           `/orders/accounts/${user.id}?status=abandoned&orderBy=CreateDateAsc`
         )
           .then((data) => {
-            setData(data?.data.data);
+            setData(data?.data?.data || []);
             console.log(data.data.data);
           })
           .catch((error) => {

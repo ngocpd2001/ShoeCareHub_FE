@@ -17,4 +17,10 @@ export const YupSevice = yup.object({
     //     .number()
     //     .nullable()
     //     .typeError("Giá tiền mới phải là số"),
+    serviceProcesses: yup
+        .array()
+        .required("Vui lòng nhập ít nhất một bước dich vụ")
+        .of(yup.object({
+            process: yup.string().trim().required("Vui lòng nhập tên bước"),
+        }))
 });

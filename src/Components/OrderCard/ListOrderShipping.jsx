@@ -15,7 +15,7 @@ export default function ListOrderShipping({ activeKey }) {
           `/orders/accounts/${user.id}?status=shipping&orderBy=CreateDateAsc`
         )
           .then((data) => {
-            setData(data?.data.data);
+            setData(data?.data?.data || []);
             console.log(data.data.data);
           })
           .catch((error) => {

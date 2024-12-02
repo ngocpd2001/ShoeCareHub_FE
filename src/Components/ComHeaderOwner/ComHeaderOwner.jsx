@@ -36,6 +36,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Affix } from "antd";
 import { PackageIcon, UserCircleIcon } from "lucide-react";
 import { useStorage } from "../../hooks/useLocalStorage";
+import { FaStar } from "react-icons/fa";
 
 const navigation = [
   {
@@ -71,7 +72,7 @@ const navigation = [
   {
     name: "Đánh giá",
     href: "/owner/feedback",
-    icon: ChatBubbleBottomCenterTextIcon,
+    icon: FaStar,
     current: false,
   },
   {
@@ -86,13 +87,16 @@ const navigation = [
     icon: UserCircleIcon,
     current: false,
     children: [
+  
       { name: "Hồ sơ của tôi", href: "/owner/profile" },
+      { name: "Hồ sơ doanh nghiệp", href: "/owner/business" },
       { name: "Đổi mật khẩu", href: "/owner/reset-password" },
     ],
   },
 ];
 
 const userNavigation = [
+  { name: "Quay lại trang chủ", href: "/" },
   { name: "Hồ sơ của tôi", href: "/owner/profile" },
   { name: "Đăng xuất", href: "/login" },
 ];

@@ -9,7 +9,8 @@ import { useModalState } from "../../../hooks/useModalState";
 import { Image, Tooltip } from "antd";
 import { useNotification } from "../../../Notification/Notification";
 
-import DetailService from "./DetailService";
+// import DetailService from "./DetailService";
+// import EditUpgrede from "./EditService";
 import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import ComConfirmDeleteModal from "../../../Components/ComConfirmDeleteModal/ComConfirmDeleteModal";
@@ -17,26 +18,17 @@ import { getData } from "../../../api/api";
 import ComTable from "../../../Components/ComTable/ComTable";
 import useColumnFilters from "../../../Components/ComTable/utils";
 import { useStorage } from "../../../hooks/useLocalStorage";
-import { render } from "@testing-library/react";
-import ComDateConverter from "./../../../Components/ComDateConverter/ComDateConverter";
-
+import ComDateConverter from "../../../Components/ComDateConverter/ComDateConverter";
 function formatCurrency(number) {
-  // Định dạng số thành tiền tệ Việt Nam
+  // Sử dụng hàm toLocaleString() để định dạng số thành chuỗi với ngăn cách hàng nghìn và mặc định là USD.
   if (typeof number === "number") {
     return number.toLocaleString("vi-VN", {
       style: "currency",
       currency: "VND",
     });
-  } else if (typeof number === "string" && !isNaN(Number(number))) {
-    return Number(number).toLocaleString("vi-VN", {
-      style: "currency",
-      currency: "VND",
-    });
-  } else {
-    return number;
   }
 }
-export const TablePackage = forwardRef((props, ref) => {
+export const TableTransaction = forwardRef((props, ref) => {
   const [data, setData] = useState([]);
   const [selectedData, setSelectedData] = useState({});
   const table = useTableState();
@@ -55,12 +47,12 @@ export const TablePackage = forwardRef((props, ref) => {
   } = useColumnFilters();
   const columns = [
     {
-      title: "Mã gói",
+      title: "Người mua",
       width: 100,
       // fixed: "left",
-      dataIndex: "id",
-      key: "id",
-      ...getColumnSearchProps("id", "Mã gói"),
+      dataIndex: "accountName",
+      key: "accountName",
+      ...getColumnSearchProps("accountName", "Người mua"),
     },
     {
       title: "Tên gói",
@@ -173,14 +165,12 @@ export const TablePackage = forwardRef((props, ref) => {
   }));
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(
-      `/transactions?AccountId=${user?.id}&IsDecsending=false&PageSize=1000&PageNum=1`
-    )
+    getData(`/transactions?IsDecsending=false&PageSize=101&PageNum=1`)
       .then((e) => {
-        const activeItems = e?.data?.data;
-        setData(activeItems);
+        // setData(e?.data?.data?.items.sort((a, b) => b.id - a.id));
+        setData(e?.data?.data);
         console.log("====================================");
-        console.log(e?.data);
+        console.log("saa", e?.data);
         console.log("====================================");
         table.handleCloseLoading();
       })
@@ -206,7 +196,18 @@ export const TablePackage = forwardRef((props, ref) => {
         onClose={modalDetail?.handleClose}
         width={800}
       >
-        <DetailService selectedUpgrede={selectedData} />
+        {/* <DetailService selectedUpgrede={selectedData} /> */}
+      </ComModal>
+      <ComModal
+        isOpen={modalEdit?.isModalOpen}
+        onClose={modalEdit?.handleClose}
+        width={1000}
+      >
+        {/* <EditUpgrede
+          selectedUpgrede={selectedData}
+          tableRef={reloadData}
+          onClose={modalEdit?.handleClose}
+        /> */}
       </ComModal>
     </div>
   );

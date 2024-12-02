@@ -13,10 +13,10 @@ import { getData, postData } from "../../api/api";
 import ComSelect from "../../Components/ComInput/ComSelect";
 import ComModal from "./../../Components/ComModal/ComModal";
 import { useModalState } from "../../hooks/useModalState";
-import { firebaseImg } from './../../upImgFirebase/firebaseImg';
-import ComUpImgOne from './../../Components/ComUpImg/ComUpImgOne';
-import ComDatePicker from './../../Components/ComDatePicker/ComDatePicker';
-import { cccdRegex } from './../../regexPatterns';
+import { firebaseImg } from "./../../upImgFirebase/firebaseImg";
+import ComUpImgOne from "./../../Components/ComUpImg/ComUpImgOne";
+import ComDatePicker from "./../../Components/ComDatePicker/ComDatePicker";
+import { cccdRegex } from "./../../regexPatterns";
 export default function RegisterOwner() {
   const [token, setToken] = useStorage("token", "");
   const [user, setUser] = useStorage("user", null);
@@ -78,12 +78,12 @@ export default function RegisterOwner() {
         "Số điện thoại doanh nghiệp không hợp lệ"
       )
       .required("Số điện thoại doanh nghiệp không được để trống"),
-    citizenIdnumber: yup
-      .string()
-      .trim()
-      .matches(cccdRegex, "Vui lòng nhập đúng số CMND/CCCD ( 12 chữ số)")
+    // citizenIdnumber: yup
+    //   .string()
+    //   .trim()
+    //   .matches(cccdRegex, "Vui lòng nhập đúng số CMND/CCCD ( 12 chữ số)")
 
-      .required("Số CMND/CCCD không được để trống"),
+    //   .required("Số CMND/CCCD không được để trống"),
   });
 
   const defaultValues = {
@@ -96,7 +96,7 @@ export default function RegisterOwner() {
     dob: "",
     name: "",
     businessPhone: "",
-    citizenIdnumber: "",
+    // citizenIdnumber: "",
   };
 
   const methods = useForm({
@@ -119,24 +119,24 @@ export default function RegisterOwner() {
     setLoginError(false);
     setLogin(false);
 
-    if (!frontCitizenImage) {
-      setDisabled(false);
-      alert("Vui lòng chọn hình ảnh mặt trước CMND/CCCD");
-      return;
-    }
-    if (!backCitizenImage) {
-      setDisabled(false);
-      alert("Vui lòng chọn hình ảnh mặt sau CMND/CCCD");
-      return;
-    }
+    // if (!frontCitizenImage) {
+    //   setDisabled(false);
+    //   alert("Vui lòng chọn hình ảnh mặt trước CMND/CCCD");
+    //   return;
+    // }
+    // if (!backCitizenImage) {
+    //   setDisabled(false);
+    //   alert("Vui lòng chọn hình ảnh mặt sau CMND/CCCD");
+    //   return;
+    // }
 
     try {
       // Upload ảnh lên Firebase
-      const frontImageUrl = await firebaseImg(frontCitizenImage);
-      const backImageUrl = await firebaseImg(backCitizenImage);
-console.log(watch("dob"));
-console.log(frontImageUrl);
-console.log(backImageUrl);
+      //       const frontImageUrl = await firebaseImg(frontCitizenImage);
+      //       const backImageUrl = await firebaseImg(backCitizenImage);
+      // console.log(watch("dob"));
+      // console.log(frontImageUrl);
+      // console.log(backImageUrl);
       const customerRegister = {
         email: data.email,
         password: data.password,
@@ -150,19 +150,16 @@ console.log(backImageUrl);
       const createBusiness = {
         name: data.name,
         businessPhone: data.businessPhone,
-        citizenIdnumber: data.citizenIdnumber,
-        frontCitizenImageUrl: frontImageUrl,
-        backCitizenImageUrl: backImageUrl,
+        // citizenIdnumber: data.citizenIdnumber,
+        // frontCitizenImageUrl: frontImageUrl,
+        // backCitizenImageUrl: backImageUrl,
       };
 
       const requestData = { customerRegister, createBusiness };
-console.log('====================================');
-console.log(222,requestData);
-console.log('====================================');
-      const responseData = await postData(
-        "/auth/owner-register",
-        requestData,
-      );
+      console.log("====================================");
+      console.log(222, requestData);
+      console.log("====================================");
+      const responseData = await postData("/auth/owner-register", requestData);
 
       console.log("Registration successful:", responseData);
       modal.handleOpen();
@@ -305,7 +302,6 @@ console.log('====================================');
                       <ComDatePicker
                         placeholder={"Ngày sinh"}
                         label={"Ngày sinh"}
-                      
                         {...register("dob")}
                         required
                       />
@@ -329,7 +325,7 @@ console.log('====================================');
                         required
                       />
                     </div>
-                    <div>
+                    {/* <div>
                       <ComInput
                         placeholder={"Số CMND/CCCD"}
                         label={"Số CMND/CCCD"}
@@ -337,9 +333,9 @@ console.log('====================================');
                         {...register("citizenIdnumber")}
                         required
                       />
-                    </div>
+                    </div> */}
                     {/* Upload hình ảnh */}
-                    <div>
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Hình ảnh mặt trước CMND/CCCD
                       </label>
@@ -351,8 +347,8 @@ console.log('====================================');
                         }
                         required
                       />
-                    </div>
-                    <div>
+                    </div> */}
+                    {/* <div>
                       <label className="block text-sm font-medium text-gray-700">
                         Hình ảnh mặt sau CMND/CCCD
                       </label>
@@ -364,7 +360,7 @@ console.log('====================================');
                         }
                         required
                       />
-                    </div>
+                    </div> */}
 
                     <FieldError className="text-red-500 text-center">
                       {LoginState || LoginError ? errorMessage : ""}

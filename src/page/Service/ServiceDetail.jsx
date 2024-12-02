@@ -205,7 +205,7 @@ const ServiceDetail = () => {
     // Kiểm tra nếu người dùng chưa đăng nhập
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      navigate("/login");
+      // navigate("/login");
       return;
     }
 

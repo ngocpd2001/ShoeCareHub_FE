@@ -12,12 +12,12 @@ import { useTableState } from "../../../hooks/useTableState";
 import { Image } from "antd";
 import { getData, putData } from "../../../api/api";
 import ComDateConverter from "../../../Components/ComDateConverter/ComDateConverter";
-import DetailElder from "../TableElder/DetailElder";
+
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import useRolePermission from "../../../hooks/useRolePermission";
 import EditFeedback from "./EditFeedback";
 
-export const Tables = forwardRef((props, ref) => {
+export const Table = forwardRef((props, ref) => {
   const [data, setData] = useState([]);
   const { getColumnSearchProps, getColumnApprox } = useColumnSearch();
   const table = useTableState();

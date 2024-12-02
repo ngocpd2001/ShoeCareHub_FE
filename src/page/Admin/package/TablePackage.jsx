@@ -9,7 +9,6 @@ import { useModalState } from "../../../hooks/useModalState";
 import { Image, Tooltip } from "antd";
 import { useNotification } from "../../../Notification/Notification";
 
-import DetailService from "./DetailService";
 import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import ComConfirmDeleteModal from "../../../Components/ComConfirmDeleteModal/ComConfirmDeleteModal";
@@ -19,6 +18,7 @@ import useColumnFilters from "../../../Components/ComTable/utils";
 import { useStorage } from "../../../hooks/useLocalStorage";
 import { render } from "@testing-library/react";
 import ComDateConverter from "./../../../Components/ComDateConverter/ComDateConverter";
+import EditPackage from "./EditPackage";
 
 function formatCurrency(number) {
   // Định dạng số thành tiền tệ Việt Nam
@@ -55,72 +55,81 @@ export const TablePackage = forwardRef((props, ref) => {
   } = useColumnFilters();
   const columns = [
     {
-      title: "Mã gói",
-      width: 100,
-      // fixed: "left",
-      dataIndex: "id",
-      key: "id",
-      ...getColumnSearchProps("id", "Mã gói"),
-    },
-    {
       title: "Tên gói",
-      width: 200,
-      // fixed: "left",
-      dataIndex: "packName",
-      key: "packName",
-      sorter: (a, b) => a?.packName?.localeCompare(b?.packName),
-      ...getColumnSearchProps("packName", "Dich vụ"),
-    },
-    {
-      title: "Tổng tiền",
-      dataIndex: "balance",
-      key: "balance",
-      sorter: (a, b) => a.balance - b.balance,
-      width: 150,
-      ...getColumnPriceRangeProps("balance", "Giá tiền"),
-      render: (text, record) => <>{formatCurrency(record.balance)}</>,
-    },
-    {
-      title: "Thanh toán bằng",
-      dataIndex: "paymentMethod",
-      key: "paymentMethod",
-      width: 150,
-      ...getColumnSearchProps("paymentMethod", "Thanh toán bằng"),
-    },
-
-    {
-      title: "Thời gian giao dịch",
-      dataIndex: "processTime",
-      key: "processTime",
-      width: 150,
-      sorter: (a, b) => new Date(a.processTime) - new Date(b.processTime),
-      ...getColumnApprox("processTime", "Thời gian"),
-      render: (data, record) => (
-        <>
-          <ComDateConverter>{data}</ComDateConverter>
-        </>
-      ),
-    },
-    {
-      title: "Trạng thái ",
       width: 100,
-      dataIndex: "status",
-      key: "status",
-      width: 120,
-      filters: [
-        { text: "Thành công", value: "COMPLETED" },
-        { text: "Thất bại", value: "FAILED" },
-        { text: "Chờ thanh toán", value: "PROCESSING" },
-      ],
-      onFilter: (value, record) => record.status === value,
-      render: (_, record) => (
-        <div>
-          {record.status === "COMPLETED" && "Thành công"}
-          {record.status === "FAILED" && "Thất bại"}
-          {record.status === "PROCESSING" && "Chờ thanh toán"}
-        </div>
-      ),
+      // fixed: "left",
+      dataIndex: "name",
+      key: "name",
+      ...getColumnSearchProps("name", "Tên gói"),
     },
+    {
+      title: "Mô tả",
+      width: 150,
+      // fixed: "left",
+      dataIndex: "description",
+      key: "description",
+
+      ...getColumnSearchProps("description", "Mô tả"),
+    },
+    {
+      title: "Số tháng",
+      width: 50,
+      // fixed: "left",
+      dataIndex: "period",
+      key: "period",
+
+      ...getColumnSearchProps("period", "Số tháng"),
+    },
+    {
+      title: "Giá tiền",
+      dataIndex: "price",
+      key: "price",
+      //   sorter: (a, b) => a.balance - b.balance,
+      width: 100,
+      ...getColumnPriceRangeProps("price", "Giá tiền"),
+      render: (text, record) => <>{formatCurrency(record.price)}</>,
+    },
+    // {
+    //   title: "Thanh toán bằng",
+    //   dataIndex: "paymentMethod",
+    //   key: "paymentMethod",
+    //   width: 150,
+    //   ...getColumnSearchProps("paymentMethod", "Thanh toán bằng"),
+    // },
+
+    // {
+    //   title: "Thời gian giao dịch",
+    //   dataIndex: "processTime",
+    //   key: "processTime",
+    //   width: 150,
+    //   sorter: (a, b) => new Date(a.processTime) - new Date(b.processTime),
+    //   ...getColumnApprox("processTime", "Thời gian"),
+    //   render: (data, record) => (
+    //     <>
+    //       <ComDateConverter>{data}</ComDateConverter>
+    //     </>
+    //   ),
+    // },
+    // {
+    //   title: "Trạng thái ",
+    //   width: 100,
+    //   dataIndex: "status",
+    //   key: "status",
+    //   width: 120,
+    //   filters: [
+    //     { text: "Thành công", value: "COMPLETED" },
+    //     { text: "Thất bại", value: "FAILED" },
+    //     { text: "Chờ thanh toán", value: "PROCESSING" },
+    //   ],
+    //   onFilter: (value, record) => record.status === value,
+    //   render: (_, record) => (
+    //     <div>
+    //       {record.status === "COMPLETED" && "Thành công"}
+    //       {record.status === "FAILED" && "Thất bại"}
+    //       {record.status === "PROCESSING" && "Chờ thanh toán"}
+    //     </div>
+    //   ),
+    // },
     // {
     //   title: "Trạng thái",
     //   dataIndex: "status",
@@ -128,39 +137,29 @@ export const TablePackage = forwardRef((props, ref) => {
     //   width: 150,
     // ...getColumnApprox("status", "Trạng thái"),
     // },
-    // {
-    //   title: "",
-    //   key: "operation",
-    //   fixed: "right",
-    //   width: 100,
-    //   render: (_, record) => (
-    //     <div className="flex items-center flex-col">
-    //       <ComMenuButonTable
-    //         record={record}
-    //         showModalDetails={() => {
-    //           modalDetail.handleOpen();
-    //           setSelectedData(record);
-    //         }}
-    //         showModalEdit={() => {
-    //           modalEdit.handleOpen();
-    //           setSelectedData(record);
-    //         }}
-    //         showModalDelete={() => {
-    //           ComConfirmDeleteModal(
-    //             `/services`,
-    //             record.id,
-    //             `Bạn có chắc chắn muốn xóa?`,
-    //             reloadData,
-    //             notificationSuccess,
-    //             notificationError
-    //           );
-    //         }}
-    //         // extraMenuItems={extraMenuItems}
-    //         excludeDefaultItems={["details", "edit", "delete"]}
-    //       />
-    //     </div>
-    //   ),
-    // },
+    {
+      title: "",
+      key: "operation",
+      fixed: "right",
+      width: 50,
+      render: (_, record) => (
+        <div className="flex items-center flex-col">
+          <ComMenuButonTable
+            record={record}
+            // showModalDetails={() => {
+            //   modalDetail.handleOpen();
+            //   setSelectedData(record);
+            // }}
+            showModalEdit={() => {
+              modalEdit.handleOpen();
+              setSelectedData(record);
+            }}
+            // extraMenuItems={extraMenuItems}
+            excludeDefaultItems={["details", "delete"]}
+          />
+        </div>
+      ),
+    },
   ];
   const notificationSuccess = () => {
     notificationApi("success", "Thành công", "Đã xóa ");
@@ -173,9 +172,7 @@ export const TablePackage = forwardRef((props, ref) => {
   }));
   const reloadData = () => {
     table.handleOpenLoading();
-    getData(
-      `/transactions?AccountId=${user?.id}&IsDecsending=false&PageSize=1000&PageNum=1`
-    )
+    getData(`/subscription-packs`)
       .then((e) => {
         const activeItems = e?.data?.data;
         setData(activeItems);
@@ -202,11 +199,15 @@ export const TablePackage = forwardRef((props, ref) => {
       />
 
       <ComModal
-        isOpen={modalDetail?.isModalOpen}
-        onClose={modalDetail?.handleClose}
+        isOpen={modalEdit?.isModalOpen}
+        onClose={modalEdit?.handleClose}
         width={800}
       >
-        <DetailService selectedUpgrede={selectedData} />
+        <EditPackage
+          selectedData={selectedData}
+          tableRef={reloadData}
+          onClose={modalEdit?.handleClose}
+        />
       </ComModal>
     </div>
   );

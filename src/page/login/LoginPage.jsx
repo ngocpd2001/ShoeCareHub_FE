@@ -9,7 +9,6 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { FieldError } from "../../Components/FieldError/FieldError";
 import { useStorage } from "../../hooks/useLocalStorage";
 import logo2 from "../../assets/images/logo2.webp";
-
 import { getData, postData } from "../../api/api";
 import { message } from "antd";
 export default function LoginPage(props) {
@@ -151,6 +150,11 @@ export default function LoginPage(props) {
                     <div className="flex justify-end">
                       <Link to="/reset-password" className=" text-sky-600">
                         Quên mật khẩu
+                      </Link>
+                    </div>
+                    <div className="flex justify-end">
+                      <Link to="/login-otp" className=" text-sky-600">
+                        Đăng nhập bằng OPT
                       </Link>
                     </div>
                     <div className="mt-4 text-center gap-3 flex flex-col">

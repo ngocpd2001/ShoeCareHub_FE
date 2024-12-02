@@ -51,6 +51,9 @@ const Package = () => {
             <p className="text-lg text-gray-500 text-center mb-4">
               {plan.period} tháng
             </p>
+            <p className="text-lg text-gray-500 text-center mb-4">
+              {plan.description}
+            </p>
             <button
               className="mt-auto bg-[#1C3A9C] text-white py-2 px-4 rounded text-lg"
               onClick={() => handleSubscribeClick(plan)}
@@ -69,7 +72,7 @@ const Package = () => {
       )}
 
       <div className="mt-4">
-        <TablePackage/>
+        <TablePackage />
       </div>
     </div>
   );

@@ -11,7 +11,7 @@ export default function ListOrderFinished({ activeKey }) {
   const reloadData = () => {
     getData(`/orders/accounts/${user.id}?status=finished&orderBy=CreateDateAsc`)
       .then((data) => {
-        setData(data?.data.data);
+        setData(data?.data?.data || []);
       })
       .catch((error) => {
         console.log(error);
