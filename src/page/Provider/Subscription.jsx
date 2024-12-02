@@ -30,11 +30,11 @@ const Subscription = () => {
         {subscriptionData.map((plan) => (  
           <div key={plan.id} className="bg-white shadow-md rounded-lg p-6 w-80 flex flex-col border-2 border-[#3A4980]">  
             <h2 className="text-2xl font-semibold mb-2 text-center">{plan.name}</h2>  
-            <p className="text-xl mt-2 mb-1 text-center">{plan.price}</p>  
+            <p className="text-xl mt-2 mb-1 text-center">{plan.price.toLocaleString()} đ</p>  
             <p className="text-lg text-gray-500 text-center mb-4">{plan.description}</p>  
-            <button className="mt-auto bg-[#1C3A9C] text-white py-2 px-4 rounded text-lg">  
+            {/* <button className="mt-auto bg-[#1C3A9C] text-white py-2 px-4 rounded text-lg">  
               ĐĂNG KÝ  
-            </button>  
+            </button>   */}
           </div>  
         ))}  
       </div>  

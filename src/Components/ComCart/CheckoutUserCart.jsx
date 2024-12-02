@@ -239,6 +239,11 @@ const CheckoutUserCart = ({
     return data.price; // Trả về giá của phụ kiện
   };
 
+  const handleMaterialFetch = async (materialId) => {
+    const materialPrice = await getMaterialById(materialId);
+    console.log("Giá phụ kiện:", materialPrice);
+  };
+
   return (
     <div className="px-4 py-4 bg-white mb-4">
       <div className="grid grid-cols-3 items-center justify-center p-4 h-15">

@@ -115,7 +115,7 @@ export const createOrderDetail = async (orderDetailData) => {
       orderId: orderDetailData.orderId || 0,
       branchId: orderDetailData.branchId || 0,
       serviceId: orderDetailData.serviceId || 0,
-      materialId: orderDetailData.materialId || 0
+      ...(orderDetailData.materialIds && { materialIds: orderDetailData.materialIds })
     };
 
     const response = await axiosInstances.login.post('/orderdetails', requestBody);

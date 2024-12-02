@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, message } from "antd";
+import { Modal, message, Image } from "antd";
 import {
   updateOrderDetail,
   getProcessesByServiceId,
@@ -85,11 +85,7 @@ const UpdateOrderDetailModal = ({
   const onChangeImages = (data) => {
     if (Array.isArray(data)) {
       const newImages = data.map((file) => file.originFileObj);
-      const uniqueImages = newImages.filter(
-        (newImage) =>
-          !images.some((existingImage) => existingImage.name === newImage.name)
-      );
-      setImages([...images, ...uniqueImages]);
+      setImages(newImages);
     } else {
       console.error("Dữ liệu hình ảnh không hợp lệ:", data);
       setImages([]);
@@ -112,7 +108,7 @@ const UpdateOrderDetailModal = ({
             className="w-full p-2 border rounded"
           >
             <option value="">Chọn trạng thái</option>
-            {processes.map((process) => (
+            {Array.isArray(processes) && processes.map((process) => (
               <option key={process.id} value={process.process}>
                 {process.process}
               </option>
@@ -121,19 +117,20 @@ const UpdateOrderDetailModal = ({
         </div>
         <div className="mt-4">
           <label>Hình ảnh của giày trước và sau khi làm dịch vụ:</label>
-          <div className="flex flex-wrap">
-            <div className="ml-4 flex flex-wrap">
-              {assetUrls.map((asset) =>
-                asset.url ? (
-                  <img
-                    key={asset.id}
-                    src={asset.url}
-                    alt={`Asset ${asset.id}`}
-                    className="w-auto h-auto mb-2 max-w-[100px] max-h-[100px] mr-2"
-                  />
-                ) : null
-              )}
-            </div>
+          <div className="flex gap-4 flex-wrap">
+            {assetUrls.map((asset, index) => (
+              asset.url ? (
+                <div key={index} className="w-[100px]">
+                  <Image.PreviewGroup>
+                    <Image
+                      src={asset.url}
+                      alt={`Asset ${index + 1}`}
+                      className="w-full h-auto rounded border"
+                    />
+                  </Image.PreviewGroup>
+                </div>
+              ) : null
+            ))}
             <ComUpImg onChange={onChangeImages} />
           </div>
         </div>

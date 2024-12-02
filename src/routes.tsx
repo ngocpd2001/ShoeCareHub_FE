@@ -81,6 +81,13 @@ import MaterialManager from "./page/Owner/Material/MaterialManager";
 import UpdateMaterial from "./page/Owner/Material/UpdateMaterial";
 import CreateMaterial from "./page/Owner/Material/CreateMaterial";
 import ProviderPage from "./page/Provider/ProviderPage";
+import TransactionManager from "./page/Admin/Transaction/TransactionManager";
+import CategoryServiceManager from "./page/Admin/CategoryService/CategoryServiceManager";
+import PackageManager from "./page/Admin/package/PackageManager";
+import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
+import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
+import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
+import LoginOtp from "./page/login/LoginOtp";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -138,6 +145,10 @@ export const routers = createBrowserRouter([
         element: <ResetPassword />,
       },
       {
+        path: "/login-otp",
+        element: <LoginOtp />,
+      },
+      {
         path: "/request-reset-password",
         element: <ResetPasswordSuccess />,
       },
@@ -178,6 +189,10 @@ export const routers = createBrowserRouter([
           {
             path: "/user/order-history",
             element: <OrderHistory />,
+          },
+          {
+            path: "/user/register-owner",
+            element: <RegisterCustomerToOwner />,
           },
           {
             path: "/user/addresses",
@@ -255,7 +270,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service",
-        element: <ServiceManager />,
+        element: <PopupHandler><ServiceManager /></PopupHandler>,
       },
       {
         path: "/owner/package",
@@ -275,19 +290,19 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service/create",
-        element: <CreateSevice />,
+        element: <PopupHandler><CreateSevice /></PopupHandler>,
       },
       {
         path: "/owner/service/:id",
-        element: <DetailService />,
+        element: <PopupHandler><DetailService /></PopupHandler>,
       },
       {
         path: "/owner/order",
-        element: <OrderManager />,
+        element: <PopupHandler><OrderManager /></PopupHandler>,
       },
       {
         path: "/owner/order/:id",
-        element: <OrderDetail />,
+        element: <PopupHandler><OrderDetail /></PopupHandler>,
       },
       {
         path: "/owner/order/update/:id",
@@ -295,7 +310,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/branch",
-        element: <BranchManager />,
+        element: <PopupHandler><BranchManager /></PopupHandler>,
       },
       // {
       //   path: "/owner/branch/create",
@@ -306,24 +321,28 @@ export const routers = createBrowserRouter([
         element: <ProfilePage />,
       },
       {
+        path: "/owner/business",
+        element: <ProfileBusiness />,
+      },
+      {
         path: "/owner/reset-password",
         element: <ChangePassword />,
       },
       {
         path: "/owner/employee",
-        element: <EmployeeManager />,
+        element: <PopupHandler><EmployeeManager /></PopupHandler>,
       },
       {
         path: "/owner/employee/:id",
-        element: <EmployeeDetail />,
+        element: <PopupHandler><EmployeeDetail /></PopupHandler>,
       },
       {
         path: "/owner/employee/create",
-        element: <CreateEmployee />,
+        element: <PopupHandler><CreateEmployee /></PopupHandler>,
       },
       {
         path: "/owner/ticket",
-        element: <TicketManager />,
+        element: <PopupHandler><TicketManager /></PopupHandler>,
       },
       // {
       //   path: "/owner/ticket/:id",
@@ -335,7 +354,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/material",
-        element: <MaterialManager />,
+        element: <PopupHandler><MaterialManager /></PopupHandler>,
       },
       {
         path: "/owner/material/update/:id",
@@ -483,23 +502,39 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/admin/store/update/:id",
-        element: <UpdateBusiness/>,
+        element: <UpdateBusiness />,
       },
       {
         path: "/admin/branch/update/:id",
-        element: <UpdateBranch_Ad/>,
+        element: <UpdateBranch_Ad />,
       },
       {
         path: "/admin/ticket-category",
-        element: <CategoryTicketManager/>,
+        element: <CategoryTicketManager />,
       },
       {
         path: "/admin/ticket",
-        element: <TicketManager_Ad/>,
+        element: <TicketManager_Ad />,
       },
       {
         path: "/admin/ticket/update/:id",
-        element: <UpdateTicket_Ad/>,
+        element: <UpdateTicket_Ad />,
+      },
+      {
+        path: "/admin/transaction",
+        element: <TransactionManager />,
+      },
+      {
+        path: "/admin/feedback",
+        element: <TableFeedback />,
+      },
+      {
+        path: "/admin/service-category",
+        element: <CategoryServiceManager />,
+      },
+      {
+        path: "/admin/package",
+        element: <PackageManager />,
       },
     ],
   },

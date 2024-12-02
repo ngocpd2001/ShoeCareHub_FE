@@ -185,10 +185,7 @@ const UpdateOrder = () => {
       setOrderData((prev) => ({
         ...prev,
         ...data, // Cập nhật tất cả thông tin từ data
-        materials: data.orderDetails.flatMap(item => {
-          // console.log("Order Detail:", item); // Log từng orderDetail
-          return item.materials || []; // Lấy thông tin vật liệu từ orderDetails
-        }),
+        materials: data.orderDetails.flatMap((item) => item.materials || []),
       }));
 
       // Kiểm tra đơn hàng hết hạn
@@ -509,7 +506,7 @@ const UpdateOrder = () => {
         [name]: displayValue,
       }));
 
-      // Cập nhật orderData với giá trị đã parse
+      // C��p nhật orderData với giá trị đã parse
       const parsedValue = parseInt(displayValue, 10);
       setOrderData((prev) => ({
         ...prev,
@@ -647,7 +644,7 @@ const UpdateOrder = () => {
               <tr>
                 <th className="text-left py-2">Dịch vụ</th>
                 <th className="text-right">Đơn giá</th>
-                {/* <th className="text-right">Thành tiền</th> */}
+                {/* <th className="text-right">Thnh tiền</th> */}
                 <th className="text-right"></th>
               </tr>
             </thead>
@@ -713,23 +710,29 @@ const UpdateOrder = () => {
                                     icon={faPenNib}
                                     className="text-[#002278]"
                                   />{" "}
-                                  Cập nhật
+                                  Cập nhật dịch vụ
                                 </Menu.Item>
                                 <Menu.Item key="delete">
-                                  {orderStatus === "Đã nhận" && ( // Kiểm tra trạng thái
-                                    <Popconfirm
-                                      title="Bạn có chắc chắn muốn xóa dịch vụ này?"
-                                      onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
-                                      okText="Đồng ý"
-                                      cancelText="Hủy"
+                                  <Popconfirm
+                                    title="Bạn có chắc chắn muốn xóa dịch vụ này?"
+                                    onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
+                                    okText="Đồng ý"
+                                    cancelText="Hủy"
+                                  >
+                                    <span
+                                      className={
+                                        orderStatus !== "Đã nhận"
+                                          ? "text-gray-400 cursor-not-allowed"
+                                          : "text-[#002278]"
+                                      }
                                     >
                                       <FontAwesomeIcon
                                         icon={faTrashCan}
                                         className="text-[#002278]"
                                       />{" "}
-                                      Xóa
-                                    </Popconfirm>
-                                  )}
+                                      Xóa dịch vụ
+                                    </span>
+                                  </Popconfirm>
                                 </Menu.Item>
                               </Menu>
                             }
@@ -777,12 +780,12 @@ const UpdateOrder = () => {
                       ))}
                     {/* Hiển thị ghi chú cho tng dịch vụ */}
                     <tr>
-                      <td className="text-gray-600 italic py-2">
+                      <td className="text-gray-600 py-2">
                         <div className="text-[#002278]">
                           Ghi chú: {item.note || "Không có ghi chú"}
                         </div>
                         <div className="text-[#002278] pt-1">
-                          Trạng thi xử lý của dịch vụ:{" "}
+                          Trạng thái xử lý của dịch vụ:{" "}
                           {item.processState || "....."}
                         </div>
                       </td>
@@ -1032,18 +1035,36 @@ const UpdateOrder = () => {
                       Mã vận chuyển
                     </label>
                     <div className="flex items-center">
-                      <span className="text-gray-900">
+                      <span className="text-gray-900 mr-4">
                         {formData.shippingCode}
                       </span>
-                      {["Đã giao hàng", "Hoàn thành", "Đang giao hàng"].includes(orderStatus) && ( // Kiểm tra trạng thái
+                      {[
+                        "Đã giao hàng",
+                        "Hoàn thành",
+                        "Đang giao hàng",
+                        "Quá hạn nhận hàng",
+                      ].includes(orderStatus) && ( // Kiểm tra trạng thái
                         <button
                           onClick={handleShowShippingStatus}
-                          className="ml-2"
+                          className="flex items-center border border-[#002278] text-[#002278] bg-white rounded-md px-4 py-2 hover:bg-[#002278] hover:text-white transition duration-200"
+                          title="Xem quá trình vận chuyển" // Thêm tooltip để giải thích
                         >
-                          <FontAwesomeIcon icon={faEye} />
+                          <FontAwesomeIcon icon={faEye} className="mr-2" />
+                          Xem quá trình vận chuyển
                         </button>
                       )}
                     </div>
+                    {/* Thêm thông báo nhỏ để người dùng biết có thể xem quá trình vận chuyển */}
+                    {/* {[
+                      "Đã giao hàng",
+                      "Hoàn thành",
+                      "Đang giao hàng",
+                      "Quá hạn nhận hàng",
+                    ].includes(orderStatus) && (
+                      <div className="mt-1 text-sm text-yellow-500 italic">
+                        (Nhấn vào biểu tượng để xem quá trình vận chuyển)
+                      </div>
+                    )} */}
                   </div>
 
                   <div>

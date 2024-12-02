@@ -48,7 +48,7 @@ export default function ProviderPageComponent() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Nhà cung cấp tiêu biểu</h2>
+      <h2 className="text-2xl font-bold mb-6">Nhà cung cấp</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
         {providers.map((provider) => (
           <ProviderCard key={provider.id} provider={provider} navigate={navigate} />

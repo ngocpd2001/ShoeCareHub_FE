@@ -21,6 +21,24 @@ import { addToCart } from "../../api/cart";
 import { Select, message, Checkbox, Dropdown, Menu } from "antd";
 import { getMaterialByServiceId } from "../../api/material";
 
+const useAuth = () => {
+    const [user, setUser] = useState(null);
+
+    useEffect(() => {
+        const storedUser = JSON.parse(localStorage.getItem("user"));
+        if (storedUser && storedUser.id) {
+            setUser(storedUser);
+        }
+    }, []);
+
+    const logout = () => {
+        localStorage.removeItem("user");
+        setUser(null);
+    };
+
+    return { user, logout };
+};
+
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -39,6 +57,7 @@ const ServiceDetail = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedMaterialIds, setSelectedMaterialIds] = useState([]);
   const [materials, setMaterials] = useState([]);
+  const { user } = useAuth();
 
   // console.log("Business ID:", businessId);
 
@@ -183,12 +202,14 @@ const ServiceDetail = () => {
 
   const handleAddToCart = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
+    // Kiểm tra nếu người dùng chưa đăng nhập
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
       navigate("/login");
       return;
     }
 
+    // Kiểm tra nếu dịch vụ không tồn tại hoặc chi nhánh chưa được chọn
     if (!service || service.id === 0 || !selectedBranch) {
       console.error("Service not found or branch not selected");
       return;
@@ -199,15 +220,21 @@ const ServiceDetail = () => {
         serviceId: Number(service.id),
         branchId: Number(selectedBranch.id),
         accountId: user.id,
-        ...(selectedMaterialIds.length > 0 ? { materialIds: selectedMaterialIds } : {}),
-        materials: selectedMaterialIds.map(materialId => {
-          const selectedMaterial = materials.find(m => m.id === materialId);
-          return selectedMaterial ? {
-            id: selectedMaterial.id,
-            name: selectedMaterial.name,
-            price: selectedMaterial.price
-          } : null;
-        }).filter(Boolean), // Lọc các giá trị null
+        ...(selectedMaterialIds.length > 0
+          ? { materialIds: selectedMaterialIds }
+          : {}),
+        materials: selectedMaterialIds
+          .map((materialId) => {
+            const selectedMaterial = materials.find((m) => m.id === materialId);
+            return selectedMaterial
+              ? {
+                  id: selectedMaterial.id,
+                  name: selectedMaterial.name,
+                  price: selectedMaterial.price,
+                }
+              : null;
+          })
+          .filter(Boolean), // Lọc các giá trị null
       };
 
       // Kiểm tra và ghi lại thông tin phụ kiện
@@ -291,14 +318,18 @@ const ServiceDetail = () => {
         branchId: selectedBranch.id,
         shopName: selectedBranch.name,
         shopAddress: selectedBranch.address,
-        materials: selectedMaterialIds.map(materialId => {
-          const selectedMaterial = materials.find(m => m.id === materialId);
-          return selectedMaterial ? {
-            id: selectedMaterial.id,
-            name: selectedMaterial.name,
-            price: selectedMaterial.price
-          } : null;
-        }).filter(Boolean), // Lọc các giá trị null
+        materials: selectedMaterialIds
+          .map((materialId) => {
+            const selectedMaterial = materials.find((m) => m.id === materialId);
+            return selectedMaterial
+              ? {
+                  id: selectedMaterial.id,
+                  name: selectedMaterial.name,
+                  price: selectedMaterial.price,
+                }
+              : null;
+          })
+          .filter(Boolean), // Lọc các giá trị null
       };
 
       // Log dữ liệu checkoutService để kiểm tra
@@ -369,7 +400,9 @@ const ServiceDetail = () => {
                   alt={material.name}
                   className="w-8 h-8 mr-3 rounded"
                 />
-                <span className="font-semibold text-gray-800">{material.name}</span>
+                <span className="font-semibold text-gray-800">
+                  {material.name}
+                </span>
               </div>
               <div className="text-gray-700 whitespace-nowrap ml-2">
                 {formatCurrency(material.price)}
@@ -384,12 +417,15 @@ const ServiceDetail = () => {
 
   // Thêm hàm tính tổng tiền
   const calculateTotalPrice = () => {
-    const servicePrice = service.promotion && service.promotion.status === "Hoạt Động" && service.promotion.newPrice
-      ? service.promotion.newPrice
-      : service.price;
+    const servicePrice =
+      service.promotion &&
+      service.promotion.status === "Hoạt Động" &&
+      service.promotion.newPrice
+        ? service.promotion.newPrice
+        : service.price;
 
     const materialsPrice = selectedMaterialIds.reduce((total, materialId) => {
-      const material = materials.find(m => m.id === materialId);
+      const material = materials.find((m) => m.id === materialId);
       return total + (material ? material.price : 0);
     }, 0);
 
@@ -649,9 +685,14 @@ const ServiceDetail = () => {
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  disabled={!service || service.status !== "Hoạt Động" || !selectedBranch}
+                  disabled={
+                    !service ||
+                    service.status !== "Hoạt Động" ||
+                    !selectedBranch ||
+                    !user
+                  }
                   className={`rounded-xl py-4 px-6 flex items-center ${
-                    service.status === "Hoạt Động" && selectedBranch
+                    service.status === "Hoạt Động" && selectedBranch && user
                       ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
