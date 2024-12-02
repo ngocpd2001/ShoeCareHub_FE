@@ -293,11 +293,11 @@ const BusinessProfileForm = () => {
                   <p
                     className={`font-semibold ${
                       business.isLimitServiceNum
-                        ? "text-green-600"
-                        : "text-red-600"
+                        ? "text-red-600"
+                        : "text-green-600"
                     }`}
                   >
-                    {business.isLimitServiceNum ? "Đã đăng ký" : "Chưa đăng ký"}
+                    {business.isLimitServiceNum ? "Chưa đăng ký" : "Đã đăng ký"}
                   </p>
                 </div>
               </div>
