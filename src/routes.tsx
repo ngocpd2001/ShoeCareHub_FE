@@ -88,6 +88,7 @@ import ProfileBusiness from "./page/ProfileUser/ProfileBusiness";
 import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
 import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
 import LoginOtp from "./page/login/LoginOtp";
+import FeaturePacks from "./page/Owner/FeaturePacks/FeaturePacks";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -270,11 +271,19 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service",
-        element: <PopupHandler><ServiceManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <ServiceManager />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/package",
         element: <Package />,
+      },
+      {
+        path: "/owner/feature-packs",
+        element: <FeaturePacks />,
       },
       {
         path: "/owner/payments/success",
@@ -290,19 +299,35 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/service/create",
-        element: <PopupHandler><CreateSevice /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <CreateSevice />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/service/:id",
-        element: <PopupHandler><DetailService /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <DetailService />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/order",
-        element: <PopupHandler><OrderManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <OrderManager />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/order/:id",
-        element: <PopupHandler><OrderDetail /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <OrderDetail />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/order/update/:id",
@@ -310,7 +335,11 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/branch",
-        element: <PopupHandler><BranchManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <BranchManager />
+          </PopupHandler>
+        ),
       },
       // {
       //   path: "/owner/branch/create",
@@ -330,19 +359,35 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/employee",
-        element: <PopupHandler><EmployeeManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <EmployeeManager />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/employee/:id",
-        element: <PopupHandler><EmployeeDetail /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <EmployeeDetail />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/employee/create",
-        element: <PopupHandler><CreateEmployee /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <CreateEmployee />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/ticket",
-        element: <PopupHandler><TicketManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <TicketManager />
+          </PopupHandler>
+        ),
       },
       // {
       //   path: "/owner/ticket/:id",
@@ -354,7 +399,11 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/material",
-        element: <PopupHandler><MaterialManager /></PopupHandler>,
+        element: (
+          <PopupHandler>
+            <MaterialManager />
+          </PopupHandler>
+        ),
       },
       {
         path: "/owner/material/update/:id",

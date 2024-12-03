@@ -56,7 +56,7 @@ const Carousels = ({ title, items, type, goto }) => {
           className="flex space-x-2 overflow-x-hidden scroll-smooth pt-1"
           style={{ width: "100%", overflowX: "hidden" }}
         >
-          {items.map((item) => (
+          {items.map((item, index) => (
             <div
               key={item.id}
               className="flex-none m-2 "
@@ -69,7 +69,11 @@ const Carousels = ({ title, items, type, goto }) => {
                 {type === "service" ? (
                   <ServiceCard item={item} navigate={navigate} />
                 ) : (
-                  <SupplierCard item={item} navigate={navigate} />
+                  <SupplierCard
+                    item={item}
+                    navigate={navigate}
+                    number={index + 1}
+                  />
                 )}
               </div>
             </div>
@@ -131,14 +135,51 @@ const ServiceCard = ({ item, navigate }) => (
   </div>
 );
 
-const SupplierCard = ({ item, navigate }) => (
+const SupplierCard = ({ item, navigate, number }) => (
   <>
-    <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center py-2">
-      <img
-        src={item.imageUrl}
-        className="text-gray-400 h-40 w-full object-cover"
-        alt={item.name}
-      />
+    <div
+      className={`mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center  `}
+    >
+      <div className="relative w-full h-full">
+        <img
+          src={item.imageUrl}
+          className="text-gray-400 h-40 w-full object-cover"
+          alt={item.name}
+        />
+        {/* Hiển thị số thứ hạng nếu là Top 1, 2, hoặc 3 */}
+        {number === 1 && (
+          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F8b0fc7da-2f8a-4c28-8e9f-d6ee30aebac9.png?alt=media&token=2f191e70-4da5-4f87-8e28-849ccd40114e"
+              className="text-gray-400 h-13 w-full "
+              alt={1}
+            />
+          </div>
+        )}
+        {number === 2 && (
+          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F74af8a62-9456-4727-bc5c-8865697d1d26.png?alt=media&token=0eccbf46-8664-45de-b9bc-7c93026ab573"
+              className="text-gray-400 h-13 w-full "
+              alt={2}
+            />
+          </div>
+        )}
+        {number === 3 && (
+          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F5a161334-89be-4996-b733-7b37c8a70173.png?alt=media&token=82f15bf0-b238-4bb5-9a69-d94fc77b1d2a"
+              className="text-gray-400 h-13 w-full "
+              alt={3}
+            />
+          </div>
+        )}
+        {/* {number >= 1 && number <= 3 && (
+          <div className="absolute top-2 right-2 bg-yellow-500 text-white font-bold py-1 px-2 rounded-full">
+            {`Top ${number}`}
+          </div>
+        )} */}
+      </div>
     </div>
     <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
     <div className="flex items-center mb-1">
@@ -197,13 +238,10 @@ export default function CarouselsSection() {
         console.log(error);
       });
 
-    getData(
-      "/businesses-by-ranking?SortBy=RANK&Status=ACTIVE&IsDecsending=false&PageSize=10&PageNum=1"
-    )
+    getData("/leaderboards/by-month")
       .then((data) => {
-        console.log(22222, data);
-
-        setBusiness(data?.data?.data);
+        console.log(22222, data?.data.data);
+        setBusiness(data?.data?.data?.businesses || []);
       })
       .catch((error) => {
         console.log(error);

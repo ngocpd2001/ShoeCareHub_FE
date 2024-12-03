@@ -10,32 +10,30 @@ export default function PopupHandler({ children }) {
   const modal = useModalState();
   const [business, setBusiness] = useState(null);
   const [user, setUser] = useStorage("user", null);
-  const location = useLocation();
-  const currentPath = location.pathname;
-
-  useEffect(() => {
-    const fetchBusiness = async () => {
-      try {
-        const response = await getData(`/businesses/${user.businessId}`);
-        console.log("Dữ liệu doanh nghiệp:", response.data);
-        setBusiness(response.data.data);
-
+  const fetchBusiness = () => {
+    getData(`/businesses/${user.businessId}`)
+      .then((e) => {
+        setBusiness(e.data.data);
+        console.log("====================================");
+        console.log("dữ liệu doanh nghiệp");
+        console.log("====================================");
         // Kiểm tra thời gian hết hạn gói
-        const expiredTime = new Date(response?.data?.data?.expiredTime); // Chuyển expiredTime thành đối tượng Date
+        const expiredTime = new Date(e?.data?.data?.expiredTime); // Chuyển expiredTime thành đối tượng Date
         const currentTime = new Date(); // Lấy thời gian hiện tại
         const timeDifference = expiredTime - currentTime; // Tính toán sự chênh lệch giữa expiredTime và thời gian hiện tại
 
         // Kiểm tra nếu thời gian còn lại dưới 10 ngày (10 ngày = 10 * 24 * 60 * 60 * 1000 milliseconds)
         if (timeDifference <= 10 * 24 * 60 * 60 * 1000) {
-          if (response.data?.data?.status === "ACTIVE") {
+          if (e.data?.data?.status === "ACTIVE") {
             modal.handleOpen(); // Mở modal khi còn dưới 10 ngày
           }
         }
-      } catch (error) {
+      })
+      .catch((error) => {
         console.error("Lỗi khi lấy thông tin doanh nghiệp:", error);
-      }
-    };
-
+      });
+  };
+  useEffect(() => {
     fetchBusiness();
   }, []); // Cập nhật khi `currentPath`, `user.businessId` hoặc `modal` thay đổi
 
@@ -73,11 +71,7 @@ export default function PopupHandler({ children }) {
           </div>
         );
       case "INACTIVE":
-        return (
-          <div className="flex items-center gap-2 text-gray-600">
-        
-          </div>
-        );
+        return <div className="flex items-center gap-2 text-gray-600"></div>;
       case "SUSPENDED":
         return (
           <div className="flex items-center gap-2 text-gray-600 justify-center">

@@ -8,6 +8,9 @@ import { getData, postData } from "../../../api/api";
 
 import { YupBranch } from "./../../../yup/YupBranch";
 import ComSelect from "../../../Components/ComInput/ComSelect";
+import { XCircle } from "lucide-react";
+import { Link } from "react-router-dom";
+import { useStorage } from "../../../hooks/useLocalStorage";
 // Thiết lập icon cho Marker (khắc phục vấn đề với icon mặc định của Leaflet)
 
 export default function CreateBranch({ onClose, tableRef }) {
@@ -16,10 +19,13 @@ export default function CreateBranch({ onClose, tableRef }) {
   const [provinces, setProvinces] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [wards, setWards] = useState([]);
+  const [user, setUser] = useStorage("user", null);
   const [address, setAddress] = useState(""); // Trạng thái để lưu địa chỉ
+  const [userData, setUserData] = useState({});
   const methods = useForm({
     resolver: yupResolver(YupBranch),
   });
+  const [data, setData] = useState([]);
 
   const {
     handleSubmit,
@@ -28,7 +34,29 @@ export default function CreateBranch({ onClose, tableRef }) {
     setValue,
     formState: { errors },
   } = methods;
-
+  const reloadData = () => {
+    getData(`/businesses/${user.businessId}`)
+      .then((e) => {
+        // Giả sử dữ liệu trả về nằm trong e.data.data
+        setUserData(e?.data.data);
+        console.log("Dữ liệu user", e?.data.data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      });
+    getData(`/branches/business/${user.businessId}`)
+      .then((e) => {
+        setData(e?.data?.data);
+        console.log("====================================");
+        console.log(3333,e?.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching items:", error);
+      });
+  };
+  useEffect(() => {
+    reloadData();
+  }, []);
   // Hàm submit form
   const onSubmit = (data) => {
     // Kiểm tra nếu chưa chọn hình ảnh
@@ -131,10 +159,29 @@ export default function CreateBranch({ onClose, tableRef }) {
         setWards([]);
       });
   }, [watch("districtId")]);
+
+  if (userData.isIndividual) {
+    if (data.length >= 1) {
+      return (
+        <div>
+          <div className="  text-yellow-600 text-center">
+            <div className="flex items-center gap-2 justify-center">
+              <XCircle className="w-6 h-6" />
+              Bạn đã quá hạn chi nhánh được tạo! Vui lòng đăng ký gói tính năng để
+              sử dụng .
+            </div>
+            <Link className="text-teal-500" to={"/owner/feature-packs"}>
+              Đăng ký gói tính năng
+            </Link>
+          </div>
+        </div>
+      );
+    }
+  }
   return (
     <div>
       <h2 className="text-xl font-semibold text-blue-800 mb-4 ml-4">
-        Thêm chi nhánh
+        Thêm chi nhánh  
       </h2>
 
       <div className="">

@@ -65,9 +65,13 @@ const navigation = [
   },
   {
     name: "Gói ",
-    href: "/owner/package",
+    // href: "/owner/package",
     icon: PackageIcon,
     current: true,
+    children: [
+      { name: "Gói gia hạn ", href: "/owner/package" },
+      { name: "Gói tính năng", href: "/owner/feature-packs" },
+    ],
   },
   {
     name: "Đánh giá",
@@ -87,7 +91,6 @@ const navigation = [
     icon: UserCircleIcon,
     current: false,
     children: [
-  
       { name: "Hồ sơ của tôi", href: "/owner/profile" },
       { name: "Hồ sơ doanh nghiệp", href: "/owner/business" },
       { name: "Đổi mật khẩu", href: "/owner/reset-password" },

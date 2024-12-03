@@ -36,7 +36,7 @@ export default function CreatePackage({ onClose, tableRef }) {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-    postData(`/subscription-packs`, {
+    postData(`/platform-packs/register-packs`, {
       ...data,
     })
       .then((response) => {

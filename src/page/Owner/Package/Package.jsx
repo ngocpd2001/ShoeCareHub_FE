@@ -10,7 +10,7 @@ const Package = () => {
   const [showInvoice, setShowInvoice] = useState(false);
 
   useEffect(() => {
-    getData(`/subscription-packs`)
+    getData(`/platform-packs/register-packs`)
       .then((e) => {
         // Giả sử dữ liệu trả về nằm trong e.data.data
         setPackages(e?.data.data);

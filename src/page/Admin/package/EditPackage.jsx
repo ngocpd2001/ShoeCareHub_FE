@@ -37,11 +37,11 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
     // Kiểm tra nếu chưa chọn hình ảnh
     console.log(data);
     console.log(provinces);
-    putData(`/subscription-packs`, selectedData.id, {
+    putData(`/platform-packs`, `${selectedData.id}/register-pack`, {
       ...data,
     })
       .then((response) => {
-        console.log("Tạo thành công:", response);
+        console.log("Cập nhật thành công:", response);
         setDisabled(false);
         notificationApi("success", "Thành công", "Cập nhật gói thành công.");
         setTimeout(() => {
@@ -52,7 +52,7 @@ export default function EditPackage({ onClose, tableRef, selectedData }) {
       .catch((error) => {
         setDisabled(false);
         console.error("Lỗi:", error);
-        notificationApi("error", "Lỗi", `${error.data.message}`);
+        notificationApi("error", "Lỗi", `${error?.response?.data?.message}`);
       });
   };
 

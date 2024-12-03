@@ -10,7 +10,7 @@ import ComTextArea from "../../../Components/ComInput/ComTextArea";
 import { getData, postData } from "../../../api/api";
 import { Breadcrumb, Upload } from "antd";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, XCircle } from "lucide-react";
 import ComSelect from "./../../../Components/ComInput/ComSelect";
 import ComUpImg from "./../../../Components/ComUpImg/ComUpImg";
 import ComNumber from "./../../../Components/ComInput/ComNumber";
@@ -27,6 +27,8 @@ export default function CreateSevice() {
   const [branches, setBranches] = useState([]);
   const [categories, setCategories] = useState([]);
   const [user, setUser] = useStorage("user", null);
+  const [userData, setUserData] = useState({});
+  const [data, setData] = useState([]);
 
   const methods = useForm({
     resolver: yupResolver(YupSevice),
@@ -42,10 +44,29 @@ export default function CreateSevice() {
       ],
     },
   });
+  getData(`services/business/${user?.businessId}?PageIndex=1&PageSize=1000`)
+    .then((e) => {
+      setData(e?.data?.data?.items.sort((a, b) => b.id - a.id));
+      console.log("====================================");
+      console.log(e?.data);
+      console.log("====================================");
+    })
+    .catch((error) => {
+      console.error("Error fetching items:", error);
+    });
   useEffect(() => {
+    getData(`/businesses/${user.businessId}`)
+      .then((e) => {
+        // Giả sử dữ liệu trả về nằm trong e.data.data
+        setUserData(e?.data.data);
+        console.log("Dữ liệu user", e?.data.data);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi lấy dữ liệu:", error);
+      });
     getData(`branches/business/${user?.businessId}`)
       .then((response) => {
-        console.log("", response?.data?.data);
+        console.log("branches", response?.data?.data);
         setBranches(
           response?.data?.data.map((branch) => ({
             value: branch.id,
@@ -161,11 +182,28 @@ export default function CreateSevice() {
         });
     }
   };
-
+  if (userData.isLimitServiceNum ) {
+    if (data.length >= 5) {
+      return (
+        <div>
+          <div className="  text-yellow-600 text-center">
+            <div className="flex items-center gap-2 justify-center">
+              <XCircle className="w-6 h-6" />
+              Bạn đã quá hạn dịch vụ được tạo! Vui lòng đăng ký gói tính năng để
+              sử dụng dịch vụ.
+            </div>
+            <Link className="text-teal-500" to={"/owner/feature-packs"}>
+              Đăng ký gói tính năng
+            </Link>
+          </div>
+        </div>
+      );
+    }
+  }
   return (
     <div>
       <h2 className="text-xl font-semibold text-blue-800 mb-4 ml-4">
-        Thêm dịch vụ
+        Thêm dịch vụ 
       </h2>
       <Breadcrumb
         className="ml-4"

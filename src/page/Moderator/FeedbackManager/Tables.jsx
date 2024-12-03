@@ -12,7 +12,6 @@ import { useTableState } from "../../../hooks/useTableState";
 import { Image } from "antd";
 import { getData, putData } from "../../../api/api";
 import ComDateConverter from "../../../Components/ComDateConverter/ComDateConverter";
-import DetailElder from "../TableElder/DetailElder";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
 import useRolePermission from "../../../hooks/useRolePermission";
 import EditFeedback from "./EditFeedback";
