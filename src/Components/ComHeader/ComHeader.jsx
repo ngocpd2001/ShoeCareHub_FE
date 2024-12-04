@@ -206,6 +206,7 @@ export default function ComHeader({ children }) {
                                   {item.name === "Đăng xuất" ? (
                                     <button
                                       onClick={() => {
+                                        localStorage.clear();
                                         setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
                                         setTimeout(() => {
                                           navigate("/login");
@@ -232,10 +233,10 @@ export default function ComHeader({ children }) {
                                     <button
                                       onClick={() => {
                                         localStorage.clear();
-                                        setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
-                                        setTimeout(() => {
-                                          navigate("/login");
-                                        }, 300);
+                                        // setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
+                                        // setTimeout(() => {
+                                        //   navigate("/login");
+                                        // }, 300);
                                       }}
                                       className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
                                     >

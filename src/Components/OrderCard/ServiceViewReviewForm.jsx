@@ -3,9 +3,17 @@ import { Star } from "lucide-react";
 import ComUpImg from "./../ComUpImg/ComUpImg";
 import { firebaseImgs } from "../../upImgFirebase/firebaseImgs";
 import { postData } from "../../api/api";
-import { Image } from "antd";
+import { Image, Button } from "antd";
+import { MenuButton } from "@headlessui/react";
+import { Menu, MenuItems } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/20/solid";
+import { EllipsisOutlined } from "@ant-design/icons";
+import ComModal from "../ComModal/ComModal";
+import ServicePutReviewForm from "./ServicePutReviewForm";
+import { useModalState } from "../../hooks/useModalState";
 
-const ServiceViewReviewForm = ({ data, onClose }) => {
+const ServiceViewReviewForm = ({ data, onClose, reloadData, edit }) => {
+  const [dataSelect, setDataSelect] = useState({});
   const [reviews, setReviews] = useState(
     data?.orderDetails?.map((item) => ({
       id: item?.id,
@@ -14,6 +22,8 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
       images: [],
     })) || []
   );
+  const modalPutFeedback = useModalState();
+
   const [loading, setLoading] = useState(false);
   // Hàm thay đổi rating cho từng dịch vụ
   const handleRatingChange = (id, newRating) => {
@@ -93,6 +103,18 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
 
   return (
     <div className="max-w-2xl mx-auto">
+      <ComModal
+        isOpen={modalPutFeedback?.isModalOpen}
+        onClose={modalPutFeedback?.handleClose}
+        width={700}
+      >
+        <ServicePutReviewForm
+          data={dataSelect}
+          onClose={modalPutFeedback?.handleClose}
+          onClose2={onClose}
+          reloadData={reloadData}
+        />
+      </ComModal>
       <h1 className="text-2xl font-bold mb-4">Xem đánh giá</h1>
       {data?.orderDetails &&
         data?.orderDetails.map((value) => (
@@ -113,10 +135,57 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
                 <p className="text-blue-600">Đã duyệt</p>
               )}
               {value?.feedback?.status === "PENDING" && (
-                <p className="text-blue-600">Chờ duyệt</p>
+                <div className="flex gap-4">
+                  <p className="text-blue-600">Chờ duyệt</p>
+                  {value?.feedback?.isAllowedUpdate && (
+                    <Menu as="div" className="relative">
+                      <MenuButton className="-m-1.5 flex items-center p-1.5">
+                        <Button icon={<EllipsisOutlined />} />
+                      </MenuButton>
+                      <MenuItems
+                        transition
+                        className="absolute right-0 z-10 mt-2.5 w-30 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                      >
+                        <button
+                          onClick={() => {
+                            modalPutFeedback?.handleOpen();
+                            setDataSelect(value);
+                          }}
+                          className="block px-3 py-1 text-sm w-full leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                        >
+                          Chỉnh sửa
+                        </button>
+                      </MenuItems>
+                    </Menu>
+                  )}
+                </div>
               )}
               {value?.feedback?.status === "SUSPENDED" && (
-                <p className="text-red-600">Từ chối</p>
+                <div className="flex gap-4">
+                  <p className="text-red-600">Từ chối</p>
+                  {value?.feedback?.isAllowedUpdate && (
+                    <Menu as="div" className="relative">
+                      <MenuButton className="-m-1.5 flex items-center p-1.5">
+                        <Button icon={<EllipsisOutlined />} />
+                      </MenuButton>
+                      <MenuItems
+                        transition
+                        className="absolute right-0 z-10 mt-2.5 w-30 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-wbg-white/5 transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in"
+                      >
+                        <button
+                          onClick={() => {
+                            modalPutFeedback?.handleOpen();
+
+                            setDataSelect(value);
+                          }}
+                          className="block px-3 py-1 text-sm w-full leading-6 text-wbg-white data-[focus]:bg-gray-50"
+                        >
+                          Chỉnh sửa
+                        </button>
+                      </MenuItems>
+                    </Menu>
+                  )}
+                </div>
               )}
             </div>
             <div className="mb-4">
@@ -170,9 +239,11 @@ const ServiceViewReviewForm = ({ data, onClose }) => {
                 </Image.PreviewGroup>
               </div>
             </div>
-                {value?.feedback?.status === "SUSPENDED" && (
-                  <p className="text-red-600 p-8">Đánh giá bị từ chối vì vi phạm tiêu chuẩn nội dung.</p>
-                )}
+            {value?.feedback?.status === "SUSPENDED" && (
+              <p className="text-red-600 p-8">
+                Đánh giá bị từ chối vì vi phạm tiêu chuẩn nội dung.
+              </p>
+            )}
           </div>
         ))}
     </div>

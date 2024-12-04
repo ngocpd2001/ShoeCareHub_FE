@@ -12,6 +12,7 @@ import { message, Modal, Steps } from "antd";
 import { putData } from "../../api/api";
 import StepsDetail from "./StepsDetail";
 import StepsDetailProcess from "./StepsDetailProcess";
+import ServicePutReviewForm from "./ServicePutReviewForm";
 
 const CartItem = ({ order, item }) => {
   const modalDetailProcess = useModalState();
@@ -68,6 +69,7 @@ const CartItem = ({ order, item }) => {
 export default function OrderCard({ order, reloadData }) {
   const [user, setUser] = useStorage("user", null);
   const modalFeedback = useModalState();
+  const modalPutFeedback = useModalState();
   const modalDetail = useModalState();
 
   const modalViewFeedback = useModalState();
@@ -235,6 +237,8 @@ export default function OrderCard({ order, reloadData }) {
       >
         <ServiceViewReviewForm
           data={order}
+          reloadData={reloadData}
+          edit={modalPutFeedback.handleOpen}
           onClose={modalViewFeedback?.handleClose}
         />
       </ComModal>
