@@ -5,7 +5,6 @@ import { faCartShopping, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useNavigate, useLocation } from "react-router-dom";
 import { getUserCart, deleteCartItem } from "../../api/cart";
 import { getServiceById } from "../../api/service";
-import { getMaterialById } from "../../api/material";
 
 const UserCart = () => {
   const [cartItems, setCartItems] = useState([]);
@@ -48,9 +47,11 @@ const UserCart = () => {
             const serviceDetails = await getServiceById(item.serviceId);
             const imageUrl = serviceDetails.assetUrls?.[0]?.url || "";
             let materialPrice = 0;
+            let materialIds = [];
 
             if (item.materials && item.materials.length > 0) {
               materialPrice = item.materials.reduce((total, material) => total + material.price, 0);
+              materialIds = item.materials.map(m => m.id);
             }
 
             return {
@@ -68,6 +69,7 @@ const UserCart = () => {
               isAvailable: serviceDetails.status !== "UNAVAILABLE",
               material: item.materials.map(m => m.name).join(", ") || "",
               materialPrice: materialPrice,
+              materialId: materialIds,
             };
           })
         )
@@ -179,7 +181,12 @@ const UserCart = () => {
         branchId: shop.branchId,
         shopName: shop.shopName,
         shopAddress: shop.shopAddress,
-        services: shop.services.filter((service) => service.selected),
+        services: shop.services
+          .filter((service) => service.selected)
+          .map((service) => ({
+            ...service,
+            materialId: service.materialId,
+          })),
       }));
 
     if (selectedItems.length === 0) {
@@ -318,22 +325,22 @@ const UserCart = () => {
     }, 0);
   };
 
-  const handleQuantityChange = (id, newQuantity) => {
-    setCartItems((prevShops) =>
-      prevShops.map((shop) => ({
-        ...shop,
-        services: shop.services.map((service) => {
-          if (service.id === id) {
-            return {
-              ...service,
-              quantity: 1,
-            };
-          }
-          return service;
-        }),
-      }))
-    );
-  };
+  // const handleQuantityChange = (id, newQuantity) => {
+  //   setCartItems((prevShops) =>
+  //     prevShops.map((shop) => ({
+  //       ...shop,
+  //       services: shop.services.map((service) => {
+  //         if (service.id === id) {
+  //           return {
+  //             ...service,
+  //             quantity: 1,
+  //           };
+  //         }
+  //         return service;
+  //       }),
+  //     }))
+  //   );
+  // };
 
   return (
     <div>
@@ -382,7 +389,6 @@ const UserCart = () => {
                     userId={userId}
                     setCartItems={setCartItems}
                     setTotalAmount={setTotalAmount}
-                    onQuantityChange={handleQuantityChange}
                     onRemove={handleRemove}
                     onSelectAll={handleSelectAll}
                     onSelect={handleSelect}

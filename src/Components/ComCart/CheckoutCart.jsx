@@ -437,6 +437,9 @@ const CheckoutCart = ({
                             <span className="font-semibold text-[#002278] max-w-xs break-words whitespace-normal overflow-hidden overflow-ellipsis">
                               {materialInfo?.name}
                             </span>
+                            <span className="mt-1 border border-red-500 text-red-500 bg-white px-1 py-0.5 rounded text-sm w-16">
+                                Phụ kiện
+                              </span>
                           </div>
                         </div>
                         <div className="items-center justify-center text-center">

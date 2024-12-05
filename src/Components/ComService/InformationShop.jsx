@@ -83,17 +83,9 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
             <h2 className="text-xl font-semibold text-[#1D364D]">
               {business.name}
             </h2>
-            {/* <div className="flex items-center">
-              <FontAwesomeIcon
-                icon={faCircle}
-                className={`text-${
-                  business.status === "ACTIVE" ? "green" : "red"
-                }-500 mr-2 text-sm`}
-              />
-              <p className="text-sm text-gray-600">
-                {business.status === "ACTIVE" ? "Đang hoạt động" : "Ngừng hoạt động"}
-              </p>
-            </div> */}
+            <p className="text-base text-gray-600">
+              {business.phone ? `Điện thoại: ${business.phone}` : "Chưa có số điện thoại"}
+            </p>
           </div>
           <div className="flex flex-row">
             <button className="bg-[#1D364D] text-white rounded-lg py-2 px-4 flex items-center mr-3">
@@ -253,7 +245,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         <div className="flex flex-row justify-between mr-8 my-4">
           <span className="text-lg font-normal">Tham gia</span>
           <span className="text-lg text-[#002278] font-normal">
-            {business.createdDate}
+            {new Date(business.createdDate).toLocaleDateString('vi-VN')}
           </span>
         </div>
         <div className="flex flex-row justify-between mr-8 my-4">

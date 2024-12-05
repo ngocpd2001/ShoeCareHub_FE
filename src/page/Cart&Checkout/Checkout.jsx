@@ -215,100 +215,99 @@ const Checkout = () => {
 
   const handleCheckout = async () => {
     try {
+      // Log dữ liệu nhận được từ UserCart
+      console.log("Dữ liệu nhận được từ UserCart:", cartItems);
+
+      // Kiểm tra xem có cửa hàng nào chọn giao hàng không
+      const shopsWithDelivery = cartItems.filter(
+        (shop) => deliveryOptions[shop.branchId] === "delivery"
+      );
+
+      // Nếu không có cửa hàng chọn giao hàng và không có địa chỉ
+      if (shopsWithDelivery.length === 0 && !defaultAddress) {
+        Modal.warning({
+          title: "Thông báo",
+          content: "Vui lòng chọn phương thức giao hàng.",
+          okText: "Đồng ý",
+          centered: true,
+        });
+        return;
+      }
+
+      // Kiểm tra xem tất cả cửa hàng đã chọn phương thức giao hàng chưa
+      const allShopsHaveDeliveryOption = cartItems.every(
+        (shop) =>
+          deliveryOptions[shop.branchId] === "delivery" ||
+          deliveryOptions[shop.branchId] === "pickup"
+      );
+
+      if (!allShopsHaveDeliveryOption) {
+        Modal.warning({
+          title: "Thông báo",
+          content: "Vui lòng chọn phương thức giao hàng.",
+          okText: "Đồng ý",
+          centered: true,
+        });
+        return;
+      }
+
+      // Chuẩn bị dữ liệu checkout cho từng cửa hàng
+      const checkoutPromises = cartItems.map(async (shop) => {
+        const shopServices = shop.services.map((service) => ({
+          cartItemId: service.id,
+          note: notes[shop.branchId]?.[service.id] || "",
+          branchId: shop.branchId,
+        }));
+
+        let checkoutData = {
+          isShip: deliveryOptions[shop.branchId] === "delivery",
+          cartItems: shopServices,
+          accountId: Number(accountId),
+          addressId: defaultAddress?.id ? Number(defaultAddress.id) : 0,
+          isAutoReject: false,
+        };
+
         // Log dữ liệu nhận được từ UserCart
-        console.log("Dữ liệu nhận được từ UserCart:", cartItems);
+        console.log("Dữ liệu nhận được từ UserCart:", checkoutData); // Đảm bảo ghi lại dữ liệu
 
-        // Kiểm tra xem có cửa hàng nào chọn giao hàng không
-        const shopsWithDelivery = cartItems.filter(
-            (shop) => deliveryOptions[shop.branchId] === "delivery"
-        );
-
-        // Nếu không có cửa hàng chọn giao hàng và không có địa chỉ
-        if (shopsWithDelivery.length === 0 && !defaultAddress) {
-            Modal.error({
-                title: "Lỗi",
-                content:
-                    "Vui lòng chọn địa chỉ giao hàng hoặc chọn lấy tại cửa hàng.",
-                okText: "Đồng ý",
-                centered: true,
-            });
-            return;
+        // Kiểm tra xem checkoutData có đầy đủ thông tin cần thiết không
+        if (
+          !checkoutData.accountId ||
+          !checkoutData.addressId ||
+          checkoutData.cartItems.length === 0
+        ) {
+          throw new Error("Thông tin thanh toán không đầy đủ.");
         }
 
-        // Kiểm tra xem tất cả cửa hàng đã chọn phương thức giao hàng chưa
-        const allShopsHaveDeliveryOption = cartItems.every(
-            (shop) =>
-                deliveryOptions[shop.branchId] === "delivery" ||
-                deliveryOptions[shop.branchId] === "pickup"
-        );
+        // Log để kiểm tra dữ liệu checkout
+        console.log("Dữ liệu checkout gửi đi:", checkoutData);
 
-        if (!allShopsHaveDeliveryOption) {
-            Modal.error({
-                title: "Lỗi",
-                content: "Vui lòng chọn phương thức giao hàng cho tất cả cửa hàng.",
-                okText: "Đồng ý",
-                centered: true,
-            });
-            return;
-        }
+        return await checkoutCart(checkoutData);
+      });
 
-        // Chuẩn bị dữ liệu checkout cho từng cửa hàng
-        const checkoutPromises = cartItems.map(async (shop) => {
-            const shopServices = shop.services.map((service) => ({
-                cartItemId: service.id,
-                note: notes[shop.branchId]?.[service.id] || "",
-                branchId: shop.branchId,
-            }));
+      // Chờ tất cả các đơn hàng được xử lý
+      const responses = await Promise.all(checkoutPromises);
 
-            let checkoutData = {
-                isShip: deliveryOptions[shop.branchId] === "delivery",
-                cartItems: shopServices,
-                accountId: Number(accountId),
-                addressId: defaultAddress?.id ? Number(defaultAddress.id) : 0,
-                isAutoReject: false,
-            };
-
-            // Log dữ liệu nhận được từ UserCart
-            console.log("Dữ liệu nhận được từ UserCart:", checkoutData); // Đảm bảo ghi lại dữ liệu
-
-            // Kiểm tra xem checkoutData có đầy đủ thông tin cần thiết không
-            if (
-                !checkoutData.accountId ||
-                !checkoutData.addressId ||
-                checkoutData.cartItems.length === 0
-            ) {
-                throw new Error("Thông tin thanh toán không đầy đủ.");
-            }
-
-            // Log để kiểm tra dữ liệu checkout
-            console.log("Dữ liệu checkout gửi đi:", checkoutData);
-
-            return await checkoutCart(checkoutData);
-        });
-
-        // Chờ tất cả các đơn hàng được xử lý
-        const responses = await Promise.all(checkoutPromises);
-
-        if (responses) {
-            setIsOrderSuccess(true);
-            setCartItems([]);
-            localStorage.removeItem("cartItems");
-        }
+      if (responses) {
+        setIsOrderSuccess(true);
+        setCartItems([]);
+        localStorage.removeItem("cartItems");
+      }
     } catch (error) {
-        console.error("Lỗi khi thanh toán:", error);
-        Modal.error({
-            title: "Lỗi",
-            content:
-                error.message || "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!",
-            okText: "Đồng ý",
-            centered: true,
-            okButtonProps: {
-                className:
-                    "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
-            },
-        });
+      console.error("Lỗi khi thanh toán:", error);
+      Modal.error({
+        title: "Lỗi",
+        content:
+          error.message || "Có lỗi xảy ra khi đặt hàng. Vui lòng thử lại sau!",
+        okText: "Đồng ý",
+        centered: true,
+        okButtonProps: {
+          className:
+            "bg-[#002278] hover:bg-[#001a5e] border-[#002278] text-white",
+        },
+      });
     }
-};
+  };
 
   const handleShippingFeesChange = (fees) => {
     setShippingFees(fees);

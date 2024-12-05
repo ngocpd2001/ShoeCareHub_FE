@@ -10,7 +10,7 @@ import {
   Modal,
   Image,
 } from "antd";
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, CloseOutlined } from "@ant-design/icons";
 import {
   getMaterialById,
   updateMaterial,
@@ -27,6 +27,7 @@ import ComUpImg from "../../../Components/ComUpImg/ComUpImg";
 import ComSelect from "../../../Components/ComInput/ComSelect";
 import ComNumber from "../../../Components/ComInput/ComNumber";
 import * as yup from "yup";
+import { UploadOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -92,6 +93,7 @@ const UpdateMaterial = () => {
       price: null,
       status: "",
       branchId: [],
+      assetUrls: [],
     },
   });
 
@@ -102,18 +104,6 @@ const UpdateMaterial = () => {
     formState: { errors },
   } = methods;
 
-  const fetchAllBranches = async () => {
-    try {
-      const businessId = 1;
-      //   console.log('Đang gọi API getBranchByBusinessId với businessId:', businessId);
-      const response = await getBranchByBusinessId(businessId);
-      //   console.log('Kết quả API getBranchByBusinessId:', response);
-      setAllBranches(response.data || []);
-    } catch (error) {
-      console.error("Lỗi khi gọi API getBranchByBusinessId:", error);
-      notificationApi("error", "Lỗi", "Không thể tải danh sách chi nhánh");
-    }
-  };
 
   const fetchMaterialData = async () => {
     try {
@@ -167,15 +157,18 @@ const UpdateMaterial = () => {
 
       // Cập nhật danh sách hình ảnh
       if (materialData.assetUrls && materialData.assetUrls.length > 0) {
-        setFileList(
-          materialData.assetUrls.map((asset, index) => ({
-            uid: `-${index}`,
-            name: `image-${index}`,
-            status: "done",
-            url: asset.url,
-            type: "image",
-          }))
-        );
+        const existingFileList = materialData.assetUrls.map((asset) => ({
+          uid: asset.id,
+          name: `image-${asset.id}`,
+          status: "done",
+          url: asset.url,
+          type: "image",
+        }));
+
+        // Cập nhật fileList với các hình ảnh từ API
+        setFileList(existingFileList);
+      } else {
+        setFileList([]); // Đảm bảo danh sách ảnh trống nếu không có ảnh
       }
     } catch (error) {
       notificationApi("error", "Lỗi", "Không thể tải thông tin vật liệu");
@@ -184,32 +177,16 @@ const UpdateMaterial = () => {
 
   useEffect(() => {
     fetchMaterialData();
-    fetchAllBranches();
+    // fetchAllBranches();
   }, [id, setValue]);
 
-  const handleInputChange = (name, value) => {
-    if (name === "price") {
-      const numericValue = Math.max(0, Number(value) || 0);
-      setFormData((prev) => ({
-        ...prev,
-        [name]: numericValue,
-      }));
-      return;
-    }
 
+  const handleImageDelete = (index) => {
+    const newFileList = fileList.filter((_, i) => i !== index);
+    setFileList(newFileList);
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleImageChange = async (data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
-    setFileList(selectedImages);
-    setFormData((prev) => ({
-      ...prev,
-      assetUrls: selectedImages.map((file) => file.url).filter(Boolean),
+      assetUrls: newFileList.map((file) => file.url).filter(Boolean),
     }));
   };
 
@@ -236,25 +213,36 @@ const UpdateMaterial = () => {
     }
   };
 
-  // Tách logic xử lý hình ảnh thành hook riêng
-  const handleImageProcessing = async (fileList) => {
-    const newImages = fileList
-      .filter((file) => file.originFileObj)
-      .map((file) => file.originFileObj);
+  const onChange = async (data) => {
+    const newImages = data.map((file) => file.originFileObj);
+    console.log("Danh sách hình ảnh mới:", newImages);
 
-    let assetUrls = fileList
-      .filter((file) => file.url)
-      .map((file) => ({ url: file.url }));
+    // Tải lên hình ảnh lên Firebase và lấy URL
+    const uploadedUrls = await firebaseImgs(newImages);
+    console.log("URL hình ảnh đã tải lên:", uploadedUrls);
 
-    if (newImages.length > 0) {
-      const uploadedUrls = await firebaseImgs(newImages);
-      assetUrls = [...assetUrls, ...uploadedUrls.map((url) => ({ url }))];
-    }
+    // Cập nhật fileList với các hình ảnh đã tải lên
+    const updatedFileList = [
+      ...fileList,
+      ...uploadedUrls.map((url, index) => ({
+        uid: newImages[index].name,
+        name: newImages[index].name,
+        status: "done",
+        url: url,
+        type: "image",
+      })),
+    ];
 
-    return assetUrls;
+    setFileList(updatedFileList);
+    setFormData((prev) => ({
+      ...prev,
+      assetUrls: [
+        ...(prev.assetUrls || []),
+        ...uploadedUrls.map((url) => ({ url, type: "image" })),
+      ],
+    }));
   };
 
-  // Tách logic cập nhật số lượng thành function riêng
   const updateBranchQuantities = async (quantities) => {
     const validQuantities = Object.entries(quantities).filter(
       ([_, quantity]) => quantity && Number(quantity) > 0
@@ -268,7 +256,6 @@ const UpdateMaterial = () => {
     }
   };
 
-  // Tối ưu hóa onSubmit
   const onSubmit = async (data) => {
     if (!fileList?.length) {
       notificationApi(
@@ -281,15 +268,20 @@ const UpdateMaterial = () => {
 
     setLoading(true);
     try {
-      const assetUrls = await handleImageProcessing(fileList);
+      const assetUrls = fileList.map((file) => ({
+        url: file.url,
+        type: "image",
+      }));
 
       const submitData = {
         name: data.name.trim(),
         price: Number(data.price),
         status: data.status,
         branchId: data.branchId,
-        assetUrls,
+        assetUrls: assetUrls,
       };
+
+      console.log("Dữ liệu gửi đi:", submitData);
 
       await updateMaterial(id, submitData);
       await updateBranchQuantities(quantities);
@@ -329,120 +321,146 @@ const UpdateMaterial = () => {
           />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Thông tin chung */}
+        <div className="grid grid-cols-2 gap-2">
+          {/* Thông tin chung và trạng thái */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold mb-6">Thông tin chung</h2>
-              <div className="space-y-4">
-                <ComInput
-                  type="text"
-                  label="Tên phụ kiện"
-                  error={errors.name?.message}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Thông tin chung */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="space-y-4">
+                  <ComInput
+                    type="text"
+                    label={
+                      <span className="font-normal text-lg">Tên phụ kiện</span>
+                    }
+                    error={errors.name?.message}
+                    required
+                    {...register("name")}
+                  />
+                  <ComNumber
+                    min={1000}
+                    label={
+                      <span className="font-normal text-lg">Giá phụ kiện</span>
+                    }
+                    error={errors.price?.message}
+                    {...register("price")}
+                    value={methods.watch("price")}
+                    onChange={(value) => setValue("price", value)}
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Trạng thái */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <ComSelect
+                  size="large"
+                  className="w-full min-w-[200px]"
+                  dropdownMatchSelectWidth={false}
+                  dropdownStyle={{ minWidth: "200px" }}
+                  label={
+                    <span className="font-normal text-lg">
+                      Trạng thái phụ kiện
+                    </span>
+                  }
+                  placeholder="Lựa chọn"
+                  onChangeValue={(e, value) => {
+                    setValue("status", value);
+                  }}
+                  mode="default"
+                  value={methods.watch("status")}
+                  options={STATUS_OPTIONS}
                   required
-                  {...register("name")}
-                />
-                <ComNumber
-                  min={1000}
-                  label="Giá phụ kiện"
-                  error={errors.price?.message}
-                  {...register("price")}
-                  value={methods.watch("price")}
-                  onChange={(value) => setValue("price", value)}
-                  required
+                  {...register("status")}
                 />
               </div>
             </div>
           </div>
 
-          {/* Trạng thái */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 h-full">
-              <h2 className="text-lg font-semibold mb-6">Trạng thái</h2>
-              <ComSelect
-                size="large"
-                className="w-full min-w-[200px]"
-                dropdownMatchSelectWidth={false}
-                dropdownStyle={{ minWidth: "200px" }}
-                label="Trạng thái phụ kiện"
-                placeholder="Lựa chọn"
-                onChangeValue={(e, value) => {
-                  setValue("status", value);
-                }}
-                mode="default"
-                value={methods.watch("status")}
-                options={STATUS_OPTIONS}
-                required
-                {...register("status")}
-              />
-            </div>
-          </div>
-
-          {/* Số lượng theo chi nhánh */}
+          {/* Số lượng theo chi nhánh và hình ảnh */}
           <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold mb-6">
-                Số lượng theo chi nhánh
-              </h2>
-              <div className="space-y-4">
-                {branchMaterials.map((bm) => (
-                  <div key={bm.branch.id} className="flex flex-col gap-2">
-                    <label className="text-sm font-medium">
-                      {bm.branch.name}
-                    </label>
-                    <InputNumber
-                      className="w-full"
-                      min={1}
-                      value={quantities[bm.branch.id] || undefined}
-                      onChange={(value) => {
-                        setQuantities((prev) => ({
-                          ...prev,
-                          [bm.branch.id]: value,
-                        }));
-                      }}
-                      onBlur={() => {
-                        const value = quantities[bm.branch.id];
-                        if (value !== undefined && value !== null) {
-                          handleQuantityChange(bm.branch.id, value);
-                        }
-                      }}
-                      size="large"
-                      controls={true}
-                      placeholder="Nhập số lượng"
-                    />
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Hình ảnh */}
-          <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              <h2 className="text-lg font-semibold mb-6">Hình ảnh</h2>
-              {fileList && fileList.length > 0 ? (
-                <div className="grid grid-cols-2 gap-2">
-                  {fileList.map((file, index) => (
-                    <div key={index} className="relative">
-                      <Image
-                        src={file.url}
-                        alt={`image-${index}`}
-                        className="w-full h-32 object-cover rounded"
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Số lượng theo chi nhánh */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-normal mb-6">
+                  Số lượng theo chi nhánh
+                </h2>
+                <div className="space-y-4">
+                  {branchMaterials.map((bm) => (
+                    <div key={bm.branch.id} className="flex flex-col gap-2">
+                      <label className="text-sm font-medium">
+                        {bm.branch.name}
+                      </label>
+                      <InputNumber
+                        className="w-full"
+                        min={1}
+                        value={quantities[bm.branch.id] || undefined}
+                        onChange={(value) => {
+                          setQuantities((prev) => ({
+                            ...prev,
+                            [bm.branch.id]: value,
+                          }));
+                        }}
+                        onBlur={() => {
+                          const value = quantities[bm.branch.id];
+                          if (value !== undefined && value !== null) {
+                            handleQuantityChange(bm.branch.id, value);
+                          }
+                        }}
+                        size="large"
+                        controls={true}
+                        placeholder="Nhập số lượng"
                       />
                     </div>
                   ))}
                 </div>
-              ) : (
-                <div className="text-gray-500 text-center">
-                  Chưa có hình ảnh
+              </div>
+
+              {/* Hình ảnh */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h2 className="text-lg font-normal mb-6">Hình ảnh</h2>
+                {fileList.length > 0 ? (
+                  <div className="grid grid-cols-4 gap-4">
+                    {fileList.map((file, index) => (
+                      <div
+                        key={file.uid}
+                        className="relative w-[80px] h-[80px]"
+                      >
+                        {file.url ? ( // Hiển thị ảnh đã tải lên
+                          <Image
+                            src={file.url}
+                            alt={`Selected ${index}`}
+                            className="w-20 h-20 object-cover rounded-md"
+                          />
+                        ) : (
+                          // Hiển thị ảnh chưa tải lên
+                          <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md">
+                            <UploadOutlined className="text-gray-400" />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleImageDelete(index)}
+                          className="absolute top-0 right-0 text-red-500 rounded-full p-1 w-6 h-6 flex items-center justify-center"
+                        >
+                          <CloseOutlined className="text-xs" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div>Chưa có hình ảnh nào.</div>
+                )}
+                <div className="mt-4">
+                  <ComUpImg
+                    onChange={onChange}
+                    error={
+                      fileList.length === 0 ? "Vui lòng chọn hình ảnh" : ""
+                    }
+                    required
+                  />
                 </div>
-              )}
-              <ComUpImg
-                onChange={handleImageChange}
-                fileList={fileList}
-                error={fileList.length === 0 ? "Vui lòng chọn hình ảnh" : ""}
-                required
-              />
+              </div>
             </div>
           </div>
         </div>
@@ -451,7 +469,7 @@ const UpdateMaterial = () => {
         <div className="mt-10 flex justify-end gap-6">
           <div className="w-[150px]">
             <ComButton
-              onClick={() => navigate('/owner/material')}
+              onClick={() => navigate("/owner/material")}
               type="button"
               className="w-full h-[45px] rounded border-[#E0E2E7] border-md bg-[#F0F1F3] text-center text-sm font-semibold shadow-sm flex items-center justify-center"
             >

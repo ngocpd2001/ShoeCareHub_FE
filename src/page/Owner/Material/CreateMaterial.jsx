@@ -91,8 +91,8 @@ export default function CreateMaterial() {
 
         if (serviceResponse?.data?.items) {
           const serviceOptions = serviceResponse.data.items
-            .filter((service) => service.status === "Hoạt Động")
-            .map((service) => ({
+            .filter(service => service.status === "Hoạt Động" && service.category.status === "Hoạt Động")
+            .map(service => ({
               value: service.id,
               label: service.name,
             }));
@@ -133,11 +133,7 @@ export default function CreateMaterial() {
 
     // Kiểm tra nếu chưa chọn hình ảnh
     if (!image || image.length === 0) {
-      notificationApi(
-        "error",
-        "Hình ảnh không hợp lệ",
-        "Vui lòng chọn hình ảnh."
-      );
+      notificationApi("error", "Hình ảnh không hợp lệ", "Vui lòng chọn hình ảnh.");
       return;
     }
 
@@ -146,6 +142,15 @@ export default function CreateMaterial() {
       notificationApi("error", "Lỗi", "Vui lòng chọn ít nhất một chi nhánh");
       return;
     }
+
+    // In ra dữ liệu gửi đi để kiểm tra
+    console.log("Dữ liệu gửi đi:", {
+      name: data.name.trim(),
+      price: data.price,
+      status: data.status,
+      branchId: data.branchId,
+      serviceId: data.serviceId,
+    });
 
     // Tiếp tục với việc gửi dữ liệu
     const imageUrls = await firebaseImgs(image);

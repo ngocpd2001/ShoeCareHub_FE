@@ -132,7 +132,7 @@ const ProviderLandingPage = () => {
             </div>
           </div> */}
 
-          <div className="items-center bg-blue-400 my-8 p-5">
+          {/* <div className="items-center bg-blue-400 my-8 p-5">
             <h1 className="text-2xl font-bold text-[#002278] text-center pb-5">
               EXPLORE NEW AND POPULAR STYLES
             </h1>
@@ -175,7 +175,7 @@ const ProviderLandingPage = () => {
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <ServiceGrid businessId={id} branchId={selectedBranchId} />
         </div>

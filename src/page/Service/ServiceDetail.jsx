@@ -18,7 +18,7 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addToCart } from "../../api/cart";
-import { Select, message, Checkbox, Dropdown, Menu } from "antd";
+import { Select, message, Checkbox, Dropdown, Menu, Modal } from "antd";
 import { getMaterialByServiceId } from "../../api/material";
 
 const ServiceDetail = () => {
@@ -90,15 +90,8 @@ const ServiceDetail = () => {
       service.branchServices &&
       service.branchServices.length > 0
     ) {
-      // Tìm chi nhánh đầu tiên đang hoạt động
-      const activeBranch = service.branchServices.find(
-        (bs) => bs.status === "Hoạt Động"
-      );
-      if (activeBranch) {
-        setSelectedBranch(activeBranch.branch);
-      } else {
-        setSelectedBranch(null); // Không có chi nhánh nào hoạt động
-      }
+      // Không tự động chọn chi nhánh đầu tiên
+      setSelectedBranch(null); // Đặt giá trị mặc định là null
     }
   }, [service]);
 
@@ -113,9 +106,12 @@ const ServiceDetail = () => {
           price: item.price,
           assetUrls: item.assetUrls,
           status: item.status,
+          branchMaterials: item.branchMaterials,
         }));
-        // console.log("Tất cả phụ kiện:", allMaterials);
-        setMaterials(allMaterials);
+        const availableMaterials = allMaterials.filter(material => 
+          material.branchMaterials.some(branch => branch.storage > 0)
+        );
+        setMaterials(availableMaterials);
       } catch (error) {
         console.error("Lỗi khi tải phụ kiện:", error);
       }
@@ -185,12 +181,28 @@ const ServiceDetail = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      // navigate("/login");
+      message.warning("Vui lòng đăng nhập trước khi thêm vào giỏ hàng");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return;
+    }
+
+    // Kiểm tra token trước khi thêm vào giỏ hàng
+    const token = localStorage.getItem("token");
+    console.log("Token:", token);
+    if (!token) {
+      message.error(
+        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+      );
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
       return;
     }
 
     if (!service || service.id === 0 || !selectedBranch) {
-      console.error("Service not found or branch not selected");
+      message.warning("Vui lòng chọn chi nhánh");
       return;
     }
 
@@ -199,15 +211,21 @@ const ServiceDetail = () => {
         serviceId: Number(service.id),
         branchId: Number(selectedBranch.id),
         accountId: user.id,
-        ...(selectedMaterialIds.length > 0 ? { materialIds: selectedMaterialIds } : {}),
-        materials: selectedMaterialIds.map(materialId => {
-          const selectedMaterial = materials.find(m => m.id === materialId);
-          return selectedMaterial ? {
-            id: selectedMaterial.id,
-            name: selectedMaterial.name,
-            price: selectedMaterial.price
-          } : null;
-        }).filter(Boolean), // Lọc các giá trị null
+        ...(selectedMaterialIds.length > 0
+          ? { materialIds: selectedMaterialIds }
+          : {}),
+        materials: selectedMaterialIds
+          .map((materialId) => {
+            const selectedMaterial = materials.find((m) => m.id === materialId);
+            return selectedMaterial
+              ? {
+                  id: selectedMaterial.id,
+                  name: selectedMaterial.name,
+                  price: selectedMaterial.price,
+                }
+              : null;
+          })
+          .filter(Boolean), // Lọc các giá trị null
       };
 
       // Kiểm tra và ghi lại thông tin phụ kiện
@@ -262,13 +280,28 @@ const ServiceDetail = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      navigate("/login");
+      message.warning("Vui lòng đăng nhập trước khi thanh toán");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return;
+    }
+
+    // Kiểm tra token trước khi thanh toán
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error(
+        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+      );
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
       return;
     }
 
     // Thêm kiểm tra chi nhánh
     if (!selectedBranch) {
-      setUserMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      message.warning("Vui lòng chọn chi nhánh");
       return;
     }
 
@@ -291,14 +324,18 @@ const ServiceDetail = () => {
         branchId: selectedBranch.id,
         shopName: selectedBranch.name,
         shopAddress: selectedBranch.address,
-        materials: selectedMaterialIds.map(materialId => {
-          const selectedMaterial = materials.find(m => m.id === materialId);
-          return selectedMaterial ? {
-            id: selectedMaterial.id,
-            name: selectedMaterial.name,
-            price: selectedMaterial.price
-          } : null;
-        }).filter(Boolean), // Lọc các giá trị null
+        materials: selectedMaterialIds
+          .map((materialId) => {
+            const selectedMaterial = materials.find((m) => m.id === materialId);
+            return selectedMaterial
+              ? {
+                  id: selectedMaterial.id,
+                  name: selectedMaterial.name,
+                  price: selectedMaterial.price,
+                }
+              : null;
+          })
+          .filter(Boolean), // Lọc các giá trị null
       };
 
       // Log dữ liệu checkoutService để kiểm tra
@@ -330,6 +367,24 @@ const ServiceDetail = () => {
     const branch = service.branchServices.find(
       (bs) => bs.branch.id === parseInt(selectedBranchId)
     )?.branch;
+
+    // Kiểm tra trạng thái chi nhánh
+    const selectedBranchService = service.branchServices.find(
+      (bs) => bs.branch.id === branch.id
+    );
+
+    if (selectedBranchService && selectedBranchService.status !== "Hoạt Động") {
+      Modal.info({
+        title: "Thông báo",
+        content: (
+          <div>
+            <p>Hiện tại dịch vụ ở chi nhánh này ngưng hoạt động.</p>
+          </div>
+        ),
+        onOk() {},
+      });
+    }
+
     setSelectedBranch(branch);
   };
 
@@ -369,7 +424,9 @@ const ServiceDetail = () => {
                   alt={material.name}
                   className="w-8 h-8 mr-3 rounded"
                 />
-                <span className="font-semibold text-gray-800">{material.name}</span>
+                <span className="font-semibold text-gray-800">
+                  {material.name}
+                </span>
               </div>
               <div className="text-gray-700 whitespace-nowrap ml-2">
                 {formatCurrency(material.price)}
@@ -384,12 +441,15 @@ const ServiceDetail = () => {
 
   // Thêm hàm tính tổng tiền
   const calculateTotalPrice = () => {
-    const servicePrice = service.promotion && service.promotion.status === "Hoạt Động" && service.promotion.newPrice
-      ? service.promotion.newPrice
-      : service.price;
+    const servicePrice =
+      service.promotion &&
+      service.promotion.status === "Hoạt Động" &&
+      service.promotion.newPrice
+        ? service.promotion.newPrice
+        : service.price;
 
     const materialsPrice = selectedMaterialIds.reduce((total, materialId) => {
-      const material = materials.find(m => m.id === materialId);
+      const material = materials.find((m) => m.id === materialId);
       return total + (material ? material.price : 0);
     }, 0);
 
@@ -579,7 +639,7 @@ const ServiceDetail = () => {
               <div className="mt-5 border-t pt-4">
                 <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
                 <Select
-                  value={selectedBranch?.id || ""}
+                  value={selectedBranch ? selectedBranch.id : undefined}
                   onChange={(value) => {
                     const branch = service.branchServices.find(
                       (bs) => bs.branch.id === value
@@ -587,36 +647,51 @@ const ServiceDetail = () => {
                     setSelectedBranch(branch);
                   }}
                   className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400"
+                  placeholder="Vui lòng chọn chi nhánh..."
                   optionLabelProp="label"
                   listItemHeight={10}
                   listHeight={250}
                 >
-                  {service?.branchServices?.map((bs) => {
-                    const branchName =
-                      bs.branch.name +
-                      (bs.status === "Ngưng Hoạt Động"
-                        ? " (Ngưng hoạt động)"
-                        : "");
-                    const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
+                  {service?.branchServices?.length === 0 ? (
+                    <Select.Option value="" disabled>
+                      Vui lòng chọn chi nhánh...
+                    </Select.Option>
+                  ) : (
+                    <>
+                      {service.branchServices.map((bs) => {
+                        const branchName =
+                          bs.branch.name +
+                          (bs.status === "Ngưng Hoạt Động" ||
+                          bs.branch.status === "Không Hoạt Động"
+                            ? " (Ngưng hoạt động)"
+                            : "");
+                        const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
 
-                    return (
-                      <Select.Option
-                        key={bs.branch.id}
-                        value={bs.branch.id}
-                        disabled={bs.status === "Ngưng Hoạt Động"}
-                        label={<span className="text-lg">{branchName}</span>}
-                      >
-                        <div className="flex flex-col py-2">
-                          <span className="text-lg text-[#3A4980]">
-                            {branchName}
-                          </span>
-                          <span className="text-base text-gray-400 break-words whitespace-normal max-w-full">
-                            {branchAddress}
-                          </span>
-                        </div>
-                      </Select.Option>
-                    );
-                  })}
+                        return (
+                          <Select.Option
+                            key={bs.branch.id}
+                            value={bs.branch.id}
+                            disabled={
+                              bs.status === "Ngưng Hoạt Động" ||
+                              bs.branch.status === "Không Hoạt Động"
+                            }
+                            label={
+                              <span className="text-lg">{branchName}</span>
+                            }
+                          >
+                            <div className="flex flex-col py-2">
+                              <span className="text-lg text-[#3A4980]">
+                                {branchName}
+                              </span>
+                              <span className="text-base text-gray-400 break-words whitespace-normal max-w-full">
+                                {branchAddress}
+                              </span>
+                            </div>
+                          </Select.Option>
+                        );
+                      })}
+                    </>
+                  )}
                 </Select>
               </div>
 
@@ -649,7 +724,11 @@ const ServiceDetail = () => {
               <div className="flex justify-center mt-5 border-t pt-8 space-x-10">
                 <button
                   onClick={handleAddToCart}
-                  disabled={!service || service.status !== "Hoạt Động" || !selectedBranch}
+                  disabled={
+                    !service ||
+                    service.status !== "Hoạt Động" ||
+                    !selectedBranch
+                  }
                   className={`rounded-xl py-4 px-6 flex items-center ${
                     service.status === "Hoạt Động" && selectedBranch
                       ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"

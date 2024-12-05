@@ -114,6 +114,30 @@ export const getServiceFeedback = async (serviceId) => {
   }
 };
 
+export const getCategoryService = async (id) => {
+  try {
+    const response = await axiosInstances.login.get(`/categories?PageIndex=1&PageSize=10`);
+    
+    if (response.data && response.data.message === "Fetch Category Success") {
+      const items = response.data.data.items;
+      const category = items.find(item => item.id === id);
+
+      if (!category) {
+        console.error("Không tìm thấy danh mục với ID:", id);
+        return null; // Trả về null nếu không tìm thấy danh mục
+      }
+
+      return category; // Trả về danh mục tìm thấy
+    } else {
+      console.error("Dữ liệu không hợp lệ:", response.data);
+      return null; // Trả về null nếu dữ liệu không hợp lệ
+    }
+  } catch (error) {
+    console.error("Lỗi khi gọi API danh mục dịch vụ:", error);
+    throw error; // Ném lại lỗi để xử lý ở cấp cao hơn
+  }
+};
+
 
 
 

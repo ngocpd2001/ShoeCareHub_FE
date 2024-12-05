@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Form, Input, Select, Button } from "antd";
+import { Modal, Form, Select} from "antd";
 import { createOrderDetail } from "../../../api/order";
 import { getServiceByBranchId } from "../../../api/branch";
 import { getMaterialByServiceId } from "../../../api/material";
@@ -21,7 +21,7 @@ const CreateOrderDetailPopup = ({
     try {
       const response = await getServiceByBranchId(branchId);
       const activeServices = response.data.items.filter(
-        (service) => service.status !== "INACTIVE"
+        (service) => service.status !== "Ngưng Hoạt Động" && service.category.status !== "Ngưng Hoạt Động"
       );
       setServices(activeServices);
     } catch (error) {
@@ -40,7 +40,10 @@ const CreateOrderDetailPopup = ({
       const response = await getMaterialByServiceId(serviceId);
       console.log("Dữ liệu vật liệu nhận được:", response.data);
       if (Array.isArray(response.data.items)) {
-        setMaterials(response.data.items);
+        const activeMaterials = response.data.items.filter(
+          (material) => material.status !== "Ngưng Hoạt Động"
+        );
+        setMaterials(activeMaterials);
       } else {
         console.warn("Dữ liệu không phải là mảng:", response.data);
         setMaterials([]);
@@ -68,7 +71,7 @@ const CreateOrderDetailPopup = ({
         orderId: orderId || 0,
         branchId: branchId || 0,
         serviceId: values.serviceId || 0,
-        materialId: values.materialId || 0,
+        materialIds: values.materialId || [],
       };
       console.log("Payload gửi đi:", payload);
       const response = await createOrderDetail(payload);
@@ -78,6 +81,10 @@ const CreateOrderDetailPopup = ({
       onServiceAdded();
     } catch (error) {
       console.error("Lỗi khi tạo chi tiết đơn hàng:", error);
+      Modal.error({
+        title: 'Lỗi',
+        content: 'Không thể tạo chi tiết đơn hàng. Vui lòng thử lại.',
+      });
     }
   };
 
@@ -124,12 +131,13 @@ const CreateOrderDetailPopup = ({
         </Form.Item>
         <Form.Item
           name="materialId"
-          label="Mã vật liệu"
-          rules={[{ required: true, message: "Vui lòng nhập mã vật liệu!" }]}
+          label="Vật liệu"
+          rules={[]}
         >
           <Select
             placeholder="Chọn vật liệu"
             showSearch
+            mode="multiple"
             disabled={materials.length === 0}
             filterOption={(input, option) =>
               (option?.children ?? "")
