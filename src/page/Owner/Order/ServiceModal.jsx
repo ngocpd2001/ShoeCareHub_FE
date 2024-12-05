@@ -21,7 +21,7 @@ const CreateOrderDetailPopup = ({
     try {
       const response = await getServiceByBranchId(branchId);
       const activeServices = response.data.items.filter(
-        (service) => service.status !== "INACTIVE"
+        (service) => service.status !== "Ngưng Hoạt Động" && service.category.status !== "Ngưng Hoạt Động"
       );
       setServices(activeServices);
     } catch (error) {

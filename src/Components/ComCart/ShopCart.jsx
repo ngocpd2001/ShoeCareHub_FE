@@ -8,7 +8,6 @@ import { getBranchByBranchId } from "../../api/branch";
 const ShopCart = ({
   shop,
   userId,
-  onQuantityChange,
   onRemove,
   onSelectAll,
   onSelect,
@@ -29,10 +28,6 @@ const ShopCart = ({
       fetchBranchData();
     }
   }, [shop.branchId]);
-
-  const handleQuantityChange = (serviceId, delta) => {
-    onQuantityChange(serviceId, delta);
-  };
 
   return (
     <div className="mb-6 border rounded-lg bg-white">

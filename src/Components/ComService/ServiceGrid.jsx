@@ -6,25 +6,41 @@ import { Button, Dropdown, Menu, Pagination } from "antd";
 import { DownOutlined } from "@ant-design/icons";
 import { getServiceByBusinessId } from "../../api/service";
 import { getServiceByBranchId } from "../../api/branch";
+import { getCategoryService } from "../../api/service";
 import { FaStar } from "react-icons/fa"; // Thêm import cho FaStar
 import { useNavigate } from "react-router-dom"; // Sử dụng useNavigate
 
-const ServiceGrid = ({ businessId, branchId }) => {
+const ServiceGrid = ({ businessId, branchId, categoryId }) => {
   const navigate = useNavigate(); // Sử dụng useNavigate
   const [services, setServices] = useState([]); // State để lưu trữ danh sách dịch vụ
   const [selected, setSelected] = useState(false);
   const [totalItems, setTotalItems] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 12;
+  const pageSize = 20;
+  const [categories, setCategories] = useState([]); // State để lưu trữ danh sách danh mục
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
         let response;
-        if (branchId) {
-          response = await getServiceByBranchId(branchId, currentPage, pageSize);
+        if (categoryId) {
+          response = await getCategoryService(
+            categoryId,
+            currentPage,
+            pageSize
+          );
+        } else if (branchId) {
+          response = await getServiceByBranchId(
+            branchId,
+            currentPage,
+            pageSize
+          );
         } else {
-          response = await getServiceByBusinessId(businessId, currentPage, pageSize);
+          response = await getServiceByBusinessId(
+            businessId,
+            currentPage,
+            pageSize
+          );
         }
 
         // Log để kiểm tra response
@@ -34,7 +50,7 @@ const ServiceGrid = ({ businessId, branchId }) => {
         if (response?.data?.items) {
           // console.log("Số lượng services:", response.data.items.length);
           // console.log("Services data:", response.data.items);
-          
+
           setServices(response.data.items);
           setTotalItems(response.data.totalCount || 0);
         } else {
@@ -50,7 +66,25 @@ const ServiceGrid = ({ businessId, branchId }) => {
     };
 
     fetchServices();
-  }, [businessId, branchId, currentPage, pageSize]);
+  }, [businessId, branchId, categoryId, currentPage, pageSize]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await getCategoryService(); // Lấy danh sách danh mục
+        if (response?.data?.items) {
+          setCategories(response.data.items);
+        } else {
+          console.warn("Không tìm thấy danh mục trong response");
+          setCategories([]);
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy danh mục:", error);
+      }
+    };
+
+    fetchCategories();
+  }, []); // Chỉ gọi một lần khi component được mount
 
   const handleFocus = () => {
     setSelected(true);
@@ -70,12 +104,38 @@ const ServiceGrid = ({ businessId, branchId }) => {
     // Thêm logic xử lý khi một mục trong menu được chọn
   };
 
+  const handleCategorySelect = (categoryId) => {
+    setCurrentPage(1); // Đặt lại trang hiện tại về 1
+    fetchServicesByCategory(categoryId); // Gọi lại hàm fetchServices với categoryId đã chọn
+  };
+
+  const fetchServicesByCategory = async (categoryId) => {
+    try {
+      const response = await getCategoryService(
+        categoryId,
+        currentPage,
+        pageSize
+      );
+      if (response?.data?.items) {
+        setServices(response.data.items);
+        setTotalItems(response.data.totalCount || 0);
+      } else {
+        setServices([]);
+        setTotalItems(0);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy dịch vụ theo danh mục:", error);
+      setServices([]);
+      setTotalItems(0);
+    }
+  };
+
   // Định nghĩa menu trong ServiceGrid
   const menu = (
-    <Menu onClick={handleMenuClick}>
-      <Menu.Item key="1">Rẻ</Menu.Item>
-      <Menu.Item key="2">Trung Bình</Menu.Item>
-      <Menu.Item key="3">Cao</Menu.Item>
+    <Menu onClick={(e) => handleCategorySelect(e.key)}>
+      {categories.map((category) => (
+        <Menu.Item key={category.id}>{category.name}</Menu.Item>
+      ))}
     </Menu>
   );
 
@@ -90,16 +150,16 @@ const ServiceGrid = ({ businessId, branchId }) => {
 
         <Button
           className={`mx-3 ${
-            selected ? "bg-white border-3 border-[#3A4980] text-white" : ""
-          } text-center`}
+            selected ? "bg-[#3A4980] text-white" : "bg-white text-[#3A4980]"
+          } text-center border border-[#3A4980] rounded-md`}
           onFocus={handleFocus}
           onBlur={handleBlur}
         >
-          Phổ biến
+          Danh mục
         </Button>
 
         <Dropdown overlay={menu} trigger={["click"]}>
-          <Button>
+          <Button className="bg-white text-[#3A4980] border border-[#3A4980] rounded-md">
             Giá <DownOutlined />
           </Button>
         </Dropdown>
@@ -120,21 +180,21 @@ const ServiceGrid = ({ businessId, branchId }) => {
                   className="w-full h-50 object-cover rounded"
                 />
                 <div className="absolute top-1 right-1">
-                  {service.promotion && 
-                   service.promotion.status === "Hoạt Động" && 
-                   service.promotion.saleOff > 0 && (
-                    <div className="bg-red-500 text-white rounded-lg px-2 py-1">
-                      <span className="text-sm font-bold">
-                        -{service.promotion.saleOff}%
-                      </span>
-                    </div>
-                  )}
+                  {service.promotion &&
+                    service.promotion.status === "Hoạt Động" &&
+                    service.promotion.saleOff > 0 && (
+                      <div className="bg-red-500 text-white rounded-lg px-2 py-1">
+                        <span className="text-sm font-bold">
+                          -{service.promotion.saleOff}%
+                        </span>
+                      </div>
+                    )}
                 </div>
               </div>
               <h3 className="text-lg font-semibold mt-2">{service.name}</h3>
-              {service.promotion && 
-               service.promotion.status === "Hoạt Động" && 
-               service.promotion.newPrice > 0 ? (
+              {service.promotion &&
+              service.promotion.status === "Hoạt Động" &&
+              service.promotion.newPrice > 0 ? (
                 <>
                   <p className="text-[#667085] font-normal line-through">
                     {service.price.toLocaleString("vi-VN")}đ

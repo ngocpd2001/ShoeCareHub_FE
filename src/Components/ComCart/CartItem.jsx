@@ -51,6 +51,7 @@ const CartItem = ({
           checked={service.selected}
           onChange={() => onSelect(service.id)}
           className="mr-2"
+          disabled={material.storage === 0}
         />
         <div className="w-12 h-12 flex items-center justify-center overflow-hidden mr-4">
           {service.image ? (
@@ -82,7 +83,7 @@ const CartItem = ({
           {service.material && (
             <div className="flex flex-col">
               <span className="text-sm text-gray-800">
-                Phụ kiện: {service.material}
+                 <u>Phụ kiện:</u> {service.material}
               </span>
               {materialPrice > 0 && (
                 <div className="text-sm text-gray-600">

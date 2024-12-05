@@ -158,6 +158,7 @@ const UpdateOrder = () => {
   const [currentOrderDetailId, setCurrentOrderDetailId] = useState(null);
   const [shippingStatus, setShippingStatus] = useState(null);
   const [isShippingModalVisible, setIsShippingModalVisible] = useState(false);
+  const [serviceId, setServiceId] = useState(null);
 
   useEffect(() => {
     if (orderData) {
@@ -506,7 +507,7 @@ const UpdateOrder = () => {
         [name]: displayValue,
       }));
 
-      // C��p nhật orderData với giá trị đã parse
+      // Cập nhật orderData với giá trị đã parse
       const parsedValue = parseInt(displayValue, 10);
       setOrderData((prev) => ({
         ...prev,
@@ -564,8 +565,17 @@ const UpdateOrder = () => {
   };
 
   const handleUpdateClick = (OrderDetailId) => {
+    const orderDetail = orderDetails.find(item => item.id === OrderDetailId);
+    
+    console.log("Order Detail:", orderDetail); // Kiểm tra orderDetail
+    const serviceId = orderDetail ? orderDetail.service.id : null; // Lấy serviceId từ orderDetail
+    // console.log("Service ID:", serviceId); // Kiểm tra serviceId
+
+    // Gọi hàm với serviceId
     setCurrentOrderDetailId(OrderDetailId);
     setUpdateDetailVisible(true);
+    // Chuyển serviceId vào modal
+    setServiceId(serviceId); // Thêm dòng này để cập nhật serviceId
   };
 
   const handleShowShippingStatus = () => {
@@ -579,10 +589,6 @@ const UpdateOrder = () => {
   const orderDetails = orderData.orderDetails || [];
 
   const branchId = orderDetails.length > 0 ? orderDetails[0].branch.id : null;
-
-  // Trước khi gọi modal, thêm log để kiểm tra serviceId
-  const serviceId = orderDetails.length > 0 ? orderDetails[0].service.id : null;
-  // console.log("Service ID truyền vào modal:", serviceId); // Log serviceId
 
   return (
     <div className="max-w-6xl mx-auto p-4 bg-gray-50">
@@ -771,6 +777,9 @@ const UpdateOrder = () => {
                               <span className="break-words">
                                 {material.name}
                               </span>
+                              <span className="mt-1 ml-2 border border-red-500 text-red-500 bg-white px-1 py-0.5 rounded text-sm w-16">
+                                Phụ kiện
+                              </span>
                             </div>
                           </td>
                           <td className="text-right">
@@ -784,7 +793,7 @@ const UpdateOrder = () => {
                         <div className="text-[#002278]">
                           Ghi chú: {item.note || "Không có ghi chú"}
                         </div>
-                        <div className="text-[#002278] pt-1">
+                        <div className="text-[#002278] pt-1 font-semibold bg-yellow-100 p-2 rounded w-fit">
                           Trạng thái xử lý của dịch vụ:{" "}
                           {item.processState || "....."}
                         </div>

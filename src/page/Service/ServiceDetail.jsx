@@ -18,26 +18,8 @@ import ServiceCard from "../../Components/ComService/ServiceCard";
 import { getServiceById } from "../../api/service";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { addToCart } from "../../api/cart";
-import { Select, message, Checkbox, Dropdown, Menu } from "antd";
+import { Select, message, Checkbox, Dropdown, Menu, Modal } from "antd";
 import { getMaterialByServiceId } from "../../api/material";
-
-const useAuth = () => {
-    const [user, setUser] = useState(null);
-
-    useEffect(() => {
-        const storedUser = JSON.parse(localStorage.getItem("user"));
-        if (storedUser && storedUser.id) {
-            setUser(storedUser);
-        }
-    }, []);
-
-    const logout = () => {
-        localStorage.removeItem("user");
-        setUser(null);
-    };
-
-    return { user, logout };
-};
 
 const ServiceDetail = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -57,7 +39,6 @@ const ServiceDetail = () => {
   const [selectedBranch, setSelectedBranch] = useState(null);
   const [selectedMaterialIds, setSelectedMaterialIds] = useState([]);
   const [materials, setMaterials] = useState([]);
-  const { user } = useAuth();
 
   // console.log("Business ID:", businessId);
 
@@ -109,15 +90,8 @@ const ServiceDetail = () => {
       service.branchServices &&
       service.branchServices.length > 0
     ) {
-      // Tìm chi nhánh đầu tiên đang hoạt động
-      const activeBranch = service.branchServices.find(
-        (bs) => bs.status === "Hoạt Động"
-      );
-      if (activeBranch) {
-        setSelectedBranch(activeBranch.branch);
-      } else {
-        setSelectedBranch(null); // Không có chi nhánh nào hoạt động
-      }
+      // Không tự động chọn chi nhánh đầu tiên
+      setSelectedBranch(null); // Đặt giá trị mặc định là null
     }
   }, [service]);
 
@@ -132,9 +106,12 @@ const ServiceDetail = () => {
           price: item.price,
           assetUrls: item.assetUrls,
           status: item.status,
+          branchMaterials: item.branchMaterials,
         }));
-        // console.log("Tất cả phụ kiện:", allMaterials);
-        setMaterials(allMaterials);
+        const availableMaterials = allMaterials.filter(material => 
+          material.branchMaterials.some(branch => branch.storage > 0)
+        );
+        setMaterials(availableMaterials);
       } catch (error) {
         console.error("Lỗi khi tải phụ kiện:", error);
       }
@@ -202,16 +179,30 @@ const ServiceDetail = () => {
 
   const handleAddToCart = async () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    // Kiểm tra nếu người dùng chưa đăng nhập
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      // navigate("/login");
+      message.warning("Vui lòng đăng nhập trước khi thêm vào giỏ hàng");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
       return;
     }
 
-    // Kiểm tra nếu dịch vụ không tồn tại hoặc chi nhánh chưa được chọn
+    // Kiểm tra token trước khi thêm vào giỏ hàng
+    const token = localStorage.getItem("token");
+    console.log("Token:", token);
+    if (!token) {
+      message.error(
+        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+      );
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return;
+    }
+
     if (!service || service.id === 0 || !selectedBranch) {
-      console.error("Service not found or branch not selected");
+      message.warning("Vui lòng chọn chi nhánh");
       return;
     }
 
@@ -289,13 +280,28 @@ const ServiceDetail = () => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.id) {
       localStorage.setItem("redirectAfterLogin", location.pathname);
-      navigate("/login");
+      message.warning("Vui lòng đăng nhập trước khi thanh toán");
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+      return;
+    }
+
+    // Kiểm tra token trước khi thanh toán
+    const token = localStorage.getItem("token");
+    if (!token) {
+      message.error(
+        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+      );
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
       return;
     }
 
     // Thêm kiểm tra chi nhánh
     if (!selectedBranch) {
-      setUserMessage("Vui lòng chọn chi nhánh đang hoạt động");
+      message.warning("Vui lòng chọn chi nhánh");
       return;
     }
 
@@ -361,6 +367,24 @@ const ServiceDetail = () => {
     const branch = service.branchServices.find(
       (bs) => bs.branch.id === parseInt(selectedBranchId)
     )?.branch;
+
+    // Kiểm tra trạng thái chi nhánh
+    const selectedBranchService = service.branchServices.find(
+      (bs) => bs.branch.id === branch.id
+    );
+
+    if (selectedBranchService && selectedBranchService.status !== "Hoạt Động") {
+      Modal.info({
+        title: "Thông báo",
+        content: (
+          <div>
+            <p>Hiện tại dịch vụ ở chi nhánh này ngưng hoạt động.</p>
+          </div>
+        ),
+        onOk() {},
+      });
+    }
+
     setSelectedBranch(branch);
   };
 
@@ -615,7 +639,7 @@ const ServiceDetail = () => {
               <div className="mt-5 border-t pt-4">
                 <h2 className="text-xl font-semibold mb-4">Chi nhánh</h2>
                 <Select
-                  value={selectedBranch?.id || ""}
+                  value={selectedBranch ? selectedBranch.id : undefined}
                   onChange={(value) => {
                     const branch = service.branchServices.find(
                       (bs) => bs.branch.id === value
@@ -623,36 +647,51 @@ const ServiceDetail = () => {
                     setSelectedBranch(branch);
                   }}
                   className="w-full h-12 border-2 border-gray-200 rounded-lg focus:border-[#3A4980] focus:outline-none text-lg text-gray-400"
+                  placeholder="Vui lòng chọn chi nhánh..."
                   optionLabelProp="label"
                   listItemHeight={10}
                   listHeight={250}
                 >
-                  {service?.branchServices?.map((bs) => {
-                    const branchName =
-                      bs.branch.name +
-                      (bs.status === "Ngưng Hoạt Động"
-                        ? " (Ngưng hoạt động)"
-                        : "");
-                    const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
+                  {service?.branchServices?.length === 0 ? (
+                    <Select.Option value="" disabled>
+                      Vui lòng chọn chi nhánh...
+                    </Select.Option>
+                  ) : (
+                    <>
+                      {service.branchServices.map((bs) => {
+                        const branchName =
+                          bs.branch.name +
+                          (bs.status === "Ngưng Hoạt Động" ||
+                          bs.branch.status === "Không Hoạt Động"
+                            ? " (Ngưng hoạt động)"
+                            : "");
+                        const branchAddress = `${bs.branch.address}, ${bs.branch.ward}, ${bs.branch.district}, ${bs.branch.province}`;
 
-                    return (
-                      <Select.Option
-                        key={bs.branch.id}
-                        value={bs.branch.id}
-                        disabled={bs.status === "Ngưng Hoạt Động"}
-                        label={<span className="text-lg">{branchName}</span>}
-                      >
-                        <div className="flex flex-col py-2">
-                          <span className="text-lg text-[#3A4980]">
-                            {branchName}
-                          </span>
-                          <span className="text-base text-gray-400 break-words whitespace-normal max-w-full">
-                            {branchAddress}
-                          </span>
-                        </div>
-                      </Select.Option>
-                    );
-                  })}
+                        return (
+                          <Select.Option
+                            key={bs.branch.id}
+                            value={bs.branch.id}
+                            disabled={
+                              bs.status === "Ngưng Hoạt Động" ||
+                              bs.branch.status === "Không Hoạt Động"
+                            }
+                            label={
+                              <span className="text-lg">{branchName}</span>
+                            }
+                          >
+                            <div className="flex flex-col py-2">
+                              <span className="text-lg text-[#3A4980]">
+                                {branchName}
+                              </span>
+                              <span className="text-base text-gray-400 break-words whitespace-normal max-w-full">
+                                {branchAddress}
+                              </span>
+                            </div>
+                          </Select.Option>
+                        );
+                      })}
+                    </>
+                  )}
                 </Select>
               </div>
 
@@ -688,11 +727,10 @@ const ServiceDetail = () => {
                   disabled={
                     !service ||
                     service.status !== "Hoạt Động" ||
-                    !selectedBranch ||
-                    !user
+                    !selectedBranch
                   }
                   className={`rounded-xl py-4 px-6 flex items-center ${
-                    service.status === "Hoạt Động" && selectedBranch && user
+                    service.status === "Hoạt Động" && selectedBranch
                       ? "bg-[#3A4980] text-white hover:bg-[#2d3860] cursor-pointer"
                       : "bg-gray-200 text-gray-500 cursor-not-allowed"
                   }`}
