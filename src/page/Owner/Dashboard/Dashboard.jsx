@@ -60,7 +60,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <div className="search-bar">
+      {/* <div className="search-bar">
         <input type="text" placeholder="Search" />
         <div className="dropdown">
           <button onClick={toggleDropdown} className="dropdown-button">
@@ -76,7 +76,8 @@ const Dashboard = () => {
             </ul>
           )}
         </div>
-      </div>
+      </div> */}
+      <h3 className="text-[#002278] text-2xl mb-3 font-semibold ml-3">Thống kê cửa hàng</h3>
       <div className="stats">
         <div className="stat-card">
           <h3>Tổng số đơn hàng</h3>

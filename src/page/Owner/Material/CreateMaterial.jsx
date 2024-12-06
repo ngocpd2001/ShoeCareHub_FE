@@ -17,6 +17,7 @@ import { updateMaterialQuantity } from "../../../api/material";
 import * as yup from "yup";
 import { getBranchByBusinessId } from "../../../api/branch";
 import { getServiceByBusinessId } from "../../../api/service";
+import { Modal } from "antd";
 
 // Điều chỉnh schema validation
 const MaterialSchema = yup.object().shape({
@@ -191,6 +192,13 @@ export default function CreateMaterial() {
         error.response?.data?.message ||
         error.message ||
         "Có lỗi xảy ra khi tạo phụ kiện";
+
+      // Hiển thị modal thông báo lỗi
+      // Modal.error({
+      //   title: 'Lỗi',
+      //   content: 'Vui lòng nâng cấp gói đăng ký để thêm mới phụ kiện.',
+      // });
+
       notificationApi("error", "Lỗi", errorMessage);
     }
   };

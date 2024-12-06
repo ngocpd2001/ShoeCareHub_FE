@@ -24,7 +24,7 @@ const ChartProfit = ({ businessId }) => {
                 }
                 const yearResponse = await getBusinessProfitByYear(businessId);
                 if (!yearResponse.data.value.length) {
-                    console.warn('Không có dữ liệu l��i nhuận theo năm cho businessId:', businessId);
+                    console.warn('Không có dữ liệu lợi nhuận theo năm cho businessId:', businessId);
                 }
 
                 setMonthlyProfit(monthResponse.data.value.length ? monthResponse.data.value : []);

@@ -24,7 +24,7 @@ const ChartFeedback = ({ businessId }) => {
         }
         const yearResponse = await getBusinessFeedbackByYear(businessId);
         if (!yearResponse.data.value.length) {
-          console.warn('Không c�� dữ liệu phản hồi theo năm cho businessId:', businessId);
+          console.warn('Không có dữ liệu phản hồi theo năm cho businessId:', businessId);
         }
         
         setMonthlyFeedback(monthResponse.data.value.length ? monthResponse.data.value : []);
