@@ -4,7 +4,8 @@ import './Dashboard.css';
 import { getEmployeeByBusinessId } from '../../../api/employee';
 import { getBusinessById } from '../../../api/businesses';
 import ChartOrder from './ChartOrder';
-
+import ChartFeedback from './ChartFeedback';
+import ChartProfit from './ChartProfit';
 const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedBranch, setSelectedBranch] = useState('Tất cả');
@@ -24,15 +25,16 @@ const Dashboard = () => {
         const userStr = localStorage.getItem('user');
         const user = JSON.parse(userStr);
         setBusinessId(user?.businessId);
-        
-        // console.log("BusinessID:", businessId);
 
-        const employeeData = await getEmployeeByBusinessId(businessId);
-        const businessData = await getBusinessById(businessId);
-        
-        // console.log("Toàn bộ dữ liệu nhân viên:", employeeData);
-        // console.log("Số lượng nhân viên:", employeeData?.employees?.length);
-        
+        // Kiểm tra businessId trước khi gọi API
+        if (!user?.businessId) {
+          console.error("Không tìm thấy businessId trong user.");
+          return; // Ngừng thực hiện nếu không có businessId
+        }
+
+        const employeeData = await getEmployeeByBusinessId(user.businessId);
+        const businessData = await getBusinessById(user.businessId);
+
         setStatistics(prev => ({
           ...prev,
           totalEmployees: employeeData?.employees?.length || 0,
@@ -93,7 +95,19 @@ const Dashboard = () => {
           <p>{statistics.totalRevenue.toLocaleString('vi-VN')} ₫</p>
         </div>
       </div>
-      <ChartOrder businessId={businessId} />
+      <div className="dashboard grid grid-cols-2 gap-5">
+        <div className="chart-container">
+          <ChartOrder businessId={businessId} />
+        </div>
+        <div className="chart-container">
+          <ChartFeedback businessId={businessId} />
+        </div>
+        <div className="chart-container">
+          <ChartProfit businessId={businessId} />
+        </div>
+        <div className="chart-container">
+        </div>
+      </div>
     </div>
   );
 };

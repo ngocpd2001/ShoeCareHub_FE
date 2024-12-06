@@ -89,6 +89,7 @@ import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
 import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
 import LoginOtp from "./page/login/LoginOtp";
 import FeaturePacks from "./page/Owner/FeaturePacks/FeaturePacks";
+import DashboardPlatform from "./page/Admin/Dashboard/DashboardPlatform";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -524,6 +525,10 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/*",
         element: <ErrorPage_Admin />,
+      },
+      {
+        path: "/admin/dashboard",
+        element: <DashboardPlatform />,
       },
       {
         path: "/admin/profile",

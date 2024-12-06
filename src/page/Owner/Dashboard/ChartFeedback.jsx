@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { getBusinessStatisticsByMonth, getBusinessStatisticsByYear } from '../../../api/dashboard';
+import { getBusinessFeedbackByMonth, getBusinessFeedbackByYear } from '../../../api/dashboard';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { Tabs } from 'antd';
 
 const { TabPane } = Tabs;
 
-const ChartOrder = ({ businessId }) => {
+const ChartFeedback = ({ businessId }) => {
   console.log('Giá trị businessId:', businessId);
 
-  const [monthlyData, setMonthlyData] = useState([]);
-  const [yearlyData, setYearlyData] = useState([]);
+  const [monthlyFeedback, setMonthlyFeedback] = useState([]);
+  const [yearlyFeedback, setYearlyFeedback] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -18,17 +18,17 @@ const ChartOrder = ({ businessId }) => {
         return; // Ngừng thực hiện nếu businessId không hợp lệ
       }
       try {
-        const monthResponse = await getBusinessStatisticsByMonth(businessId);
+        const monthResponse = await getBusinessFeedbackByMonth(businessId);
         if (!monthResponse.data.value.length) {
-          console.warn('Không có dữ liệu thống kê theo tháng cho businessId:', businessId);
+          console.warn('Không có dữ liệu phản hồi theo tháng cho businessId:', businessId);
         }
-        const yearResponse = await getBusinessStatisticsByYear(businessId);
+        const yearResponse = await getBusinessFeedbackByYear(businessId);
         if (!yearResponse.data.value.length) {
-          console.warn('Không có dữ liệu thống kê theo năm cho businessId:', businessId);
+          console.warn('Không c�� dữ liệu phản hồi theo năm cho businessId:', businessId);
         }
         
-        setMonthlyData(monthResponse.data.value.length ? monthResponse.data.value : []);
-        setYearlyData(yearResponse.data.value.length ? yearResponse.data.value : []);
+        setMonthlyFeedback(monthResponse.data.value.length ? monthResponse.data.value : []);
+        setYearlyFeedback(yearResponse.data.value.length ? yearResponse.data.value : []);
       } catch (error) {
         console.error('Lỗi khi lấy dữ liệu:', error);
       }
@@ -48,9 +48,9 @@ const ChartOrder = ({ businessId }) => {
           label: "Theo tháng",
           children: (
             <div className="mb-5">
-                <h2 className="font-bold text-2xl text-blue-600">Thống kê đơn hàng theo tháng</h2>
+               <h2 className="font-bold text-2xl text-blue-600">Thống kê đánh giá theo tháng</h2>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={monthlyData}className="my-5" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <BarChart data={monthlyFeedback} className="my-5" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <XAxis 
                     dataKey="date" 
                     label={{ value: 'Ngày', position: 'bottom', offset: 0 }} 
@@ -70,10 +70,10 @@ const ChartOrder = ({ businessId }) => {
           key: "2",
           label: "Theo năm",
           children: (
-            <>
-               <h2 className="font-bold text-2xl text-blue-600">Thống kê đơn hàng theo năm</h2>
+            <div className="mb-5">
+                <h2 className="font-bold text-2xl text-blue-600">Thống kê đánh giá theo năm</h2>
               <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={yearlyData} className="my-5" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                <BarChart data={yearlyFeedback} className="my-5" margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
                   <XAxis 
                     dataKey="month" 
                     label={{ value: 'Tháng', position: 'bottom', offset: 0 }} 
@@ -86,7 +86,7 @@ const ChartOrder = ({ businessId }) => {
                   <Bar dataKey="value" fill="#002278" />
                 </BarChart>
               </ResponsiveContainer>
-            </>
+            </div>
           ),
         },
       ]} />
@@ -94,4 +94,4 @@ const ChartOrder = ({ businessId }) => {
   );
 };
 
-export default ChartOrder;
+export default ChartFeedback; 
