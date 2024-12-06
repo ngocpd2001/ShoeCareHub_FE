@@ -26,6 +26,7 @@ import {
   XMarkIcon,
   BuildingOffice2Icon,
   BuildingOfficeIcon,
+  UserPlusIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
@@ -53,6 +54,12 @@ const navigation = [
     name: "Người dùng",
     href: "/admin/user",
     icon: UsersIcon,
+    current: false,
+  },
+  {
+    name: "Thêm người điều hành",
+    href: "/admin/moderator/create",
+    icon: UserPlusIcon,
     current: false,
   },
   {

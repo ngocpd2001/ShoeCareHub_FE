@@ -49,11 +49,11 @@ export default function CreateModerator() {
       };
 
       await createModerator(moderatorData);
-      notificationApi("success", "Thành công", "Tạo moderator thành công");
+      notificationApi("success", "Thành công", "Thêm người điều hành thành công");
       navigate("/admin/user");
     } catch (error) {
       console.log("Error details:", error.response?.data?.errors);
-      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi tạo moderator";
+      const errorMessage = error.response?.data?.message || "Có lỗi xảy ra khi thêm người điều hành";
       notificationApi("error", "Lỗi", errorMessage);
     } finally {
       setDisabled(false);
@@ -63,14 +63,8 @@ export default function CreateModerator() {
   return (
     <div className="p-6">
       <h2 className="text-xl font-semibold text-blue-800 mb-4">
-        Thêm người dùng
+        Thêm người điều hành
       </h2>
-      <Breadcrumb
-        items={[
-          { title: <Link to="/admin/user">Người dùng</Link> },
-          { title: <span className="text-[#002278]">Thêm người dùng</span> },
-        ]}
-      />
 
       <FormProvider {...methods}>
         <form onSubmit={handleSubmit(onSubmit)} className="mt-6">

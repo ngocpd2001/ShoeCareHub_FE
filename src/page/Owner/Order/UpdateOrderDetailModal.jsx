@@ -83,7 +83,7 @@ const UpdateOrderDetailModal = ({
       fetchOrderData();
       
       // Đặt lại trạng thái hình ảnh và assetUrls
-      setImages([]);
+      setImages([]); // Xóa danh sách ảnh đã chọn
       setAssetUrls([{ url: "", type: "image" }]); // Đặt lại về giá trị mặc định
     } catch (error) {
       console.error("Lỗi khi cập nhật chi tiết đơn hàng:", error);

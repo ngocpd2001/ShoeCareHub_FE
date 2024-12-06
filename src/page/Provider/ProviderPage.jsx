@@ -34,6 +34,7 @@ const ProviderCard = ({ provider, navigate }) => (
 
 export default function ProviderPageComponent() {
   const [providers, setProviders] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,11 +47,22 @@ export default function ProviderPageComponent() {
       });
   }, []);
 
+  const filteredProviders = providers.filter(provider =>
+    provider.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
       <h2 className="text-2xl font-bold mb-6">Nhà cung cấp</h2>
+      <input
+        type="text"
+        placeholder="Tìm kiếm nhà cung cấp..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        className="mb-4 p-2 border border-gray-300 rounded-md w-full"
+      />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {providers.map((provider) => (
+        {filteredProviders.map((provider) => (
           <ProviderCard key={provider.id} provider={provider} navigate={navigate} />
         ))}
       </div>

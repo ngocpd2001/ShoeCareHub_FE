@@ -16,11 +16,11 @@ export default function UserManager() {
         <div>
           <h3 className="text-[#002278] text-2xl mb-4 font-semibold">Quản lý người dùng</h3>
         </div>
-        <div>
+        {/* <div>
           <ComButton onClick={() => navigate("/admin/moderator/create")}>
             + Thêm người dùng
           </ComButton>
-        </div>
+        </div> */}
       </div>
       <TableUser ref={tableRef} />
     </>

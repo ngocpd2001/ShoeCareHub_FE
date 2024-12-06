@@ -23,6 +23,8 @@ const FeedbackService = () => {
   const [loading, setLoading] = useState(true);
   const [serviceRating, setServiceRating] = useState(0);
   const [customerInfo, setCustomerInfo] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const feedbacksPerPage = 10;
 
   const ratings = [
     { stars: 5, percentage: 70 },
@@ -92,7 +94,7 @@ const FeedbackService = () => {
     setCurrentImageIndex(updatedImageIndex);
 
     // Đặt lại chỉ số video hiện tại cho feedback được chọn
-    const updatedVideoIndex = currentVideoIndex.map(() => null); // Đặt tất cả các video về null
+    const updatedVideoIndex = currentVideoIndex.map(() => null); // Đặt tt cả các video về null
     setCurrentVideoIndex(updatedVideoIndex);
   };
 
@@ -159,6 +161,10 @@ const FeedbackService = () => {
       fetchData();
     }
   }, [id]);
+
+  const indexOfLastFeedback = currentPage * feedbacksPerPage;
+  const indexOfFirstFeedback = indexOfLastFeedback - feedbacksPerPage;
+  const currentFeedbacks = feedbacks.slice(indexOfFirstFeedback, indexOfLastFeedback);
 
   return (
     <div ref={containerRef} className="p-6 bg-white rounded-lg shadow-md mt-10">
@@ -298,7 +304,7 @@ const FeedbackService = () => {
         {loading ? (
           <div>Đang tải...</div>
         ) : (
-          feedbacks.map((feedback, reviewIndex) => (
+          currentFeedbacks.map((feedback, reviewIndex) => (
             <div
               key={feedback.id}
               className="border-b pb-4 mb-4 flex items-start"
@@ -374,9 +380,25 @@ const FeedbackService = () => {
             </div>
           ))
         )}
-        <button className="text-[#3A4980] font-semibold mt-4">
-          Xem tất cả
-        </button>
+        <div className="flex justify-center mt-4">
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="px-4 py-2 bg-white text-gray-500 rounded-l border border-gray-300 mr-2 active:border-[#002278] active:text-[#002278]"
+          >
+            Trước
+          </button>
+          <span className="px-4 py-2 bg-[#002278] text-white rounded-md">
+            {currentPage}
+          </span>
+          <button
+            onClick={() => setCurrentPage(prev => prev + 1)}
+            disabled={indexOfLastFeedback >= feedbacks.length}
+            className="px-4 py-2 bg-white text-gray-500 rounded-r border border-gray-300 ml-2 active:border-[#002278] active:text-[#002278]"
+          >
+            Sau
+          </button>
+        </div>
       </div>
     </div>
   );

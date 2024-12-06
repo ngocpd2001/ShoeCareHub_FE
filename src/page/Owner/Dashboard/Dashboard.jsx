@@ -1,8 +1,9 @@
 // src/page/Owner/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import './Dashboard.css';
-import { getEmployeeByBusinessId } from '../../api/employee';
-import { getBusinessById } from '../../api/businesses';
+import { getEmployeeByBusinessId } from '../../../api/employee';
+import { getBusinessById } from '../../../api/businesses';
+import ChartOrder from './ChartOrder';
 
 const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -14,6 +15,7 @@ const Dashboard = () => {
     totalServices: 0,
     totalRevenue: 0
   });
+  const [businessId, setBusinessId] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,7 +23,7 @@ const Dashboard = () => {
         // Lấy thông tin user từ localStorage
         const userStr = localStorage.getItem('user');
         const user = JSON.parse(userStr);
-        const businessId = user?.businessId;
+        setBusinessId(user?.businessId);
         
         // console.log("BusinessID:", businessId);
 
@@ -91,6 +93,7 @@ const Dashboard = () => {
           <p>{statistics.totalRevenue.toLocaleString('vi-VN')} ₫</p>
         </div>
       </div>
+      <ChartOrder businessId={businessId} />
     </div>
   );
 };

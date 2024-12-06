@@ -91,48 +91,50 @@ const ServiceCard = ({ businessId, branchId }) => {
                 </p>
               )}
             </div>
-            <div className="flex items-center">
-              <span className="text-yellow-500 flex">
-                {[...Array(5)].map((_, index) => {
-                  const fillPercentage = Math.max(
-                    0,
-                    Math.min(100, (service.rating - index) * 100)
-                  );
-                  return (
-                    <div
-                      key={index}
-                      className="relative inline-block w-4 h-4"
-                      style={{ marginRight: "4px" }}
-                    >
-                      <FaStar
-                        style={{
-                          position: "absolute",
-                          color: "gold",
-                          width: "1em",
-                          height: "1em",
-                          zIndex: 1,
-                          stroke: "gold",
-                          strokeWidth: "30px",
-                        }}
-                      />
-                      <FaStar
-                        style={{
-                          position: "absolute",
-                          color: "white",
-                          clipPath: `inset(0 0 0 ${fillPercentage}%)`,
-                          width: "1em",
-                          height: "1em",
-                          zIndex: 2,
-                        }}
-                      />
-                    </div>
-                  );
-                })}
-              </span>
-              <span className="ml-1 text-xs text-gray-600">
-                ({service.rating})
-              </span>
-            </div>
+            {service.rating > 0 && (
+              <div className="flex items-center">
+                <span className="text-yellow-500 flex">
+                  {[...Array(5)].map((_, index) => {
+                    const fillPercentage = Math.max(
+                      0,
+                      Math.min(100, (service.rating - index) * 100)
+                    );
+                    return (
+                      <div
+                        key={index}
+                        className="relative inline-block w-4 h-4"
+                        style={{ marginRight: "4px" }}
+                      >
+                        <FaStar
+                          style={{
+                            position: "absolute",
+                            color: "gold",
+                            width: "1em",
+                            height: "1em",
+                            zIndex: 1,
+                            stroke: "gold",
+                            strokeWidth: "30px",
+                          }}
+                        />
+                        <FaStar
+                          style={{
+                            position: "absolute",
+                            color: "white",
+                            clipPath: `inset(0 0 0 ${fillPercentage}%)`,
+                            width: "1em",
+                            height: "1em",
+                            zIndex: 2,
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </span>
+                <span className="ml-1 text-xs text-gray-600">
+                  ({service.rating})
+                </span>
+              </div>
+            )}
           </div>
         );
       })}

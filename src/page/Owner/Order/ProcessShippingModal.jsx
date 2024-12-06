@@ -68,8 +68,8 @@ const ProcessShippingModal = ({ visible, onClose, shippingCode }) => {
       visible={isShippingModalVisible}
       footer={null}
       onCancel={onClose}
-      width={900} // Increase modal width
-      closable={false} // Ẩn nút đóng
+      width={900}
+      closable={false}
     >
       <div className="flex flex-col items-center p-4">
         <Steps
@@ -91,13 +91,14 @@ const ProcessShippingModal = ({ visible, onClose, shippingCode }) => {
                 className={`${iconStyle} ${log.updatedDate ? 'text-[#002278]' : 'text-gray-400'}`}
               />
             ),
+            status: index <= shippingLogs.length - 1 ? 'finish' : 'wait',
           }))}
           className="w-full"
         />
         <button
           onClick={() => {
-            onClose(); // Gọi hàm onClose
-            setIsShippingModalVisible(false); // Đảm bảo modal được ẩn
+            onClose();
+            setIsShippingModalVisible(false);
           }}
           className="mt-4 bg-blue-800 text-white py-2 px-4 rounded"
         >

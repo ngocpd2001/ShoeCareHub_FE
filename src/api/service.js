@@ -114,20 +114,39 @@ export const getServiceFeedback = async (serviceId) => {
   }
 };
 
-export const getCategoryService = async (id) => {
+export const getAllCategories = async (pageIndex = 1, pageSize = 10) => {
   try {
-    const response = await axiosInstances.login.get(`/categories?PageIndex=1&PageSize=10`);
+    const response = await axiosInstances.login.get(`/categories?PageIndex=${pageIndex}&PageSize=${pageSize}`);
     
-    if (response.data && response.data.message === "Fetch Category Success") {
-      const items = response.data.data.items;
-      const category = items.find(item => item.id === id);
+    // Thêm log để kiểm tra phản hồi từ API
+    console.log("Phản hồi từ API:", response);
 
-      if (!category) {
-        console.error("Không tìm thấy danh mục với ID:", id);
-        return null; // Trả về null nếu không tìm thấy danh mục
-      }
+    if (response.data) {
+      return response.data; // Trả về dữ liệu từ API
+    } else {
+      console.error("Dữ liệu không hợp lệ:", response.data);
+      return null; // Trả về null nếu dữ liệu không hợp lệ
+    }
+  } catch (error) {
+    console.error("Lỗi khi gọi API danh mục:", error);
+    throw error; // Ném lại lỗi để xử lý ở cấp cao hơn
+  }
+};
 
-      return category; // Trả về danh mục tìm thấy
+export const getServiceByCategoryId = async (id, pageIndex = 1, pageSize = 10) => {
+  if (!id) {
+    console.error("categoryId không hợp lệ:", id);
+    return null; // Trả về null nếu categoryId không hợp lệ
+  }
+
+  try {
+    const response = await axiosInstances.login.get(`/services/categories/${id}?PageIndex=${pageIndex}&PageSize=${pageSize}`);
+    
+    // Thêm log để kiểm tra phản hồi từ API
+    console.log("Phản hồi từ API:", response);
+
+    if (response.data) {
+      return response.data; // Trả về dữ liệu từ API
     } else {
       console.error("Dữ liệu không hợp lệ:", response.data);
       return null; // Trả về null nếu dữ liệu không hợp lệ

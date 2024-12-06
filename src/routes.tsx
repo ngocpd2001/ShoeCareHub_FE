@@ -24,7 +24,7 @@ import CreateSevice from "./page/Owner/Service/CreateService";
 import OrderManager from "./page/Owner/Order/OrderManager";
 import OrderDetail from "./page/Owner/Order/OrderDetail";
 import UpdateOrder from "./page/Owner/Order/UpdateOrder";
-import Dashboard from "./page/Owner/Dashboard";
+import Dashboard from "./page/Owner/Dashboard/Dashboard";
 import EmployeeManager from "./page/Owner/Employee/EmployeeManager";
 import EmployeeDetail from "./page/Owner/Employee/EmployeeDetail";
 import CreateEmployee from "./page/Owner/Employee/CreateEmployee";

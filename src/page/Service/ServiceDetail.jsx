@@ -613,7 +613,7 @@ const ServiceDetail = () => {
                     onClick={toggleDescription}
                     className="text-blue-500 mt-2"
                   >
-                    {isExpanded ? "n bớt..." : "Xem thêm..."}
+                    {isExpanded ? "Ẩn bớt" : "Xem thêm..."}
                   </button>
                 )}
 
