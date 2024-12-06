@@ -19,50 +19,82 @@ const CartItem = ({ order, item }) => {
   console.log("2213", order?.status);
   const validStatuses = ["Đang xử lý", "Đang vận chuyển", "Hoàn thành"];
   return (
-    <div className="flex items-center py-4 border-b">
-      <ComModal
-        isOpen={modalDetailProcess?.isModalOpen}
-        onClose={modalDetailProcess?.handleClose}
-        width={700}
-      >
-        <StepsDetailProcess orderCode={item} />
-      </ComModal>
-      <Link to={`/servicedetail/${item?.service?.id}`}>
-        <img
-          src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
-          alt={item.name}
-          className="w-20 h-20 object-cover mr-4"
-        />
-      </Link>
-      <div className="flex-grow">
-        <Link
-          to={`/servicedetail/${item?.service?.id}`}
-          className="font-medium"
+    <>
+      <div className="flex items-center py-4 border-b">
+        <ComModal
+          isOpen={modalDetailProcess?.isModalOpen}
+          onClose={modalDetailProcess?.handleClose}
+          width={700}
         >
-          {item?.service?.name}
+          <StepsDetailProcess orderCode={item} />
+        </ComModal>
+        <Link to={`/servicedetail/${item?.service?.id}`}>
+          <img
+            src={item?.service?.assetUrls && item?.service?.assetUrls[0]?.url}
+            alt={item.name}
+            className="w-20 h-20 object-cover mr-4"
+          />
         </Link>
-        {/* <p className="text-sm text-gray-500">{item.quantity}</p> */}
-        <p className="text-sm text-gray-500 max-w-50 truncate">
-          {item?.service?.description}
-        </p>
-      </div>
-      <div className="text-right">
-        {validStatuses.includes(order?.status) && (
-          <button
-            onClick={modalDetailProcess.handleOpen}
-            className="bg-[#002278] text-white px-3 py-2 rounded-md text-sm flex items-center"
+        <div className="flex-grow">
+          <Link
+            to={`/servicedetail/${item?.service?.id}`}
+            className="font-medium"
           >
-            Xem quá trình
-          </button>
-        )}
-        <p className="text-sm text-gray-500 line-through mt-2">
-          {item?.service?.price.toLocaleString()}đ
-        </p>
-        <p className="font-bold text-blue-600">
-          {item.price.toLocaleString()}đ
-        </p>
+            {item?.service?.name}
+          </Link>
+          {/* <p className="text-sm text-gray-500">{item.quantity}</p> */}
+          <p className="text-sm text-gray-500 max-w-50 truncate">
+            {item?.service?.description}
+          </p>
+        </div>
+        <div className="text-right">
+          {validStatuses.includes(order?.status) && (
+            <button
+              onClick={modalDetailProcess.handleOpen}
+              className="bg-[#002278] text-white px-3 py-2 rounded-md text-sm flex items-center"
+            >
+              Xem quá trình
+            </button>
+          )}
+          {item?.service?.promotion ? (
+            <>
+              <p className="text-sm text-gray-500 line-through mt-2">
+                {item?.service?.price.toLocaleString()}đ
+              </p>
+              <p className="font-bold text-blue-600">
+                {item.service.promotion.newPrice.toLocaleString()}đ
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-bold text-blue-600">
+                {item.service?.price.toLocaleString()}đ
+              </p>
+            </>
+          )}
+        </div>
       </div>
-    </div>
+
+      {/* phụ kiện */}
+      {item.materials.map((dataMaterial, index) => (
+        <div key={dataMaterial.id}>
+          <div className="flex items-center py-4 border-b">
+            <img
+              src={dataMaterial?.assetUrls && dataMaterial?.assetUrls[0]?.url}
+              alt={dataMaterial.name}
+              className="w-20 h-20 object-cover mr-4"
+            />
+
+            <div className="flex-grow">{dataMaterial?.name}</div>
+            <div className="text-right">
+              <p className="font-bold text-blue-600">
+                {dataMaterial?.price.toLocaleString()}đ
+              </p>
+            </div>
+          </div>
+        </div>
+      ))}
+    </>
   );
 };
 

@@ -20,7 +20,7 @@ export default function DetailService() {
         <h2 className="text-xl font-semibold text-gray-800 mb-4">
           Chi tiết dịch vụ
         </h2>
-        <Breadcrumb
+        {/* <Breadcrumb
           items={[
             {
               title: "Cửa hàng",
@@ -32,12 +32,12 @@ export default function DetailService() {
               title: "Chi tiết dịch vụ",
             },
           ]}
-        />
-        <div>
+        /> */}
+        {/* <div>
           <ComButton onClick={() => navigate("/owner/service/create")}>
             Cập nhật dịch vụ
           </ComButton>
-        </div>
+        </div> */}
       </div>
       <div className=" mx-auto p-4 bg-white shadow-lg rounded-lg mt-2">
         <div className="flex flex-col md:flex-row gap-6">

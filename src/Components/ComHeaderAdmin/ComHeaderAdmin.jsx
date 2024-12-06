@@ -27,6 +27,7 @@ import {
   BuildingOffice2Icon,
   BuildingOfficeIcon,
   UserPlusIcon,
+  ExclamationCircleIcon,
 } from "@heroicons/react/24/outline";
 import { ChevronDownIcon } from "@heroicons/react/20/solid";
 import {
@@ -108,6 +109,12 @@ const navigation = [
     name: "Giao dịch",
     href: "/admin/transaction",
     icon: ChartPieIcon,
+    current: false,
+  },
+  {
+    name: "Từ cấm",
+    href: "/admin/word-black-list",
+    icon: ExclamationCircleIcon,
     current: false,
   },
   {

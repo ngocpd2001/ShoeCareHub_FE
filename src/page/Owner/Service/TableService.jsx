@@ -212,7 +212,7 @@ export const TableService = forwardRef((props, ref) => {
       <ComModal
         isOpen={modalDetail?.isModalOpen}
         onClose={modalDetail?.handleClose}
-        width={800}
+        width={1000}
       >
         <DetailService selectedUpgrede={selectedData} />
       </ComModal>

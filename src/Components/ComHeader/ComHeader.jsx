@@ -234,9 +234,9 @@ export default function ComHeader({ children }) {
                                       onClick={() => {
                                         localStorage.clear();
                                         // setToken(""); // Gọi hàm để xoá token khi người dùng chọn "Đăng xuất"
-                                        // setTimeout(() => {
-                                        //   navigate("/login");
-                                        // }, 300);
+                                        setTimeout(() => {
+                                          navigate("/login");
+                                        }, 300);
                                       }}
                                       className="block px-3 py-1 text-sm leading-6 text-wbg-white data-[focus]:bg-gray-50"
                                     >
