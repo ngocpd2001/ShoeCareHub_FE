@@ -9,7 +9,7 @@ import { useModalState } from "../../../hooks/useModalState";
 import { Image, Tooltip } from "antd";
 import { useNotification } from "../../../Notification/Notification";
 
-import DetailService from "./DetailService";
+import DetailFeedback from "./DetailFeedback";
 import EditUpgrede from "./EditService";
 import ComModal from "../../../Components/ComModal/ComModal";
 import ComMenuButonTable from "../../../Components/ComMenuButonTable/ComMenuButonTable";
@@ -113,7 +113,13 @@ export const TableFeedback = forwardRef((props, ref) => {
       width: 150,
       ...getColumnSearchProps("content", "Nội dung"),
     },
-
+    {
+      title: "Trả lời của shop",
+      dataIndex: "reply",
+      key: "reply",
+      width: 150,
+      ...getColumnSearchProps("reply", "Trả lời"),
+    },
     {
       title: "Thời gian đánh giá",
       dataIndex: "createdTime",
@@ -162,7 +168,7 @@ export const TableFeedback = forwardRef((props, ref) => {
               );
             }}
             // extraMenuItems={extraMenuItems}
-            excludeDefaultItems={["details", "edit", "delete"]}
+            excludeDefaultItems={["edit", "delete"]}
           />
         </div>
       ),
@@ -213,7 +219,11 @@ export const TableFeedback = forwardRef((props, ref) => {
         onClose={modalDetail?.handleClose}
         width={800}
       >
-        <DetailService selectedUpgrede={selectedData} />
+        <DetailFeedback
+          selectedFeedback={selectedData}
+          tableRef={reloadData}
+          onClose={modalDetail?.handleClose}
+        />
       </ComModal>
       <ComModal
         isOpen={modalEdit?.isModalOpen}

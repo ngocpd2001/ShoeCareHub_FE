@@ -1,71 +1,64 @@
 import React, { useEffect, useState } from "react";
-import { getAllBusiness } from "../../api/businesses";
-import { Star } from "lucide-react";
+import { ChevronLeft, ChevronRight, Star } from "lucide-react";
+import ServiceGrid from "./ServiceGrid";
+import Marquee from "react-fast-marquee";
+import ShoeSlide1 from "../../assets/images/cleanShow.webp";
+import ShoeSlide2 from "../../assets/images/suaChua.webp";
+import ShoeSlide3 from "../../assets/images/sonGiay.webp";
+import ShoeSlide4 from "../../assets/images/giatgiay.webp";
+import ShoeSlide5 from "../../assets/images/vaGiay.webp";
+import { getData } from "../../api/api";
 import { useNavigate } from "react-router-dom";
+import { getAllBusiness } from "../../api/businesses";
 
-const ProviderCard = ({ provider, navigate }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 transition-transform transform hover:scale-105 border border-[#a4a4a4]">
-    <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center">
-      <img
-        src={provider.imageUrl}
-        className="text-gray-400 h-40 w-full object-cover"
-        alt={provider.name}
-      />
-    </div>
-    <h3 className="font-semibold mb-1 mt-3 truncate">{provider.name}</h3>
-    <div className="flex items-center mb-1">
-      <span className="text-yellow-400 mr-1">{provider.rating}</span>
-      <Star className="w-4 h-4 fill-current text-yellow-400" />
-      <div className="text-end w-full text-sm text-gray-600">
-        Có {provider.toTalServiceNum} dịch vụ
-      </div>
-    </div>
-    <div className="text-end text-gray-950">
-      Đã làm {provider.totalOrder} dịch vụ
-    </div>
-    <button
-      onClick={() => navigate(`/provider-landingpage/${provider.id}`)}
-      className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
-    >
-      Chi Tiết
-    </button>
-  </div>
-);
+export default function ServiceDiscounted() {
+  const [services, setServices] = useState([]);
+  const [business, setBusiness] = useState([]);
 
-export default function ProviderPageComponent() {
-  const [providers, setProviders] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const navigate = useNavigate();
+  // Đảm bảo rằng dataImg được khai báo và khởi tạo
+  const dataImg = [
+    {
+      img: ShoeSlide1,
+    },
+    {
+      img: ShoeSlide2,
+    },
+    {
+      img: ShoeSlide3,
+    },
+    {
+      img: ShoeSlide4,
+    },
+    {
+      img: ShoeSlide5,
+    },
+  ];
 
   useEffect(() => {
-    getAllBusiness(false, 10, 1)
+    getData("/services/discounted?PageIndex=1&PageSize=99")
       .then((data) => {
-        setProviders(data);
+        console.log(data);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+
+    getAllBusiness()
+      .then((data) => {
+        setBusiness(data);
       })
       .catch((error) => {
         console.error("Lỗi khi lấy danh sách nhà cung cấp:", error);
       });
   }, []);
 
-  const filteredProviders = providers.filter(provider =>
-    provider.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h2 className="text-2xl font-bold mb-6">Nhà cung cấp</h2>
-      <input
-        type="text"
-        placeholder="Tìm kiếm nhà cung cấp..."
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className="mb-4 p-2 border border-gray-300 rounded-md w-full"
-      />
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-        {filteredProviders.map((provider) => (
-          <ProviderCard key={provider.id} provider={provider} navigate={navigate} />
-        ))}
+    <div className="bg-[#F9F9F9]">
+      {/* Using Marquee for auto-scrolling images */}
+
+      <div className="container mx-auto md:px-1 mt-4 max-w-[1250px] ">
+        <ServiceGrid name={"Các nhà cung cấp"} api={`businesses`} />
       </div>
     </div>
   );
-} 
+}

@@ -154,7 +154,7 @@ export default function LoginPage(props) {
                     </div>
                     <div className="flex justify-end">
                       <Link to="/login-otp" className=" text-sky-600">
-                        Đăng nhập bằng OPT
+                        Đăng nhập bằng OTP
                       </Link>
                     </div>
                     <div className="mt-4 text-center gap-3 flex flex-col">

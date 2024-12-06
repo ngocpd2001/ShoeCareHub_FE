@@ -89,6 +89,7 @@ import RegisterCustomerToOwner from "./page/Register/RegisterCustomerToOwner";
 import PopupHandler from "./page/Owner/PopupHandler/PopupHandler";
 import LoginOtp from "./page/login/LoginOtp";
 import FeaturePacks from "./page/Owner/FeaturePacks/FeaturePacks";
+import WordBlackManager from "./page/Admin/WordBlack/WordBlackManager";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -540,6 +541,10 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/moderator/create",
         element: <CreateModerator />,
+      },
+      {
+        path: "/admin/word-black-list",
+        element: <WordBlackManager />,
       },
       {
         path: "/admin/user/update/:id",
