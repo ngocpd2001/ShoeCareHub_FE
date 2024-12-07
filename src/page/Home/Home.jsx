@@ -12,7 +12,9 @@ import { Link, useNavigate } from "react-router-dom";
 import { getAllBusiness } from "../../api/businesses";
 
 const CARD_WIDTH = 280; // Fixed width for each card
-const CARD_HEIGHT = 360;
+const CARD_HEIGHT = 290;
+const CARD_WIDTH_SHOP = 280; // Fixed width for each card
+const CARD_HEIGHT_SHOP = 360;
 const CARD_GAP = 16; // Gap between cards
 
 const Carousels = ({ title, items, type, goto }) => {
@@ -56,28 +58,21 @@ const Carousels = ({ title, items, type, goto }) => {
           className="flex space-x-2 overflow-x-hidden scroll-smooth pt-1"
           style={{ width: "100%", overflowX: "hidden" }}
         >
-          {items.map((item, index) => (
-            <div
-              key={item.id}
-              className="flex-none m-2 "
-              style={{ width: `${CARD_WIDTH}px`, height: `${CARD_HEIGHT}px` }}
-            >
-              <div
-                className="bg-white rounded-lg shadow-md pt-4 px-6 transition-transform transform hover:scale-105 border border-[#a4a4a4]"
-                style={{ width: "260px", height: "350px" }}
-              >
-                {type === "service" ? (
-                  <ServiceCard item={item} navigate={navigate} />
-                ) : (
-                  <SupplierCard
-                    item={item}
-                    navigate={navigate}
-                    number={index + 1}
-                  />
-                )}
-              </div>
-            </div>
-          ))}
+          {items.map((item, index) => {
+            return type === "service" ? (
+              <ServiceCardWrapper key={item.id}>
+                <ServiceCard item={item} navigate={navigate} />
+              </ServiceCardWrapper>
+            ) : (
+              <SupplierCardWrapper key={item.id} number={index + 1}>
+                <SupplierCard
+                  item={item}
+                  navigate={navigate}
+                  number={index + 1}
+                />
+              </SupplierCardWrapper>
+            );
+          })}
         </div>
         <button
           onClick={() => scroll("right")}
@@ -89,9 +84,61 @@ const Carousels = ({ title, items, type, goto }) => {
     </div>
   );
 };
+const ServiceCardWrapper = ({ children }) => {
+  const wrapperStyle = {
+    width: `${CARD_WIDTH}px`,
+    height: `${CARD_HEIGHT}px`,
+  };
+
+  return (
+    <div className="flex-none m-2" style={wrapperStyle}>
+      <div
+        className="bg-white rounded-lg shadow-md pt-4 px-6 transition-transform transform hover:scale-105 border border-[#a4a4a4]"
+        style={{ width: "260px", height: "290px" }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
+const SupplierCardWrapper = ({ children, number }) => {
+  const wrapperStyle = {
+    width: `${CARD_WIDTH_SHOP + 60}px`, // Tăng chiều rộng lên 20px
+    height: `${CARD_HEIGHT_SHOP + 70}px`, // Tăng chiều cao lên 20px
+    boxSizing: "border-box", // Đảm bảo viền không làm thay đổi kích thước tổng thể
+  };
+
+  // Xác định màu và độ dày viền dựa trên thứ hạng
+  const borderClass =
+    number === 1
+      ? "border-4 border-yellow-400" // Viền vàng, dày hơn
+      : number === 2
+      ? "border-4 border-gray-400" // Viền bạc, dày hơn
+      : number === 3
+      ? "border-4 border-orange-500" // Viền đồng, dày hơn
+      : "border border-[#a4a4a4]"; // Viền mặc định cho các mục khác
+
+  return (
+    <div className="flex-none m-2" style={wrapperStyle}>
+      <div
+        className={`bg-white rounded-lg shadow-md pt-4 px-6 transition-transform transform hover:scale-105 ${borderClass}`}
+        style={{
+          width: "320px", // Tăng chiều rộng nội dung bên trong
+          height: "420px", // Tăng chiều cao nội dung bên trong
+          boxSizing: "border-box",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+};
 
 const ServiceCard = ({ item, navigate }) => (
-  <div className="cursor-pointer">
+  <div
+    onClick={() => navigate(`/servicedetail/${item.id}`)}
+    className="cursor-pointer"
+  >
     <div className="mb-2 h-35 relative bg-gray-200  rounded-md flex items-center justify-center">
       <img
         src={item?.assetUrls && item?.assetUrls[0]?.url}
@@ -126,60 +173,55 @@ const ServiceCard = ({ item, navigate }) => (
         </div>
       </>
     )}
-    <button
+    {/* <button
       onClick={() => navigate(`/servicedetail/${item.id}`)}
       className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
-      Chi tiết
-    </button>
+      Chi tiết 1
+    </button> */}
   </div>
 );
 
 const SupplierCard = ({ item, navigate, number }) => (
-  <>
-    <div
-      className={`mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center  `}
-    >
-      <div className="relative w-full h-full">
-        <img
-          src={item.imageUrl}
-          className="text-gray-400 h-40 w-full object-cover"
-          alt={item.name}
-        />
-        {/* Hiển thị số thứ hạng nếu là Top 1, 2, hoặc 3 */}
-        {number === 1 && (
-          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
-            <img
-              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F8b0fc7da-2f8a-4c28-8e9f-d6ee30aebac9.png?alt=media&token=2f191e70-4da5-4f87-8e28-849ccd40114e"
-              className="text-gray-400 h-13 w-full "
-              alt={1}
-            />
-          </div>
-        )}
-        {number === 2 && (
-          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
-            <img
-              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F74af8a62-9456-4727-bc5c-8865697d1d26.png?alt=media&token=0eccbf46-8664-45de-b9bc-7c93026ab573"
-              className="text-gray-400 h-13 w-full "
-              alt={2}
-            />
-          </div>
-        )}
-        {number === 3 && (
-          <div className="absolute -top-3 -right-7  text-white font-bold py-1 px-2 rounded-full">
-            <img
-              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F5a161334-89be-4996-b733-7b37c8a70173.png?alt=media&token=82f15bf0-b238-4bb5-9a69-d94fc77b1d2a"
-              className="text-gray-400 h-13 w-full "
-              alt={3}
-            />
-          </div>
-        )}
-        {/* {number >= 1 && number <= 3 && (
-          <div className="absolute top-2 right-2 bg-yellow-500 text-white font-bold py-1 px-2 rounded-full">
-            {`Top ${number}`}
-          </div>
-        )} */}
-      </div>
+  <div>
+    <div className="relative w-full h-full">
+      <img
+        src={item.imageUrl}
+        className="text-gray-400 object-cover rounded-md"
+        alt={item.name}
+        style={{
+          height: "240px", // Tăng chiều cao ảnh thêm 20px
+          width: "300px", // Tăng chiều rộng ảnh thêm 20px
+        }}
+      />
+      {/* Hiển thị số thứ hạng nếu là Top 1, 2, hoặc 3 */}
+      {number === 1 && (
+        <div className="absolute -top-6 -right-16 text-white font-bold py-1 px-2 rounded-full">
+          <img
+            src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F8b0fc7da-2f8a-4c28-8e9f-d6ee30aebac9.png?alt=media&token=2f191e70-4da5-4f87-8e28-849ccd40114e"
+            className="text-gray-400 h-28 w-full"
+            alt={1}
+          />
+        </div>
+      )}
+      {number === 2 && (
+        <div className="absolute -top-6 -right-16 text-white font-bold py-1 px-2 rounded-full">
+          <img
+            src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F74af8a62-9456-4727-bc5c-8865697d1d26.png?alt=media&token=0eccbf46-8664-45de-b9bc-7c93026ab573"
+            className="text-gray-400 h-28 w-full"
+            alt={2}
+          />
+        </div>
+      )}
+      {number === 3 && (
+        <div className="absolute -top-6 -right-16 text-white font-bold py-1 px-2 rounded-full">
+          <img
+            src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F5a161334-89be-4996-b733-7b37c8a70173.png?alt=media&token=82f15bf0-b238-4bb5-9a69-d94fc77b1d2a"
+            className="text-gray-400 h-28 w-full"
+            alt={3}
+          />
+        </div>
+      )}
     </div>
     <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
     <div className="flex items-center mb-1">
@@ -189,16 +231,16 @@ const SupplierCard = ({ item, navigate, number }) => (
         Có {item.toTalServiceNum} dịch vụ
       </div>
     </div>
-    <div className="text-end  text-gray-950">
+    <div className="text-end text-gray-950">
       Đã làm {item.totalOrder} dịch vụ
     </div>
     <button
       onClick={() => navigate(`/provider-landingpage/${item.id}`)}
-      className="mt-2 w-full bg-gray-200 text-gray-800 py-2 rounded-md hover:bg-gray-300 transition-colors"
+      className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
       Chi Tiết
     </button>
-  </>
+  </div>
 );
 
 export default function CarouselsSection() {
