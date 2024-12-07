@@ -120,13 +120,13 @@ const FeedbackService = () => {
           getServiceFeedback(id),
           getServiceById(id)
         ]);
-        
-        const validFeedbacks = feedbackData.filter(feedback => 
-          feedback.isValidContent === true && 
-          feedback.isValidAsset === true && 
+
+        const validFeedbacks = feedbackData.filter(feedback =>
+          feedback.isValidContent === true &&
+          feedback.isValidAsset === true &&
           feedback.status !== 'SUSPENDED'
         );
-        
+
         // Lấy thông tin khách hàng cho mỗi feedback
         const customerData = {};
         await Promise.all(
@@ -146,7 +146,7 @@ const FeedbackService = () => {
             }
           })
         );
-        
+
         setCustomerInfo(customerData);
         setFeedbacks(validFeedbacks);
         setServiceRating(serviceData.rating);
@@ -165,6 +165,13 @@ const FeedbackService = () => {
   const indexOfLastFeedback = currentPage * feedbacksPerPage;
   const indexOfFirstFeedback = indexOfLastFeedback - feedbacksPerPage;
   const currentFeedbacks = feedbacks.slice(indexOfFirstFeedback, indexOfLastFeedback);
+
+  // Thêm hàm getBranchName để lấy tên branch từ nội dung reply
+  const getBranchName = (reply) => {
+    // Giả sử tên branch được xác định bằng cách lấy một phần của reply
+    // Bạn có thể điều chỉnh logic này tùy theo cách bạn muốn lấy tên branch
+    return reply.split(' ')[0]; // Ví dụ: lấy từ đầu tiên trong reply
+  };
 
   return (
     <div ref={containerRef} className="p-6 bg-white rounded-lg shadow-md mt-10">
@@ -341,11 +348,10 @@ const FeedbackService = () => {
                         <img
                           src={asset.url}
                           alt={`Feedback ${imageIndex + 1}`}
-                          className={`w-32 h-32 object-cover cursor-pointer rounded ${
-                            currentImageIndex[reviewIndex] === imageIndex
+                          className={`w-32 h-32 object-cover cursor-pointer rounded ${currentImageIndex[reviewIndex] === imageIndex
                               ? "border-2 border-[#3A4980]"
                               : ""
-                          }`}
+                            }`}
                           onClick={() =>
                             handleImageClick(reviewIndex, imageIndex)
                           }
@@ -375,6 +381,13 @@ const FeedbackService = () => {
                       Thích
                     </button>
                   </div> */}
+
+                  {/* Hiển thị reply */}
+                  {feedback.reply && (
+                    <div className="mt-4 p-2 bg-gray-200 rounded w-fit">
+                      <p className="text-gray-600 font-medium">Phản hồi của {feedback.orderItem.branch.name}: {feedback.reply}</p>               
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
