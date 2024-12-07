@@ -78,7 +78,7 @@ const Dashboard = () => {
         </div>
       </div> */}
       <h3 className="text-[#002278] text-2xl mb-3 font-semibold ml-3">Thống kê cửa hàng</h3>
-      <div className="stats">
+      {/* <div className="stats">
         <div className="stat-card">
           <h3>Tổng số đơn hàng</h3>
           <p>{statistics.totalOrders}</p>
@@ -95,7 +95,7 @@ const Dashboard = () => {
           <h3>Tổng doanh thu</h3>
           <p>{statistics.totalRevenue.toLocaleString('vi-VN')} ₫</p>
         </div>
-      </div>
+      </div> */}
       <div className="dashboard grid grid-cols-2 gap-5">
         <div className="chart-container">
           <ChartOrder businessId={businessId} />

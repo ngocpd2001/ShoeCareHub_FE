@@ -188,18 +188,21 @@ const ServiceDetail = () => {
       return;
     }
 
-    // Kiểm tra token trước khi thêm vào giỏ hàng
+     // Kiểm tra token trước khi thêm vào giỏ hàng
+    // const token = localStorage.getItem("token");
+    // console.log("Token:", token);
+    // if (!token) {
+    //   message.error(
+    //     "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+    //   );
+    //   setTimeout(() => {
+    //     navigate("/login");
+    //   }, 1000);
+    //   return;
+    // }
+    
     const token = localStorage.getItem("token");
     console.log("Token:", token);
-    if (!token) {
-      message.error(
-        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
-      );
-      setTimeout(() => {
-        navigate("/login");
-      }, 1000);
-      return;
-    }
 
     if (!service || service.id === 0 || !selectedBranch) {
       message.warning("Vui lòng chọn chi nhánh");
@@ -228,23 +231,11 @@ const ServiceDetail = () => {
           .filter(Boolean), // Lọc các giá trị null
       };
 
-      // Kiểm tra và ghi lại thông tin phụ kiện
-      console.log("Thông tin phụ kiện được gửi:", selectedMaterialIds);
-
-      // Kiểm tra xem có phụ kiện nào được chọn không
-      if (selectedMaterialIds.length > 0) {
-        console.log("Có phụ kiện được chọn:", selectedMaterialIds);
-      } else {
-        console.log("Không có phụ kiện nào được chọn.");
-      }
-
       console.log("Dữ liệu gửi đến giỏ hàng:", itemData);
       await addToCart(itemData);
 
-      // Reset selected materials after adding to cart
       setSelectedMaterialIds([]); // Reset selected materials
 
-      // Hiển thị thông báo thành công
       message.success({
         content: "Đã thêm vào giỏ hàng",
         duration: 2,
@@ -287,17 +278,20 @@ const ServiceDetail = () => {
       return;
     }
 
-    // Kiểm tra token trước khi thanh toán
+     // Kiểm tra token trước khi thanh toán
+    // const token = localStorage.getItem("token");
+    // if (!token) {
+    //   message.error(
+    //     "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
+    //   );
+    //   setTimeout(() => {
+    //     navigate("/login");
+    //   }, 1000);
+    //   return;
+    // }
+
     const token = localStorage.getItem("token");
-    if (!token) {
-      message.error(
-        "Token không hợp lệ hoặc không có. Vui lòng đăng nhập lại."
-      );
-      setTimeout(() => {
-        navigate("/login");
-      }, 1000);
-      return;
-    }
+    console.log("Token:", token);
 
     // Thêm kiểm tra chi nhánh
     if (!selectedBranch) {

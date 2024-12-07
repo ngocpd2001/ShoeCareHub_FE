@@ -81,7 +81,7 @@ const navigation = [
   },
   {
     name: "Tin nhắn",
-    href: "/owner/photo",
+    href: "/owner/chat",
     icon: ChatBubbleBottomCenterTextIcon,
     current: false,
   },
