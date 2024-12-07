@@ -4,7 +4,13 @@ import { getData } from "../../api/api";
 import { Link, useNavigate } from "react-router-dom";
 
 const ServiceCard = ({ item, navigate }) => (
-  <div className="bg-white rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]">
+  <div
+    onClick={(e) => {
+      e.stopPropagation();
+      navigate(`/servicedetail/${item.id}`);
+    }}
+    className="bg-white cursor-pointer rounded-lg shadow-md p-4 relative transition-transform transform hover:scale-105 border border-[#a4a4a4]"
+  >
     <div className="mb-2 h-40 bg-gray-200 rounded-md flex items-center justify-center">
       <img
         src={item?.assetUrls && item?.assetUrls[0]?.url}
@@ -39,15 +45,15 @@ const ServiceCard = ({ item, navigate }) => (
         </div>
       </>
     )}
-    <button
+    {/* <button
       onClick={(e) => {
         e.stopPropagation();
         navigate(`/servicedetail/${item.id}`);
       }}
       className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition-colors"
     >
-      Chi tiết
-    </button>
+      Chi tiết 3
+    </button> */}
   </div>
 );
 
@@ -55,17 +61,17 @@ export default function ServiceGrid() {
   const [services, setServices] = useState([]);
   const navigate = useNavigate();
 
-    useEffect(() => {
-      getData("services?PageIndex=1&PageSize=12")
-        .then((data) => {
-          console.log(data?.data?.data?.items);
+  useEffect(() => {
+    getData("services?PageIndex=1&PageSize=12")
+      .then((data) => {
+        console.log(data?.data?.data?.items);
 
-          setServices(data?.data?.data?.items);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }, []);
+        setServices(data?.data?.data?.items);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
   return (
     <div className=" container mx-auto px-4 py-8 rounded-md shadow-lg p-8 border-[#D9D9D9] border bg-white">
       <h2 className="text-2xl font-bold mb-6">Tất cả dịch vụ</h2>
