@@ -24,6 +24,48 @@ const ServiceCard = ({ item, navigate }) => (
       </div>
     )}
     <h3 className="font-semibold mb-1 mt-3 truncate">{item.name}</h3>
+    <div className=" ">
+      <div className="flex items-center justify-between ">
+        <h1 className="truncate max-w-[70%]"> {item.businessName}</h1>
+
+        {item.businessRank === 1 && (
+          <div className="h-8 w-8 ">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F8b0fc7da-2f8a-4c28-8e9f-d6ee30aebac9.png?alt=media&token=2f191e70-4da5-4f87-8e28-849ccd40114e"
+              className="text-gray-400 h-8 w-8"
+              alt={1}
+            />
+          </div>
+        )}
+        {item.businessRank === 2 && (
+          <div className="h-8 w-8 ">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F74af8a62-9456-4727-bc5c-8865697d1d26.png?alt=media&token=0eccbf46-8664-45de-b9bc-7c93026ab573"
+              className="text-gray-400 h-8 w-8"
+              alt={2}
+            />
+          </div>
+        )}
+        {item.businessRank === 3 && (
+          <div className="h-8 w-8 ">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2F5a161334-89be-4996-b733-7b37c8a70173.png?alt=media&token=82f15bf0-b238-4bb5-9a69-d94fc77b1d2a"
+              className="text-gray-400 h-8 w-8"
+              alt={3}
+            />
+          </div>
+        )}
+        {item.businessRank >= 4 && item.businessRank <= 10 && (
+          <div className="h-8 w-8 ">
+            <img
+              src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2Fdd527b36-9abd-4e5e-84bc-d7549b00692b.png?alt=media&token=7701f7f2-4e60-434c-b93e-e881d3fdc0bd"
+              className="text-gray-400 h-8 w-8"
+              alt={3}
+            />
+          </div>
+        )}
+      </div>
+    </div>
     <div className="flex items-center mb-1">
       <span className="text-yellow-400 mr-1">{item.rating}</span>
       <Star className="w-4 h-4 fill-current text-yellow-400" />
