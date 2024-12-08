@@ -91,6 +91,7 @@ import LoginOtp from "./page/login/LoginOtp";
 import FeaturePacks from "./page/Owner/FeaturePacks/FeaturePacks";
 import DashboardPlatform from "./page/Admin/Dashboard/DashboardPlatform";
 import WordBlackManager from "./page/Admin/WordBlack/WordBlackManager";
+import FeaturePackManager from "./page/Admin/FeaturePack/FeaturePackManager";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -594,6 +595,10 @@ export const routers = createBrowserRouter([
       {
         path: "/admin/package",
         element: <PackageManager />,
+      },
+      {
+        path: "/admin/feature-pack",
+        element: <FeaturePackManager />,
       },
     ],
   },

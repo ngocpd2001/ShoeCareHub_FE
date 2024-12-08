@@ -306,7 +306,7 @@ export default function ComHeader({ children }) {
       </div>
       <footer className="min-h-full  bg-white text-gray-600  font-sans  shadow-lg border-t-[#002278] border-4 ">
         <div className="container mx-auto text-center max-w-[1250px]">
-          <div className="grid grid-cols-2 justify-center  md:grid-cols-4 gap-8 mt-4">
+          <div className="grid grid-cols-2 justify-center  md:grid-cols-3 gap-8 mb-8 mt-4">
             <div>
               <h3 className="font-bold text-lg mb-4">VỀ CHÚNG TÔI</h3>
               <ul className="space-y-2">
@@ -385,7 +385,7 @@ export default function ComHeader({ children }) {
                 </li>
               </ul>
             </div>
-            <div>
+            {/* <div>
               <h3 className="font-bold text-lg ">TẢI ỨNG DỤNG</h3>
               <div className=" space-x-2  flex flex-col justify-center  items-center">
                 <img
@@ -400,7 +400,7 @@ export default function ComHeader({ children }) {
                   alt="QR Code"
                 />
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       </footer>

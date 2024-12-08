@@ -82,6 +82,12 @@ const navigation = [
     current: false,
   },
   {
+    name: "Gói tính năng",
+    href: "/admin/feature-pack",
+    icon: PackageIcon,
+    current: false,
+  },
+  {
     name: "Đánh giá",
     href: "/admin/feedback",
     icon: FaStar,

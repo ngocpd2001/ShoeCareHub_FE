@@ -19,7 +19,13 @@ const UpdateOrderDetailModal = ({
   const [assetUrls, setAssetUrls] = useState([{ url: "", type: "image" }]);
   const [processes, setProcesses] = useState([]);
   const [images, setImages] = useState([]);
+  const [key, setKey] = useState(0);
 
+  useEffect(() => {
+    if (!visible) {
+      setKey((prevKey) => prevKey + 1);
+    }
+  }, [visible]);
   //   console.log("Service ID nhận được trong modal:", serviceId);
 
   useEffect(() => {
@@ -81,7 +87,7 @@ const UpdateOrderDetailModal = ({
       message.success("Cập nhật chi tiết đơn hàng thành công!");
       onClose();
       fetchOrderData();
-      
+
       // Đặt lại trạng thái hình ảnh và assetUrls
       setImages([]); // Xóa danh sách ảnh đã chọn
       setAssetUrls([{ url: "", type: "image" }]); // Đặt lại về giá trị mặc định
@@ -117,7 +123,7 @@ const UpdateOrderDetailModal = ({
         onClose();
       }}
     >
-      <div>
+      <div key={key}>
         <div className="mb-4">
           <label className="mb-2">Trạng thái xử lý dịch vụ:</label>
           <select
@@ -126,34 +132,36 @@ const UpdateOrderDetailModal = ({
             className="w-full p-2 border rounded"
           >
             <option value="">Chọn trạng thái</option>
-            {Array.isArray(processes) && processes.map((process) => (
-              <option key={process.id} value={process.process}>
-                {process.process}
-              </option>
-            ))}
+            {Array.isArray(processes) &&
+              processes.map((process) => (
+                <option key={process.id} value={process.process}>
+                  {process.process}
+                </option>
+              ))}
           </select>
         </div>
         <div className="mt-4">
           <label>Hình ảnh của giày trước và sau khi làm dịch vụ:</label>
           <div className="flex gap-4 flex-wrap">
-            {assetUrls.length > 0 && assetUrls.map((asset, index) => (
-              asset.url ? (
-                <div key={index} className="relative w-[84px]">
-                  <img
-                    src={asset.url}
-                    alt={`Asset ${index + 1}`}
-                    className="w-full h-[84px] object-cover rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleImageDelete(index)}
-                    className="absolute top-0 right-0 text-red-500 bg-white rounded-full p-1"
-                  >
-                    Xóa
-                  </button>
-                </div>
-              ) : null
-            ))}
+            {assetUrls.length > 0 &&
+              assetUrls.map((asset, index) =>
+                asset.url ? (
+                  <div key={index} className="relative w-[84px]">
+                    <img
+                      src={asset.url}
+                      alt={`Asset ${index + 1}`}
+                      className="w-full h-[84px] object-cover rounded-md"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleImageDelete(index)}
+                      className="absolute top-0 right-0 text-red-500 bg-white rounded-full p-1"
+                    >
+                      Xóa
+                    </button>
+                  </div>
+                ) : null
+              )}
 
             {assetUrls.length === 0 && <div>Chưa có hình ảnh nào.</div>}
 
