@@ -203,7 +203,9 @@ const TicketScreen = () => {
         <td className="py-3 px-4">{ticket.id}</td>
         <td className="py-3 px-4 max-w-[200px]">
           <div className="break-words">
-            {ticket.title}
+            <span className={ticket.isOwnerNoti ? 'font-semibold text-red-600' : ''}>
+              {ticket.title}
+            </span>
           </div>
         </td>
         <td className="py-3 px-4">{ticket.fullName}</td>
