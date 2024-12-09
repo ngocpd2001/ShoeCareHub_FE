@@ -14,9 +14,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    localStorage.removeItem("user");
     setUser(null);
-    // Thêm mã để xóa thông tin khác nếu cần
+  
   };
 
   return (

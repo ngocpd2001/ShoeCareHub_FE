@@ -7,7 +7,7 @@ import {
   faTag,
   faCalendar,
 } from "@fortawesome/free-solid-svg-icons";
-import { getTicketById } from "../../api/ticket";
+import { getTicketById, updateTicketStatus } from "../../api/ticket";
 import ReplyTicketModal from "./ReplyTicketModal";
 import { Image } from "antd";
 
@@ -68,13 +68,15 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
   const getStatusStyle = (status) => {
     switch (status) {
       case "OPENING":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-blue-100 text-blue-600";
       case "PROCESSING":
-        return "bg-blue-100 text-blue-800";
+        return "bg-orange-100 text-orange-600";
       case "CLOSED":
-        return "bg-green-100 text-green-800";
+        return "bg-green-100 text-green-600";
       case "CANCELED":
-        return "bg-red-100 text-red-800";
+        return "bg-red-100 text-red-600";
+      case "RESOLVING":
+        return "bg-yellow-100 text-yellow-600";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -90,6 +92,8 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
         return "Đã đóng";
       case "CANCELED":
         return "Đã hủy";
+      case "RESOLVING":
+        return "Xử lý lại dịch vụ";
       default:
         return status;
     }
@@ -169,11 +173,26 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
                     >
                       {getStatusText(ticket.status)}
                     </span>
+                    {ticket.status === "RESOLVING" && (
+                      <button
+                        onClick={async () => {
+                          try {
+                            await updateTicketStatus(ticketId, "CLOSED");
+                            fetchTicketData(); // Cập nhật lại dữ liệu ticket
+                          } catch (error) {
+                            console.error("Lỗi khi cập nhật trạng thái:", error);
+                          }
+                        }}
+                        className="ml-2 px-2 py-1 bg-green-600 text-white rounded hover:bg-opacity-90"
+                      >
+                        Đóng đơn
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
 
-              {/* Nội dung khiếu nại ban đầu */}
+              {/* Nội dung khi��u nại ban đầu */}
               <div className="mb-6">
                 <div className="font-medium mb-2">Tiêu đề:</div>
                 <p className="text-gray-600 mb-2">{ticket.title}</p>
@@ -323,7 +342,7 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
               </div>
 
               {/* Thêm button phản hồi - chỉ hiển thị khi status không phải CLOSED */}
-              {ticket.status !== "CLOSED" && (
+              {ticket.status !== "CLOSED" && ticket.status !== "CANCELED" && ticket.status !== "RESOLVING" && (
                 <button
                   onClick={handleReplyClick}
                   className="mb-6 px-4 py-2 bg-[#002278] text-white rounded-lg hover:bg-opacity-90"

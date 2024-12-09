@@ -38,6 +38,11 @@ import React, {
           text: "Đã hủy",
           className: "bg-red-100 text-red-600"
         };
+      case "RESOLVING":
+        return {
+          text: "Xử lý lại dịch vụ",
+          className: "bg-yellow-100 text-yellow-600"
+        };
       default:
         return {
           text: status,
@@ -78,6 +83,7 @@ import React, {
           const textStyle = record.isSeen ? '' : 'font-bold text-[#002278]';
 
           return (
+            
             <span className={textStyle}>
               {text}
             </span>

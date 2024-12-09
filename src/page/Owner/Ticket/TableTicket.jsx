@@ -38,6 +38,11 @@ import React, {
           text: "Đã hủy",
           className: "bg-red-100 text-red-600"
         };
+      case "RESOLVING":
+        return {
+          text: "Xử lý lại dịch vụ",
+          className: "bg-yellow-100 text-yellow-600"
+        };
       default:
         return {
           text: status,
@@ -89,6 +94,15 @@ import React, {
         width: 200,
         sorter: (a, b) => a.title.localeCompare(b.title),
         ...getColumnSearchProps("title", "Tiêu đề"),
+        render: (text, record) => {
+          const ownerNotiStyle = record.isOwnerNoti ? 'font-bold text-red-600' : ''; 
+
+          return (
+            <span className={`${ownerNotiStyle}`}>
+              {text}
+            </span>
+          );
+        },
       },
       {
         title: "Danh mục",
