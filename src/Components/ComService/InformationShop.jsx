@@ -50,8 +50,8 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         setBusiness(businessData);
 
         // Lưu trữ thông tin name và imageUrl
-        const businessName = businessData.data.name;
-        const businessImageUrl = businessData.data.imageUrl;
+        // const businessName = businessData.data.name;
+        // const businessImageUrl = businessData.data.imageUrl;
 
         const branchData = await getBranchByBusinessId(businessId);
         const activeBranches = Array.isArray(branchData.data)
@@ -63,11 +63,11 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         setServicesCount(serviceData.data.totalCount);
 
         // Cập nhật selectedRoom với thông tin name và imageUrl
-        setSelectedRoom(prevRoom => ({
-          ...prevRoom,
-          name: businessName,
-          imageUrl: businessImageUrl
-        }));
+        // setSelectedRoom(prevRoom => ({
+        //   ...prevRoom,
+        //   name: businessName,
+        //   imageUrl: businessImageUrl
+        // }));
       } catch (error) {
         console.error("Lỗi khi lấy thông tin:", error.errors || error);
       }
@@ -88,37 +88,51 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
 
   const handleChatClick = async () => {
     try {
-      const user = JSON.parse(localStorage.getItem('user'));
-      const accountId1 = user.id;
-      const accountId2 = business.ownerId;
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (!user) {
+            console.error("Không tìm thấy thông tin người dùng trong localStorage");
+            return;
+        }
+        const accountId1 = user.id;
+        const accountId2 = business.ownerId;
 
-      const roomsResponse = await getRooms(accountId1);
-      const rooms = roomsResponse.data;
-      const existingRoom = rooms.find(room =>
-        (room.accountId1 === accountId1 && room.accountId2 === accountId2) ||
-        (room.accountId1 === accountId2 && room.accountId2 === accountId1)
-      );
+        const roomsResponse = await getRooms(accountId1);
+        if (roomsResponse.status !== "success") {
+            console.error("Lỗi khi lấy danh sách phòng:", roomsResponse.message);
+            return;
+        }
+        
+        const rooms = roomsResponse.data;
+        const existingRoom = rooms.find(room =>
+            (room.accountId1 === accountId1 && room.accountId2 === accountId2) ||
+            (room.accountId1 === accountId2 && room.accountId2 === accountId1)
+        );
 
-      if (existingRoom) {
-        setSelectedRoom({
-          ...existingRoom,
-          name: business.name,
-          imageUrl: business.imageUrl
-        });
-      } else {
-        const newRoom = await createRoom(accountId1, accountId2);
-        setSelectedRoom({
-          ...newRoom,
-          name: business.name,
-          imageUrl: business.imageUrl
-        });
-      }
+        if (existingRoom) {
+            setSelectedRoom({
+                ...existingRoom,
+                name: business.name,
+                imageUrl: business.imageUrl
+            });
+        } else {
+            const newRoom = await createRoom(accountId1, accountId2);
+            console.log("New Room Response:", newRoom);
+            if (newRoom.status !== "success") {
+                console.error("Lỗi khi tạo phòng chat:", newRoom.message);
+                return;
+            }
+            setSelectedRoom({
+                ...newRoom,
+                name: business.name,
+                imageUrl: business.imageUrl
+            });
+        }
 
-      toggleChatDrawer();
+        toggleChatDrawer();
     } catch (error) {
-      console.error("Lỗi khi kiểm tra hoặc tạo phòng chat:", error);
+        console.error("Lỗi khi kiểm tra hoặc tạo phòng chat:", error);
     }
-  };
+};
 
   if (!business) {
     return <div>Đang tải thông tin doanh nghiệp...</div>;
@@ -319,12 +333,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         open={isChatOpen}
         width={500}
       >
-        {/* <ChatUser selectedRoom={selectedRoom} /> */}
-        <ChatUser 
-        selectedRoom={selectedRoom} 
-            businessName={business.name} 
-            businessImageUrl={business.imageUrl} 
-        />
+        <ChatUser selectedRoom={selectedRoom} />
       </Drawer>
     </div>
   );

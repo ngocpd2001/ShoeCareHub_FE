@@ -10,11 +10,10 @@ import { faRocketchat } from "@fortawesome/free-brands-svg-icons";
 
 const { Panel } = Collapse;
 
-const ChatUser = ({ visible, onClose, selectedRoom: initialSelectedRoom, businessImageUrl, businessName }) => {
-    const storedUser = localStorage.getItem('user');
-    const accountId = storedUser ? JSON.parse(storedUser).id : null;
+const ChatUser = () => {
+    const accountId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user')).id : null;
     const [rooms, setRooms] = useState([]);
-    const [selectedRoom, setSelectedRoom] = useState(initialSelectedRoom);
+    const [selectedRoom, setSelectedRoom] = useState(null);
     const [messages, setMessages] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [userDetails, setUserDetails] = useState({});
@@ -26,7 +25,7 @@ const ChatUser = ({ visible, onClose, selectedRoom: initialSelectedRoom, busines
             console.error('Không tìm thấy accountId trong localStorage');
             return;
         }
-        const fetchRooms = async () => {
+              const fetchRooms = async () => {
             setIsFetching(true);
             const response = await getRooms(accountId);
             if (response.status === "success") {
@@ -34,14 +33,14 @@ const ChatUser = ({ visible, onClose, selectedRoom: initialSelectedRoom, busines
                 const updatedRooms = await Promise.all(roomData.map(async room => {
                     const otherAccountId = room.accountId1 === accountId ? room.accountId2 : room.accountId1;
 
-                    // console.log(`Account ID của người dùng hiện tại: ${accountId}`);
-                    // console.log(`Account ID của người khác: ${otherAccountId}`);
+                    console.log(`Account ID của người dùng hiện tại: ${accountId}`);
+                    console.log(`Account ID của người khác: ${otherAccountId}`);
 
                     const userResponse = await getAccountById(otherAccountId);
-                    // console.log('Dữ liệu người dùng:', JSON.stringify(userResponse));
+                    console.log('Dữ liệu người dùng:', JSON.stringify(userResponse));
                     const userInfo = userResponse.data;
 
-                    const userName = userInfo ? userInfo.fullName : 'Người dùng không xác ịnh';
+                    const userName = userInfo ? userInfo.fullName : 'Người dùng không xác định';
                     const userImageUrl = userInfo ? userInfo.imageUrl : 'đường_dẫn_ảnh_mặc_định.jpg';
 
                     return {
@@ -133,13 +132,9 @@ const ChatUser = ({ visible, onClose, selectedRoom: initialSelectedRoom, busines
             <div className="flex-1 px-4 overflow-hidden">
                 {selectedRoom ? (
                     <div className="flex flex-col h-full">
-                        <div className="bg-white p-2 rounded mb-4 flex items-center h-15">
-                            <img src={businessImageUrl || selectedRoom.imageUrl} 
-                                 alt={businessName || selectedRoom.name} 
-                                 className="inline-block w-10 h-10 rounded-full mr-2" />
-                            <h2 className="text-2xl font-semibold ml-2">
-                                {businessName || selectedRoom.name}
-                            </h2>
+                    <div className="bg-white p-2 rounded mb-4 flex items-center h-15">
+                            <img src={selectedRoom.imageUrl} alt={selectedRoom.name} className="inline-block w-10 h-10 rounded-full mr-2" />
+                            <h2 className="text-2xl font-semibold ml-2">{selectedRoom.name}</h2>
                         </div>
                         <ChatList roomId={selectedRoom.id} hasAttachments={hasAttachments} />
                         <ChatInput

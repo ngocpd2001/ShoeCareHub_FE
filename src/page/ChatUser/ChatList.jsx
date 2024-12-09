@@ -27,8 +27,8 @@ const ChatList = ({ roomId, hasAttachments }) => {
                     setMessages(response.data); 
                 }
             } catch (error) {
-                console.error('chat.js:21 Lỗi khi lấy thông tin chat:', error);
-                console.error('ChatUser.jsx:81 Đã xảy ra lỗi khi gọi API:', error);
+                console.error('Lỗi khi lấy thông tin chat:', JSON.stringify(error));
+                console.error('Đã xảy ra lỗi:', JSON.stringify(error));
             }
         };
 

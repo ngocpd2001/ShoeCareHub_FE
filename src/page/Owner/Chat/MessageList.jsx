@@ -27,17 +27,23 @@ const MessageList = ({ roomId, hasAttachments }) => {
                     setMessages(response.data); 
                 }
             } catch (error) {
-                console.error('Lỗi khi lấy tin nhắn:', error);
+                console.error('Lỗi khi lấy thông tin chat:', JSON.stringify(error));
+                console.error('Đã xảy ra lỗi:', JSON.stringify(error));
             }
         };
 
         fetchMessages(); 
-    }, [roomId]); 
+    }, [roomId]);  
 
     return (
         <div className={`overflow-auto ${hasAttachments ? 'h-[650px]' : 'h-[750px]'}`}>
-            {messages.map((message, index) => {
-                const showDate = index === 0 || formatDate(messages[index - 1].timestamp) !== formatDate(message.timestamp);
+              {messages.length === 0 ? (
+                <div className="text-center text-gray-500">
+                    Không có tin nhắn nào trong phòng này.
+                </div>
+            ) : (
+                messages.map((message, index) => {
+                    const showDate = index === 0 || formatDate(messages[index - 1].timestamp) !== formatDate(message.timestamp);
                 return (
                     <div key={index}>
                         {showDate && (
@@ -62,7 +68,8 @@ const MessageList = ({ roomId, hasAttachments }) => {
                         </div>
                     </div>
                 );
-            })}
+            })
+        )}
         </div>
     );
 };

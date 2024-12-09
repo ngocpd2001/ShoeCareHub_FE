@@ -75,11 +75,12 @@ const ChatRoom = () => {
                         setMessages(response.data);
                     } else {
                         console.error('Lỗi khi lấy tin nhắn:', response.message);
-                        setMessages([]);
+                        alert(`Lỗi: ${response.message}`);
                     }
                 } catch (error) {
-                    console.error('Đã xảy ra lỗi khi gọi API:', error);
-                    setMessages([]);
+                    console.error('Đã xảy ra lỗi:', error);
+                    console.error('Thông tin lỗi:', JSON.stringify(error, null, 2));
+                    alert('Đã xảy ra lỗi khi lấy tin nhắn. Vui lòng thử lại sau.');
                 } finally {
                     setIsFetching(false);
                 }
@@ -98,7 +99,8 @@ const ChatRoom = () => {
                     console.error('Lỗi khi lấy tin nhắn:', response.message);
                 }
             } catch (error) {
-                console.error('Đã xảy ra lỗi khi gọi API:', error);
+                console.error('Đã xảy ra lỗi:', error);
+                console.error('Thông tin lỗi:', JSON.stringify(error, null, 2));
             }
         }
     };
