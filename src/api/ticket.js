@@ -127,10 +127,10 @@ export const getTicketByBranch = async ({
   }
 };
 
-export const getTicketByBusiness = async ({ id, pageSize, pageNum }) => {
+export const getTicketByBusiness = async ({ id, pageSize, pageNum, sortBy = '', status = '', isDescending = false }) => {
   try {
     const response = await axiosInstances.login.get(
-      `/support-tickets/business/${id}?IsDecsending=false&PageSize=${pageSize}&PageNum=${pageNum + 1}`
+      `/support-tickets/business/${id}?IsDecsending=${isDescending}&PageSize=${pageSize}&PageNum=${pageNum}&SortBy=${sortBy}&Status=${status}`
     );
     return response.data;
   } catch (error) {
@@ -234,8 +234,8 @@ export const notifyCustomerForTicket = async (accountId, ticketId) => {
     }
 
     const response = await axiosInstances.login.post(
-      `/support-tickets/notify-for-customer?AccountId=${accountId}&TicketId=${ticketId}`,
-      {},
+      `/support-tickets/notify-for-customer`,
+      { accountId, ticketId },
       {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -260,7 +260,7 @@ export const notifyOwnerForTicket = async ({ ticketId, accountId, orderId }) => 
 
     const response = await axiosInstances.login.post(
       '/support-tickets/notify-for-owner',
-      { ticketId, accountId, orderId }, // Body yêu cầu
+      { ticketId, accountId, orderId }, 
       {
         headers: {
           Authorization: `Bearer ${token}`,

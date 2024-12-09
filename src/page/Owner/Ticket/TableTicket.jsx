@@ -202,8 +202,13 @@ import React, {
         const response = await getTicketByBusiness({
           id: user.businessId,
           pageSize: pagination.pageSize,
-          pageNum: pagination.current - 1
+          pageNum: pagination.current,
+          sortBy: '',
+          status: '',
+          isDescending: false
         });
+  
+        console.log("Dữ liệu nhận được từ getTicketByBusiness:", response.data);
   
         if (response.status === "success") {
           setData(response.data);
@@ -234,14 +239,36 @@ import React, {
       }
     }, [user, location.state]);
   
-    const handleTableChange = (pagination, filters, sorter) => {
-      setPagination(pagination);
-      reloadData();
+    const handleTableChange = (newPagination, filters, sorter) => {
+      table.sortField = sorter.field;
+      table.sortOrder = sorter.order;
+
+      setPagination(newPagination);
+
+      getTicketByBusiness({
+          id: user.businessId,
+          pageSize: newPagination.pageSize,
+          pageNum: newPagination.current,
+          sortBy: sorter.field,
+          isDescending: sorter.order === 'descend'
+      }).then(response => {
+          if (response && response.data) {
+              setData(response.data);
+              setPagination(prev => ({
+                  ...prev,
+                  current: response.pagination.currentPage,
+                  total: response.pagination.totalItems
+              }));
+          }
+      }).catch(error => {
+          console.error("Lỗi khi tải dữ liệu:", error);
+          notificationApi("error", "Lỗi", "Không thể tải dữ liệu");
+      });
     };
   
     return (
       <div>
-        <ComTable
+         <ComTable
           y={"50vh"}
           x={1020}
           columns={columns}
@@ -249,6 +276,12 @@ import React, {
           loading={table.loading}
           rowKey="id"
           onChange={handleTableChange}
+          pagination={{
+            ...pagination,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            // showTotal: (total) => `Tổng ${total} mục`
+          }}
           bordered
           className="w-full"
         />

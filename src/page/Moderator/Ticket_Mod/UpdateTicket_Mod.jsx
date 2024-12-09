@@ -257,7 +257,7 @@ const UpdateTicket_Mod = () => {
         return;
       }
 
-      console.log("Gửi thông báo cho khách hàng với accountId:", userId, "và ticketId:", ticketDetails.id);
+      // console.log("Gửi thông báo cho khách hàng với accountId:", userId, "và ticketId:", ticketDetails.id);
 
       await notifyCustomerForTicket(userId, ticketDetails.id);
       notification.success({
@@ -291,7 +291,7 @@ const UpdateTicket_Mod = () => {
       // Lấy orderId từ ticketDetails
       // const orderId = ticketDetails.orderId;
 
-      console.log("Gửi thông báo cho cửa hàng với accountId:", userId, "và ticketId:", ticketDetails.id, "và orderId:", ticketDetails.orderId);
+      // console.log("Gửi thông báo cho cửa hàng với accountId:", userId, "và ticketId:", ticketDetails.id, "và orderId:", ticketDetails.orderId);
 
       // Cập nhật request body để bao gồm orderId
       await notifyOwnerForTicket({ accountId: userId, ticketId: ticketDetails.id, orderId: ticketDetails.orderId });
