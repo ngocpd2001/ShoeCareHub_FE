@@ -7,6 +7,9 @@ import { FaStar } from "react-icons/fa";
 import { getBusinessById } from "../../api/businesses";
 import { getBranchByBusinessId } from "../../api/branch";
 import { getServiceByBusinessId } from "../../api/service";
+import { Drawer } from 'antd';
+import ChatUser from '../../page/ChatUser/ChatUser';
+import { createRoom, getRooms } from '../../api/chat';
 
 const InformationShop = ({ businessId, onBranchSelect }) => {
   const [isDropdownOpen, setDropdownOpen] = useState(false);
@@ -16,6 +19,8 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
   const [servicesCount, setServicesCount] = useState(0);
   const location = useLocation();
   const navigate = useNavigate();
+  const [isChatOpen, setChatOpen] = useState(false);
+  const [selectedRoom, setSelectedRoom] = useState(null);
 
   const toggleDropdown = async () => {
     setDropdownOpen(!isDropdownOpen);
@@ -23,7 +28,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
       try {
         const branchData = await getBranchByBusinessId(businessId);
         console.log("Branch Data:", branchData);
-        const activeBranches = Array.isArray(branchData.data) 
+        const activeBranches = Array.isArray(branchData.data)
           ? branchData.data.filter(branch => branch.status !== "INACTIVE")
           : [];
         setBranches(activeBranches);
@@ -43,15 +48,26 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
         }
         const businessData = await getBusinessById(businessId);
         setBusiness(businessData);
-        
+
+        // Lưu trữ thông tin name và imageUrl
+        const businessName = businessData.data.name;
+        const businessImageUrl = businessData.data.imageUrl;
+
         const branchData = await getBranchByBusinessId(businessId);
-        const activeBranches = Array.isArray(branchData.data) 
+        const activeBranches = Array.isArray(branchData.data)
           ? branchData.data.filter(branch => branch.status !== "INACTIVE")
           : [];
         setBranches(activeBranches);
 
         const serviceData = await getServiceByBusinessId(businessId);
         setServicesCount(serviceData.data.totalCount);
+
+        // Cập nhật selectedRoom với thông tin name và imageUrl
+        setSelectedRoom(prevRoom => ({
+          ...prevRoom,
+          name: businessName,
+          imageUrl: businessImageUrl
+        }));
       } catch (error) {
         console.error("Lỗi khi lấy thông tin:", error.errors || error);
       }
@@ -64,6 +80,44 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
     setSelectedBranch(selected);
     onBranchSelect(branchId);
     setDropdownOpen(false);
+  };
+
+  const toggleChatDrawer = () => {
+    setChatOpen(!isChatOpen);
+  };
+
+  const handleChatClick = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      const accountId1 = user.id;
+      const accountId2 = business.ownerId;
+
+      const roomsResponse = await getRooms(accountId1);
+      const rooms = roomsResponse.data;
+      const existingRoom = rooms.find(room =>
+        (room.accountId1 === accountId1 && room.accountId2 === accountId2) ||
+        (room.accountId1 === accountId2 && room.accountId2 === accountId1)
+      );
+
+      if (existingRoom) {
+        setSelectedRoom({
+          ...existingRoom,
+          name: business.name,
+          imageUrl: business.imageUrl
+        });
+      } else {
+        const newRoom = await createRoom(accountId1, accountId2);
+        setSelectedRoom({
+          ...newRoom,
+          name: business.name,
+          imageUrl: business.imageUrl
+        });
+      }
+
+      toggleChatDrawer();
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra hoặc tạo phòng chat:", error);
+    }
   };
 
   if (!business) {
@@ -88,7 +142,10 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
             </p>
           </div>
           <div className="flex flex-row">
-            <button className="bg-[#1D364D] text-white rounded-lg py-2 px-4 flex items-center mr-3">
+            <button
+              onClick={handleChatClick}
+              className="bg-[#1D364D] text-white rounded-lg py-2 px-4 flex items-center mr-3"
+            >
               <FontAwesomeIcon icon={faCommentDots} className="mr-2" />
               Chat Ngay
             </button>
@@ -100,16 +157,16 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
                   className="border border-[#1D364D] text-[#1D364D] rounded-lg py-2 px-4 ml-3 hover:bg-gray-50 flex items-center"
                 >
                   <span>{selectedBranch ? selectedBranch.name : 'Toàn cửa hàng'}</span>
-                  <svg 
-                    className={`w-4 h-4 ml-2 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`} 
-                    fill="none" 
-                    stroke="currentColor" 
+                  <svg
+                    className={`w-4 h-4 ml-2 transition-transform duration-200 ${isDropdownOpen ? 'transform rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
                     viewBox="0 0 24 24"
                   >
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                
+
                 {isDropdownOpen && (
                   <div className="absolute left-0 mt-2 w-[400px] rounded-lg bg-white shadow-lg border border-gray-100 z-50">
                     <div className="py-1">
@@ -121,17 +178,17 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
                           <span className="font-medium text-[#1D364D]">Toàn cửa hàng</span>
                           {business?.address && (
                             <div className="flex mt-1 text-sm text-gray-500">
-                              <svg 
-                                className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" 
-                                fill="none" 
-                                stroke="currentColor" 
+                              <svg
+                                className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
                                 viewBox="0 0 24 24"
                               >
-                                <path 
-                                  strokeLinecap="round" 
-                                  strokeLinejoin="round" 
-                                  strokeWidth={2} 
-                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                 />
                               </svg>
                               <span className="whitespace-normal break-words">
@@ -141,7 +198,7 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
                           )}
                         </div>
                       </button>
-                      
+
                       <div className="max-h-64 overflow-y-auto">
                         {branches.map((branch) => (
                           <button
@@ -154,17 +211,17 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
                                 {branch.name}
                               </span>
                               <div className="flex mt-1 text-sm text-gray-500">
-                                <svg 
-                                  className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" 
-                                  fill="none" 
-                                  stroke="currentColor" 
+                                <svg
+                                  className="w-3 h-3 mr-1 mt-0.5 flex-shrink-0"
+                                  fill="none"
+                                  stroke="currentColor"
                                   viewBox="0 0 24 24"
                                 >
-                                  <path 
-                                    strokeLinecap="round" 
-                                    strokeLinejoin="round" 
-                                    strokeWidth={2} 
-                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" 
+                                  <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
                                   />
                                 </svg>
                                 <span className="whitespace-normal break-words">
@@ -255,6 +312,20 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
           </span>
         </div>
       </div>
+      <Drawer
+        title="Chat"
+        placement="right"
+        onClose={toggleChatDrawer}
+        open={isChatOpen}
+        width={500}
+      >
+        {/* <ChatUser selectedRoom={selectedRoom} /> */}
+        <ChatUser 
+        selectedRoom={selectedRoom} 
+            businessName={business.name} 
+            businessImageUrl={business.imageUrl} 
+        />
+      </Drawer>
     </div>
   );
 };

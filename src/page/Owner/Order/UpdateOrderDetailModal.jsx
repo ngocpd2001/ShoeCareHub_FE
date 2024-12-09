@@ -36,7 +36,7 @@ const UpdateOrderDetailModal = ({
 
       const fetchProcesses = async () => {
         try {
-          // console.log("Service ID gửi vào getProcessesByServiceId:", serviceId);
+          console.log("Service ID gửi vào getProcessesByServiceId:", serviceId);
           const data = await getProcessesByServiceId(serviceId);
           console.log("Dữ liệu nhận được từ getProcessesByServiceId:", data);
           setProcesses(data.data.items);

@@ -23,6 +23,8 @@ const STATUS_DISPLAY = {
   OPENING: "Đang mở",
   PROCESSING: "Đang xử lý",
   CLOSED: "Đã đóng",
+  CANCELED: "Đã hủy",
+  RESOLVING: "Xử lý lại dịch vụ",
 };
 
 // Thêm object để map status với màu sắc và text
@@ -41,6 +43,16 @@ const STATUS_STYLES = {
     color: "#52c41a",
     bgColor: "#f6ffed",
     borderColor: "#b7eb8f",
+  },
+  CANCELED: {
+    color: "#ff4d4f",
+    bgColor: "#fff1f0",
+    borderColor: "#ffccc7",
+  },
+  RESOLVING: {
+    color: "#faad14",
+    bgColor: "#fffbe6",
+    borderColor: "#ffe58f",
   },
 };
 
@@ -357,6 +369,14 @@ const UpdateTicket = () => {
           {ticketDetails.status === "CLOSED" ? (
             <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
               Phiếu hỗ trợ đã đóng. Không thể thêm phản hồi mới.
+            </div>
+          ) : ticketDetails.status === "CANCELED" ? (
+            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
+              Phiếu hỗ trợ đã hủy. Không thể thêm phản hồi mới.
+            </div>
+          ) : ticketDetails.status === "RESOLVING" ? (
+            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
+              Phiếu hỗ trợ đang xử lý lại dịch vụ. Không thể thêm phản hồi mới.
             </div>
           ) : (
             <Form

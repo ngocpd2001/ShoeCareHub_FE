@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useState } from "react";
-import { Affix } from "antd";
+import { Affix, Drawer } from "antd";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/Shoe Care Hub Logo_NoneBack.png";
 import { useForm } from "react-hook-form";
@@ -16,6 +16,9 @@ import { useStorage } from "../../hooks/useLocalStorage";
 import { MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react";
 import { ChevronDownIcon } from "lucide-react";
 import { getData } from "../../api/api";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faComment } from '@fortawesome/free-regular-svg-icons';
+import ChatUser from '../../page/ChatUser/ChatUser';
 
 const navigation = [
   { name: "Dashboard", href: "/admin/institute", current: false },
@@ -88,6 +91,13 @@ export default function ComHeader({ children }) {
     setSearchTerm('')
     navigate(`/service?search=${encodeURIComponent(searchTerm)}`);
   };
+
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const toggleChatDrawer = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   return (
     <>
       <div className="min-h-full">
@@ -155,6 +165,29 @@ export default function ComHeader({ children }) {
                     </div>
                   </div>
                   <div className="flex gap-2">
+                    {token ? (
+                      <>
+                        <Link
+                          to="#"
+                          onClick={toggleChatDrawer}
+                          className="text-gray-600 hover:text-blue-500 mr-[5px] block"
+                        >
+                          <div
+                            style={{
+                              backgroundColor: "#ebebeb",
+                              borderRadius: "50%",
+                              width: "35px",
+                              height: "35px",
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                            }}
+                          >
+                            <FontAwesomeIcon icon={faComment} size="lg" color="black" />
+                          </div>
+                        </Link>
+                      </>
+                    ) : null}
                     <Link
                       to="/cart"
                       className="text-gray-600 hover:text-blue-500 mr-[5px] block"
@@ -417,6 +450,15 @@ export default function ComHeader({ children }) {
           Điện Thoại: (024) XXXXXXX - Email: contact@TP4SCS.vn
         </p>
       </div>
+      <Drawer
+        title="Chat"
+        placement="right"
+        onClose={toggleChatDrawer}
+        open={isChatOpen}
+        width={500}
+      >
+        <ChatUser />
+      </Drawer>
     </>
   );
 }

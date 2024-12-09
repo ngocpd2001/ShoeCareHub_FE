@@ -13,12 +13,13 @@ export const createRoom = async (accountId1, accountId2) => {
     }
   };
 
-export const sendMessage = async (roomId, senderId, content, isImage) => {
+export const sendMessage = async (roomId, senderId, content, imageUrls, isImage) => {
     try {
         const response = await axiosInstances.login.post('/chats/send-message', {
             roomId,
             senderId,
             content,
+            imageUrls,
             isImage
         });
         return response.data;

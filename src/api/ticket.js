@@ -147,10 +147,12 @@ export const updateTicketStatus = async (ticketId, status) => {
     }
 
     // Kiểm tra status hợp lệ
-    const validStatuses = ['OPENING', 'PROCESSING', 'CLOSED'];
+    const validStatuses = ['OPENING', 'PROCESSING', 'CLOSED', 'RESOLVING'];
     if (!validStatuses.includes(status)) {
       throw new Error('Trạng thái không hợp lệ');
     }
+
+    console.log('Updating ticket status:', { ticketId, status });
 
     const response = await axiosInstances.login.put(
       `/support-tickets/${ticketId}/status`,
@@ -246,5 +248,30 @@ export const notifyCustomerForTicket = async (accountId, ticketId) => {
   } catch (error) {
     console.error('Lỗi khi gửi thông báo cho khách hàng:', error);
     throw new Error(error.response?.data?.message || 'Không thể gửi thông báo cho khách hàng');
+  }
+};
+
+export const notifyOwnerForTicket = async ({ ticketId, accountId, orderId }) => {
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      throw new Error('Không tìm thấy token');
+    }
+
+    const response = await axiosInstances.login.post(
+      '/support-tickets/notify-for-owner',
+      { ticketId, accountId, orderId }, // Body yêu cầu
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error('Lỗi khi gửi thông báo cho cửa hàng:', error);
+    throw new Error(error.response?.data?.message || 'Không thể gửi thông báo cho cửa hàng');
   }
 };

@@ -30,7 +30,8 @@ const TicketScreen = () => {
     { value: 'OPENING', label: 'Đang chờ' },
     { value: 'PROCESSING', label: 'Đang xử lý' },
     { value: 'CLOSED', label: 'Đã đóng' },
-    { value: 'CANCELED', label: 'Đã hủy' }
+    { value: 'CANCELED', label: 'Đã hủy' },
+    { value: 'RESOLVING', label: 'Xử lý lại dịch vụ' }
   ];
 
   useEffect(() => {
@@ -202,23 +203,27 @@ const TicketScreen = () => {
         <td className="py-3 px-4">{ticket.id}</td>
         <td className="py-3 px-4 max-w-[200px]">
           <div className="break-words">
-            {ticket.title}
+            <span className={ticket.isOwnerNoti ? 'font-semibold text-red-600' : ''}>
+              {ticket.title}
+            </span>
           </div>
         </td>
         <td className="py-3 px-4">{ticket.fullName}</td>
         <td className="py-3 px-4">{ticket.categoryName}</td>
         <td className="py-3 px-4 whitespace-nowrap">
           <span className={`px-2 py-1 rounded-full text-sm ${
-            ticket.status === 'OPENING' ? 'bg-yellow-100 text-yellow-800' :
-            ticket.status === 'PROCESSING' ? 'bg-blue-100 text-blue-800' :
-            ticket.status === 'CLOSED' ? 'bg-green-100 text-green-800' :
-            ticket.status === 'CANCELED' ? 'bg-red-100 text-red-800' :
+            ticket.status === 'OPENING' ? 'bg-blue-100 text-blue-600' :
+            ticket.status === 'PROCESSING' ? 'bg-orange-100 text-orange-600' :
+            ticket.status === 'CLOSED' ? 'bg-green-100 text-green-600' :
+            ticket.status === 'CANCELED' ? 'bg-red-100 text-red-600' :
+            ticket.status === 'RESOLVING' ? 'bg-yellow-100 text-yellow-600' :
             'bg-gray-100 text-gray-800'
           }`}>
             {ticket.status === 'OPENING' ? 'Đang chờ' :
              ticket.status === 'PROCESSING' ? 'Đang xử lý' :
              ticket.status === 'CLOSED' ? 'Đã đóng' :
              ticket.status === 'CANCELED' ? 'Đã hủy' :
+             ticket.status === 'RESOLVING' ? 'Xử lý lại dịch vụ' :
              ticket.status}
           </span>
         </td>
@@ -361,6 +366,7 @@ const TicketScreen = () => {
               <option value="PROCESSING">Đang xử lý</option>
               <option value="CLOSED">Đã đóng</option>
               <option value="CANCELED">Đã hủy</option>
+              <option value="RESOLVING">Xử lý lại dịch vụ</option>
             </select>
             <FontAwesomeIcon
               icon={faSort}

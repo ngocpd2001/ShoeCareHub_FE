@@ -92,6 +92,7 @@ import FeaturePacks from "./page/Owner/FeaturePacks/FeaturePacks";
 import DashboardPlatform from "./page/Admin/Dashboard/DashboardPlatform";
 import WordBlackManager from "./page/Admin/WordBlack/WordBlackManager";
 import FeaturePackManager from "./page/Admin/FeaturePack/FeaturePackManager";
+import ChatRoom from "./page/Owner/Chat/ChatRoom";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -415,6 +416,10 @@ export const routers = createBrowserRouter([
       {
         path: "/owner/material/create",
         element: <CreateMaterial />,
+      },
+      {
+        path: "/owner/chat",
+        element: <ChatRoom/>,
       },
     ],
   },

@@ -14,7 +14,8 @@ import {
   getTicketById,
   updateTicketStatus,
   createChildTicket,
-  notifyCustomerForTicket
+  notifyCustomerForTicket,
+  notifyOwnerForTicket
 } from "../../../api/ticket";
 import { UploadOutlined } from "@ant-design/icons";
 import { firebaseImgs } from "../../../upImgFirebase/firebaseImgs";
@@ -41,6 +42,8 @@ const STATUS_DISPLAY = {
   OPENING: "Đang mở",
   PROCESSING: "Đang xử lý",
   CLOSED: "Đóng",
+  RESOLVING: "Xử lý lại dịch vụ",
+  CANCELED: "Đã hủy",
 };
 
 // Sử dụng trực tiếp STATUS_DISPLAY trong component
@@ -61,6 +64,8 @@ const UpdateTicket_Ad = () => {
     { value: "OPENING", label: STATUS_DISPLAY["OPENING"] },
     { value: "PROCESSING", label: STATUS_DISPLAY["PROCESSING"] },
     { value: "CLOSED", label: STATUS_DISPLAY["CLOSED"] },
+    { value: "RESOLVING", label: STATUS_DISPLAY["RESOLVING"] },
+    { value: "CANCELED", label: STATUS_DISPLAY["CANCELED"] },
   ];
 
   const handleStatusChange = async (newStatus) => {
@@ -256,6 +261,41 @@ const UpdateTicket_Ad = () => {
     }
   };
 
+    // Thêm hàm xử lý thông báo cho Cửa hàng
+    const handleNotifyOwner = async () => {
+      console.log("Bắt đầu gửi thông báo cho cửa hàng");
+      try {
+        if (!userId) {
+          notification.error({
+            message: "Lỗi",
+            description: "Không tìm thấy thông tin người dùng",
+            duration: 3,
+          });
+          return;
+        }
+  
+        // Lấy orderId từ ticketDetails
+        // const orderId = ticketDetails.orderId;
+  
+        console.log("Gửi thông báo cho cửa hàng với accountId:", userId, "và ticketId:", ticketDetails.id, "và orderId:", ticketDetails.orderId);
+  
+        // Cập nhật request body để bao gồm orderId
+        await notifyOwnerForTicket({ accountId: userId, ticketId: ticketDetails.id, orderId: ticketDetails.orderId });
+        notification.success({
+          message: "Thành công",
+          description: "Đã gửi thông báo cho cửa hàng",
+          duration: 3,
+        });
+      } catch (error) {
+        console.error("Lỗi khi gửi thông báo cho cửa hàng:", error);
+        notification.error({
+          message: "Lỗi",
+          description: error.message || "Không thể gửi thông báo cho cửa hàng",
+          duration: 3,
+        });
+      }
+    };
+
   if (!ticketDetails) {
     return <div>Loading...</div>;
   }
@@ -271,7 +311,7 @@ const UpdateTicket_Ad = () => {
             separator=">"
             items={[
               { title: "Cửa hàng" },
-              { title: <Link to="/moderator/ticket">Khiếu nại</Link> },
+              { title: <Link to="/admin/ticket">Khiếu nại</Link> },
               { title: <span className="text-[#002278]">Cập nhật khiếu nại</span> },
             ]}
           />
@@ -298,19 +338,28 @@ const UpdateTicket_Ad = () => {
               <Select
                 value={ticketDetails.status}
                 onChange={handleStatusChange}
-                options={statusOptions}
+                options={statusOptions.filter(option => !(ticketDetails.status === "RESOLVING" && option.value === "CLOSED") && option.value !== "CANCELED")} 
                 loading={loading}
                 disabled={loading}
                 style={{ width: 150 }}
               />
               {ticketDetails.status === "PROCESSING" && (
-                <button
-                  onClick={handleNotifyCustomer}
-                  className="ml-2 px-4 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
-                >
-                  <FontAwesomeIcon icon={faBell} className="text-sm" />
-                  <span>Thông báo khách hàng</span>
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleNotifyCustomer}
+                    className="ml-2 px-4 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors flex items-center gap-1"
+                  >
+                    <FontAwesomeIcon icon={faBell} className="text-sm" />
+                    <span>Thông báo khách hàng</span>
+                  </button>
+                  <button
+                    onClick={handleNotifyOwner}
+                    className="ml-2 px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
+                  >
+                    <FontAwesomeIcon icon={faBell} className="text-sm" />
+                    <span>Thông báo cho cửa hàng</span>
+                  </button>
+                </div>
               )}
             </div>
           </div>
@@ -451,7 +500,15 @@ const UpdateTicket_Ad = () => {
             <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
               Phiếu hỗ trợ đã đóng. Không thể thêm phản hồi mới.
             </div>
-          ) : (
+          ) : ticketDetails.status === "CANCELED" ? (
+            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
+              Phiếu hỗ trợ đã hủy. Không thể thêm phản hồi mới.
+            </div>
+          ) : ticketDetails.status === "RESOLVING" ? (
+            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
+              Phiếu hỗ trợ đang xử lý lại dịch vụ. Không thể thêm phản hồi mới.
+            </div>
+          )  : (
             <Form
               form={form}
               onFinish={handleSubmit}
