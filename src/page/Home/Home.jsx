@@ -10,6 +10,8 @@ import ShoeSlide5 from "../../assets/images/vaGiay.webp";
 import { getData } from "../../api/api";
 import { Link, useNavigate } from "react-router-dom";
 import { getAllBusiness } from "../../api/businesses";
+import { realtimedb } from "../../configs/firebase";
+import { onValue, ref } from "firebase/database";
 
 const CARD_WIDTH = 280; // Fixed width for each card
 const CARD_HEIGHT = 315;
