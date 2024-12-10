@@ -1,176 +1,202 @@
-import React, { useState, useEffect } from "react";
-import { Star } from "lucide-react";
-import { Breadcrumb, Image } from "antd";
-import { Link, useNavigate, useParams } from "react-router-dom";
-import { getFeedbackById } from "../../../api/feedback"; // Giả sử có API này
+import React, { useEffect, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faStar as solidStar } from "@fortawesome/free-solid-svg-icons";
+import { getData, putData } from "../../../api/api";
+import { useNotification } from "../../../Notification/Notification";
+import ComButton from "../../../Components/ComButton/ComButton";
+import { Dropdown, Menu, Button } from "antd";
+import { EllipsisOutlined } from "@ant-design/icons"; // Import biểu tượng dấu ba chấm
 
-export default function DetailFeedback_Emp() {
-  const [selectedImage, setSelectedImage] = useState(0);
-  const navigate = useNavigate();
-  const { id } = useParams();
-  const [feedback, setFeedback] = useState(null);
+export default function DetailFeedback_Emp({
+  selectedFeedback,
+  onClose,
+  tableRef,
+}) {
+  const [userData, setUserData] = useState({});
+  const [reply, setReply] = useState(""); // State to manage the reply
+  const [hasReplied, setHasReplied] = useState(false); // Flag to check if a reply exists
+  const [isEditing, setIsEditing] = useState(false); // Flag to check if editing mode is active
+  const { notificationApi } = useNotification();
+
+  // Fetch user data based on the feedback
+  const getAPI = () => {
+    getData(`/accounts/${selectedFeedback?.order?.accountId}`)
+      .then((response) => {
+        setUserData(response?.data?.data);
+      })
+      .catch((er) => {
+        console.error("Error fetching items:", er);
+      });
+  };
 
   useEffect(() => {
-    const fetchFeedbackDetail = async () => {
-      try {
-        const data = await getFeedbackById(id);
-        setFeedback(data);
-      } catch (error) {
-        console.error("Lỗi khi lấy chi tiết phản hồi:", error);
-      }
-    };
-
-    if (id) {
-      fetchFeedbackDetail();
+    getAPI();
+    // Check if feedback already has a reply
+    if (selectedFeedback?.reply) {
+      setHasReplied(true);
+      setReply(selectedFeedback?.reply); // Load the current reply if exists
     }
-  }, [id]);
+  }, [selectedFeedback]);
 
-  if (!feedback) {
-    return <div>Đang tải...</div>;
-  }
+  // Function to handle the reply submission
+  const replyFeedback = () => {
+    if (!reply.trim()) {
+      notificationApi("error", "Lỗi", "Vui lòng nhập câu trả lời!");
+      return;
+    }
+
+    putData(`/feedbacks/${selectedFeedback?.id}`, "reply", reply, {
+      "Content-Type": "application/json", // Gửi dữ liệu dạng chuỗi thuần túy
+    })
+      .then((response) => {
+        setHasReplied(true); // Mark as replied
+        tableRef(); // Refresh the table or feedback list
+        onClose(); // Close the modal or feedback view
+        notificationApi("success", "Thành công", "Trả lời thành công!");
+      })
+      .catch((er) => {
+        console.error("Error submitting reply:", er);
+        notificationApi("error", "Lỗi", "Đã có lỗi xảy ra!");
+      });
+  };
+
+  // Function to handle the reply edit (update existing reply)
+  const editReplyFeedback = () => {
+    if (!reply.trim()) {
+      notificationApi("error", "Lỗi", "Vui lòng nhập câu trả lời!");
+      return;
+    }
+
+    putData(`/feedbacks/${selectedFeedback?.id}`, "reply", reply, {
+      "Content-Type": "application/json", // Gửi dữ liệu dạng chuỗi thuần túy
+    })
+      .then((response) => {
+        setHasReplied(true); // Mark as replied
+        setIsEditing(false); // Exit editing mode
+        tableRef(); // Refresh the table or feedback list
+        onClose(); // Close the modal or feedback view
+        notificationApi(
+          "success",
+          "Thành công",
+          "Cập nhật câu trả lời thành công!"
+        );
+      })
+      .catch((er) => {
+        console.error("Error submitting reply:", er);
+        notificationApi("error", "Lỗi", "Đã có lỗi xảy ra!");
+      });
+  };
+
+  // Menu for dropdown options (Edit)
+  const menu = (
+    <Menu>
+      <Menu.Item key="edit" onClick={() => setIsEditing(true)}>
+        Chỉnh sửa
+      </Menu.Item>
+    </Menu>
+  );
 
   return (
-    <div className="p-6">
-      {/* Phần tiêu đề */}
-      <div className="pb-4 px-4">
-        <h2 className="text-xl font-semibold text-blue-800">Chi tiết phản hồi</h2>
-        <Breadcrumb
-          separator=">"
-          items={[
-            { title: "Quản lý" },
-            { title: <Link to="/employee/feedback">Phản hồi</Link> },
-            { title: <span className="text-[#002278]">Chi tiết phản hồi</span> },
-          ]}
+    <div>
+      <div className="border-b pb-4 mb-4 flex items-start">
+        <img
+          src={userData.imageUrl}
+          alt="Customer Avatar"
+          className="rounded-full w-10 h-10 mr-4"
         />
-      </div>
-
-      {/* Nội dung chính */}
-      <div className="bg-white rounded-lg border p-8">
-        <div className="flex gap-8">
-          {/* Cột trái - Thông tin */}
-          <div className="flex-1 space-y-6">
-            {/* ID Đơn hàng */}
-            <div className="flex flex-col">
-              <span className="text-gray-600 text-lg mb-2">Mã đơn hàng</span>
-              <input
-                type="text"
-                className="border rounded-md p-2 w-full text-lg"
-                value={feedback.orderItemId}
-                disabled
-              />
-            </div>
-
-            {/* Đánh giá sao */}
-            <div className="flex flex-col">
-              <span className="text-gray-600 text-lg mb-2">Đánh giá</span>
-              <div className="flex items-center">
-                <span className="text-lg font-medium mr-2">{feedback.rating}/5</span>
-                {Array(5).fill().map((_, index) => (
-                  <Star
-                    key={index}
-                    className={`w-6 h-6 ${
-                      index < feedback.rating
-                        ? "text-yellow-400 fill-current"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Nội dung */}
-            <div className="flex flex-col">
-              <span className="text-gray-600 text-lg mb-2">Nội dung</span>
-              <textarea
-                className="border rounded-md p-2 w-full text-lg min-h-[100px]"
-                value={feedback.content}
-                disabled
-              />
-            </div>
-
-            {/* Trạng thái */}
-            <div className="flex flex-col">
-              <span className="text-gray-600 text-lg mb-2">Trạng thái</span>
-              <div className={`inline-flex px-4 py-2 rounded-md text-lg font-medium ${
-                feedback.status === "SUSPENDED"
-                  ? "bg-red-100 text-red-800"
-                  : feedback.status === "ACTIVE"
-                  ? "bg-green-100 text-green-800"
-                  : "bg-yellow-100 text-yellow-800"
-              }`}>
-                {feedback.status === "ACTIVE" ? "Hoạt động" :
-                 feedback.status === "SUSPENDED" ? "Đã khóa" : "Chờ duyệt"}
-              </div>
-            </div>
-
-            {/* Tính hợp lệ */}
-            <div className="flex gap-4">
-              <div className="flex-1">
-                <span className="text-gray-600 text-lg mb-2 block">Nội dung hợp lệ</span>
-                <div className={`px-4 py-2 rounded-md text-lg font-medium ${
-                  feedback.isValidContent
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}>
-                  {feedback.isValidContent ? "Hợp lệ" : "Không hợp lệ"}
-                </div>
-              </div>
-              <div className="flex-1">
-                <span className="text-gray-600 text-lg mb-2 block">Hình ảnh hợp lệ</span>
-                <div className={`px-4 py-2 rounded-md text-lg font-medium ${
-                  feedback.isValidAsset
-                    ? "bg-green-100 text-green-800"
-                    : "bg-red-100 text-red-800"
-                }`}>
-                  {feedback.isValidAsset ? "Hợp lệ" : "Không hợp lệ"}
-                </div>
-              </div>
-            </div>
-
-            {/* Thời gian */}
-            <div className="flex flex-col">
-              <span className="text-gray-600 text-lg mb-2">Thời gian tạo</span>
-              <input
-                type="text"
-                className="border rounded-md p-2 w-full text-lg"
-                value={new Date(feedback.createdTime).toLocaleString("vi-VN")}
-                disabled
-              />
-            </div>
-
-            {/* Nút quay lại */}
-            <div className="flex justify-center gap-2 mt-10">
-              <button
-                onClick={() => navigate("/employee/feedback")}
-                className="px-6 py-2 text-lg bg-blue-900 text-white rounded hover:bg-blue-800"
-              >
-                Quay lại
-              </button>
-            </div>
-          </div>
-
-          {/* Cột phải - Hình ảnh */}
-          <div className="w-1/3">
-            <h3 className="text-xl font-semibold mb-4">Hình ảnh đính kèm</h3>
-            <div className="w-full h-[400px] rounded-lg overflow-hidden bg-white border">
-              {feedback.assetUrls && feedback.assetUrls.length > 0 ? (
-                <Image
-                  src={feedback.assetUrls[selectedImage].url}
-                  alt="Ảnh phản hồi"
-                  className="w-full h-full object-cover"
-                  fallback="data:image/png;base64,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"
-                  preview={{
-                    mask: "Xem ảnh",
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-gray-200 flex items-center justify-center">
-                  <span className="text-gray-400">Không có ảnh</span>
-                </div>
+        <div className="flex-1">
+          <div className="flex items-center mb-2">
+            <span className="font-semibold pr-10">{userData.fullName}</span>
+            <span className="text-gray-500 ml-2">
+              {new Date(selectedFeedback.createdTime).toLocaleDateString(
+                "vi-VN"
               )}
+            </span>
+          </div>
+          <div className="flex mb-2">
+            {[...Array(selectedFeedback.rating)].map((_, starIndex) => (
+              <FontAwesomeIcon
+                key={starIndex}
+                icon={solidStar}
+                className="text-yellow-500"
+              />
+            ))}
+          </div>
+          <p className="text-gray-700">{selectedFeedback.content}</p>
+          <div className="mt-6">
+            <div className="grid md:grid-cols-8 gap-4">
+              {/* Render Images */}
+              {selectedFeedback.assetUrls.map((asset, imageIndex) => (
+                <div key={asset.id} className="relative">
+                  <img
+                    src={asset.url}
+                    alt={`Feedback ${imageIndex + 1}`}
+                    className="w-32 h-32 object-cover cursor-pointer rounded border-2 border-[#3A4980]"
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Reply Section */}
+      <div>
+        <span className="font-semibold pr-10">Trả lời</span>
+        {/* If there is already a reply, show it */}
+        {hasReplied ? (
+          <div>
+            {/* Show current reply and edit option */}
+            {!isEditing ? (
+              <div className="flex justify-between items-center mb-10">
+                <p>{selectedFeedback.reply}</p>
+                <Dropdown overlay={menu} trigger={["click"]}>
+                  <Button
+                    icon={<EllipsisOutlined />}
+                    type="text"
+                    className="ml-2"
+                  />
+                </Dropdown>
+              </div>
+            ) : (
+              <div>
+                <textarea
+                  value={reply}
+                  onChange={(e) => setReply(e.target.value)}
+                  placeholder="Nhập câu trả lời..."
+                  className="w-full p-2 border rounded mb-4"
+                />
+                <ComButton onClick={editReplyFeedback} disabled={false}>
+                  Cập nhật
+                </ComButton>
+                <button
+                  onClick={() => setIsEditing(false)}
+                  className="ml-2 text-gray-500 hover:underline"
+                >
+                  Hủy
+                </button>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div>
+            <textarea
+              value={reply}
+              onChange={(e) => setReply(e.target.value)}
+              placeholder="Nhập câu trả lời..."
+              className="w-full p-2 border rounded mb-4 "
+            />
+            <ComButton
+              className={`block w-full rounded border-[#E0E2E7] border-md bg-[#0F296D] text-center text-sm font-semibold text-white shadow-sm hover:bg-[#0F296D] ${
+                hasReplied ? "opacity-50 cursor-not-allowed" : ""
+              }`}
+              onClick={replyFeedback}
+              disabled={hasReplied}
+            >
+              Trả lời
+            </ComButton>
+          </div>
+        )}
       </div>
     </div>
   );
