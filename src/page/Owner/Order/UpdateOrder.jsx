@@ -37,6 +37,7 @@ import {
   updateShipCode,
   updateOrderDetail,
   deleteOrderDetail,
+  getProcessesByServiceId,
 } from "../../../api/order";
 import { getAddressById } from "../../../api/address";
 import CreateOrderDetailPopup from "./ServiceModal";
@@ -428,6 +429,38 @@ const UpdateOrder = () => {
   const confirmStatusChange = async () => {
     try {
       const statusEnum = STATUS_TO_ENUM[newStatus];
+
+      // Kiểm tra nếu trạng thái mới là "Lưu trữ"
+      if (newStatus === "Lưu trữ") {
+        const orderDetails = orderData.orderDetails || [];
+        const checkProcesses = async (detail) => {
+          const currentProcessState = detail.processState;
+
+          // Kiểm tra xem serviceId có tồn tại không
+          if (!detail.service.id) {
+            notificationApi("error", "Lỗi", "Không tìm thấy serviceId cho dịch vụ.");
+            return false; // Trả về false nếu không có serviceId
+          }
+
+          const processes = await getProcessesByServiceId(detail.service.id);
+          const highestProcessOrder = Math.max(...processes.data.items.map(item => item.processOrder));
+          
+          // Tìm process có processOrder cao nhất
+          const highestProcess = processes.data.items.find(item => item.processOrder === highestProcessOrder);
+
+          // Kiểm tra nếu processState hiện tại trùng với process có processOrder cao nhất
+          return currentProcessState === highestProcess.process;
+        };
+
+        const results = await Promise.all(orderDetails.map(checkProcesses));
+        const allProcessesCompleted = results.every(result => result);
+
+        if (!allProcessesCompleted) {
+          notificationApi("error", "Lỗi", "Vui lòng hoàn tất quá trình xử lý dịch vụ của các dịch vụ trong đơn hàng trước khi cập nhật trạng thái'Lưu trữ'.");
+          return;
+        }
+      }
+
       const response = await updateOrderStatus(id, statusEnum);
 
       if (response) {
@@ -583,7 +616,7 @@ const UpdateOrder = () => {
   };
 
   if (!orderData) {
-    return <div>Đang tải dữ liệu...</div>;
+    return <div>Đang tải dữ li���u...</div>;
   }
 
   const orderDetails = orderData.orderDetails || [];
