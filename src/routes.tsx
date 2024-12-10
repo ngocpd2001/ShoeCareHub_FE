@@ -457,6 +457,10 @@ export const routers = createBrowserRouter([
         path: "/moderator/reset-password",
         element: <ChangePassword />,
       },
+      {
+        path: "/moderator/chat",
+        element: <ChatRoom />,
+      },
     ],
   },
   {
@@ -485,10 +489,10 @@ export const routers = createBrowserRouter([
         path: "/employee/feedback",
         element: <FeedbackManager_Emp />,
       },
-      // {
-      //   path: "/employee/feedback/:id",
-      //   element: <DetailFeedback_Emp />,
-      // },
+      {
+        path: "/employee/chat",
+        element: <ChatRoom />,
+      },
       {
         path: "/employee/dashboard",
         element: <Dashboard_Emp />,

@@ -76,7 +76,7 @@ const navigation = [
   },
   {
     name: "Tin nhắn",
-    href: "/employee/message",
+    href: "/employee/chat",
     icon: ChatBubbleBottomCenterTextIcon,
     current: false,
   },

@@ -17,7 +17,6 @@ import { YupEmployee } from "../../../yup/YupEmployee"; // Cần tạo schema va
 export default function CreateEmployee() {
   const navigate = useNavigate();
   const [disabled, setDisabled] = useState(false);
-  const [image, setImages] = useState(null);
   const [branches, setBranches] = useState([]);
   const { notificationApi } = useNotification();
   const [selectedGender, setSelectedGender] = useState("Nam");
@@ -70,13 +69,6 @@ export default function CreateEmployee() {
     fetchBranches();
   }, []);
 
-  // Xử lý upload ảnh
-  const onChange = (data) => {
-    const selectedImages = data;
-    const newImages = selectedImages.map((file) => file.originFileObj);
-    setImages(newImages);
-  };
-
   // Tách riêng phần render của ComSelect chi nhánh
   const renderBranchSelect = () => {
     return (
@@ -104,14 +96,8 @@ export default function CreateEmployee() {
 
   // Xử lý submit form
   const onSubmit = async (data) => {
-    if (!image) {
-      notificationApi("error", "Lỗi", "Vui lòng chọn ảnh đại diện");
-      return;
-    }
-
     try {
       setDisabled(true);
-      const uploadedUrls = await firebaseImgs(image);
       const userData = JSON.parse(localStorage.getItem("user"));
 
       // Format lại dữ liệu trước khi gửi
@@ -123,7 +109,6 @@ export default function CreateEmployee() {
         phone: data.phone,
         branchId: parseInt(data.branchId), // Chuyển sang số
         businessId: parseInt(userData.businessId), // Chuyển sang số
-        avatar: uploadedUrls[0],
         status: "ACTIVE"
       };
 
@@ -218,17 +203,6 @@ export default function CreateEmployee() {
                 />
 
                 {renderBranchSelect()}
-              </div>
-            </div>
-
-            <div className="bg-white rounded border p-5">
-              <h2 className="text-xl font-semibold mb-4">Ảnh đại diện</h2>
-              <div className="space-y-6">
-                <ComUpImg
-                  onChange={onChange}
-                  error={image ? "" : "Vui lòng chọn ảnh đại diện"}
-                  required
-                />
               </div>
             </div>
           </div>

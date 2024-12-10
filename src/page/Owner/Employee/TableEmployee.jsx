@@ -113,6 +113,15 @@ export const TableEmployee = forwardRef((props, ref) => {
       width: 200,
       sorter: (a, b) => a.status.localeCompare(b.status),
       ...getColumnSearchProps("status", "Trạng thái"),
+      render: (text, record) => (
+        <div className={`${
+          record.status === "ACTIVE" 
+            ? "text-green-500" 
+            : "text-red-500"
+        }`}>
+          {record.status === "ACTIVE" ? "Hoạt động" : "Ngưng hoạt động"}
+        </div>
+      ),
     },
     {
       title: "",

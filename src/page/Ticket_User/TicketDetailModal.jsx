@@ -192,7 +192,7 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
                 </div>
               </div>
 
-              {/* Nội dung khi��u nại ban đầu */}
+              {/* Nội dung khiếu nại ban đầu */}
               <div className="mb-6">
                 <div className="font-medium mb-2">Tiêu đề:</div>
                 <p className="text-gray-600 mb-2">{ticket.title}</p>

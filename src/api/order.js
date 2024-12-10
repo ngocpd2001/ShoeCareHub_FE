@@ -223,3 +223,20 @@ export const getProcessesByServiceId = async (serviceId) => {
     throw error;
   }
 };
+
+export const getProcess = async (pageIndex = 1, pageSize = 10, keyword = '', orderBy = '') => {  
+  try {  
+    const params = {  
+      pageIndex,  
+      pageSize,  
+      ...(keyword && { keyword }),  
+      ...(orderBy && { orderBy }),  
+    };  
+
+    const response = await axiosInstances.login.get('/processes', { params });  
+    return response.data.data;  
+  } catch (error) {  
+    console.error("Lỗi khi gọi API quá trình", error);  
+    throw error;  
+  }  
+};

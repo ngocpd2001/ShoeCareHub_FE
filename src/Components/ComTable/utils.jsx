@@ -85,6 +85,8 @@ const useColumnFilters = () => {
     ),
     onFilter: (value, record) => {
       const nestedValue = getNestedValue(record, dataIndex);
+      console.log("Nested Value:", nestedValue);
+      console.log("Filter Value:", value);
       return nestedValue
         ? nestedValue
             .toString()
