@@ -49,4 +49,14 @@ export const getRooms = async (accId) => {
     }
 };
 
+export const deleteRoom = async (roomId) => {
+    try {
+        const response = await axiosInstances.login.delete(`/chats/${roomId}`);
+        return response.data;
+    } catch (error) {
+        console.error('Lỗi khi xóa phòng chat:', error);
+        throw error;
+    }
+};
+
   

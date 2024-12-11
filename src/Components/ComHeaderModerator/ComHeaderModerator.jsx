@@ -40,12 +40,12 @@ import { FaStar } from "react-icons/fa";
 import { useNotification } from "../../Notification/Notification";
 
 const navigation = [
-  {
-    name: "Trang chủ",
-    href: "/moderator/dashboard",
-    icon: HomeIcon,
-    current: false,
-  },
+  // {
+  //   name: "Trang chủ",
+  //   href: "/moderator/dashboard",
+  //   icon: HomeIcon,
+  //   current: false,
+  // },
   {
     name: "Đánh giá",
     href: "/moderator/Feedback",
@@ -58,12 +58,12 @@ const navigation = [
     icon: TicketIcon,
     current: true,
   },
-  {
-    name: "Gói ",
-    href: "/moderator/package",
-    icon: PackageIcon,
-    current: true,
-  },
+  // {
+  //   name: "Gói ",
+  //   href: "/moderator/package",
+  //   icon: PackageIcon,
+  //   current: true,
+  // },
   {
     name: "Tin nhắn",
     href: "/moderator/chat",
