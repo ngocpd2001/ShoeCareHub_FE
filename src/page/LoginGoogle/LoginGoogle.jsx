@@ -19,7 +19,7 @@ export default function LoginGoogle() {
   useEffect(() => {
     getData(`/auth/get-by-token?token=${email}`)
       .then((data) => {
-        console.log(2222222,data);
+        console.log(2222222, data);
         setToken(data.data.data.token);
         setUser(data.data.data);
         message.success(`Đăng nhập thành công`);
@@ -53,6 +53,7 @@ export default function LoginGoogle() {
       .catch((error) => {
         console.log(error);
         message.error(`Đăng nhập thất bại vui lòng thử lại`);
+        navigate("/login");
       });
   }, []);
   return <div></div>;
