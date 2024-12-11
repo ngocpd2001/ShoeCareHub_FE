@@ -335,14 +335,24 @@ const UpdateTicket_Ad = () => {
           <div className="flex items-center gap-2">
             <span className="font-medium">Trạng thái:</span>
             <div className="flex items-center gap-2">
-              <Select
-                value={ticketDetails.status}
-                onChange={handleStatusChange}
-                options={statusOptions.filter(option => !(ticketDetails.status === "RESOLVING" && option.value === "CLOSED") && option.value !== "CANCELED")} 
-                loading={loading}
-                disabled={loading}
-                style={{ width: 150 }}
-              />
+              {ticketDetails.status === "CANCELED" ? (
+                <span>{STATUS_DISPLAY[ticketDetails.status]}</span>
+              ) : (
+                <Select
+                  value={STATUS_DISPLAY[ticketDetails.status] || ticketDetails.status}
+                  onChange={handleStatusChange}
+                  options={statusOptions.filter(option => {
+                    const currentStatus = ticketDetails.status;
+                    if (currentStatus === "RESOLVING" && option.value === "CLOSED") {
+                      return false;
+                    }
+                    return option.value !== currentStatus && option.value !== "CANCELED" && option.value !== "RESOLVING" && option.value !== "OPENING";
+                  })}
+                  loading={loading}
+                  disabled={loading}
+                  style={{ width: 150 }}
+                />
+              )}
               {ticketDetails.status === "PROCESSING" && (
                 <div className="flex items-center gap-2">
                   <button
@@ -503,10 +513,6 @@ const UpdateTicket_Ad = () => {
           ) : ticketDetails.status === "CANCELED" ? (
             <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
               Phiếu hỗ trợ đã hủy. Không thể thêm phản hồi mới.
-            </div>
-          ) : ticketDetails.status === "RESOLVING" ? (
-            <div className="bg-gray-100 p-4 rounded text-gray-600 text-center">
-              Phiếu hỗ trợ đang xử lý lại dịch vụ. Không thể thêm phản hồi mới.
             </div>
           )  : (
             <Form
