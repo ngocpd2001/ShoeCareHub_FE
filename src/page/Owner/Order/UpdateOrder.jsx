@@ -456,7 +456,7 @@ const UpdateOrder = () => {
         const allProcessesCompleted = results.every(result => result);
 
         if (!allProcessesCompleted) {
-          notificationApi("error", "Lỗi", "Vui lòng hoàn tất quá trình xử lý dịch vụ của các dịch vụ trong đơn hàng trước khi cập nhật trạng thái'Lưu trữ'.");
+          notificationApi("error", "Lỗi", "Vui lòng hoàn tất quá trình xử lý dịch vụ của các dịch vụ trong đơn hàng trước khi cập nhật trạng thái 'Lưu trữ'.");
           return;
         }
       }

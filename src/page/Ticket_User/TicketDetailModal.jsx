@@ -341,8 +341,8 @@ const TicketDetailModal = ({ ticketId, onClose }) => {
                 </div>
               </div>
 
-              {/* Thêm button phản hồi - chỉ hiển thị khi status không phải CLOSED */}
-              {ticket.status !== "CLOSED" && ticket.status !== "CANCELED" && ticket.status !== "RESOLVING" && (
+              {/* Thêm button phản hồi - chỉ hiển thị khi status không phải CLOSED, CANCELED */}
+              {ticket.status !== "CLOSED" && ticket.status !== "CANCELED" && (
                 <button
                   onClick={handleReplyClick}
                   className="mb-6 px-4 py-2 bg-[#002278] text-white rounded-lg hover:bg-opacity-90"
