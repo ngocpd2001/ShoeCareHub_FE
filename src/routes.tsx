@@ -493,10 +493,10 @@ export const routers = createBrowserRouter([
         path: "/employee/chat",
         element: <ChatRoom />,
       },
-      {
-        path: "/employee/dashboard",
-        element: <Dashboard_Emp />,
-      },
+      // {
+      //   path: "/employee/dashboard",
+      //   element: <Dashboard_Emp />,
+      // },
       {
         path: "/employee/profile",
         element: <ProfilePage />,

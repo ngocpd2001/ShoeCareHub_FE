@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Drawer, Collapse } from 'antd';
-import { getRooms, getMessages } from '../../api/chat';
-import { getAccountById } from '../../api/user';
+import { getRooms, getMessages, deleteRoom } from '../../api/chat';
 import ChatList from './ChatList';
 import ChatInput from './ChatInput';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faMagnifyingGlass } from "@fortawesome/free-solid-svg-icons";
+import { faMagnifyingGlass, faMinus } from "@fortawesome/free-solid-svg-icons";
 import { faRocketchat } from "@fortawesome/free-brands-svg-icons";
 
 const { Panel } = Collapse;
@@ -25,30 +24,22 @@ const ChatUser = () => {
             console.error('Không tìm thấy accountId trong localStorage');
             return;
         }
-              const fetchRooms = async () => {
+        const fetchRooms = async () => {
             setIsFetching(true);
             const response = await getRooms(accountId);
             if (response.status === "success") {
                 const roomData = response.data;
-                const updatedRooms = await Promise.all(roomData.map(async room => {
-                    const otherAccountId = room.accountId1 === accountId ? room.accountId2 : room.accountId1;
-
-                    console.log(`Account ID của người dùng hiện tại: ${accountId}`);
-                    console.log(`Account ID của người khác: ${otherAccountId}`);
-
-                    const userResponse = await getAccountById(otherAccountId);
-                    console.log('Dữ liệu người dùng:', JSON.stringify(userResponse));
-                    const userInfo = userResponse.data;
-
-                    const userName = userInfo ? userInfo.fullName : 'Người dùng không xác định';
-                    const userImageUrl = userInfo ? userInfo.imageUrl : 'đường_dẫn_ảnh_mặc_định.jpg';
+                const updatedRooms = roomData.map(room => {
+                    const isCurrentUserAccount1 = room.accountId1 === accountId;
+                    const userName = isCurrentUserAccount1 ? room.account2FullName : room.account1FullName;
+                    const userImageUrl = isCurrentUserAccount1 ? room.account2ImageUrl : room.account1ImageUrl;
 
                     return {
                         id: room.id,
-                        name: `${userName}`,
+                        name: userName,
                         imageUrl: userImageUrl
                     };
-                }));
+                });
                 setRooms(updatedRooms);
             } else {
                 setRooms([]);
@@ -97,6 +88,15 @@ const ChatUser = () => {
         }
     };
 
+    const handleDeleteRoom = async (roomId) => {
+        try {
+            await deleteRoom(roomId);
+            setRooms(rooms.filter(room => room.id !== roomId));
+        } catch (error) {
+            console.error('Lỗi khi xóa phòng chat:', error);
+        }
+    };
+
     const filteredRooms = rooms.filter(room =>
         room.name.toLowerCase().includes(searchTerm.toLowerCase())
 
@@ -120,9 +120,16 @@ const ChatUser = () => {
                         </div>
                         <ul className="overflow-auto h-[300px]">
                             {filteredRooms.map(room => (
-                                <li key={room.id} onClick={() => setSelectedRoom(room)} className="cursor-pointer hover:bg-gray-200 p-2 mb-3 flex items-center">
-                                    <img src={room.imageUrl} alt={room.name} className="inline-block w-8 h-8 rounded-full mr-2" />
-                                    <span className="font-medium text-[#002278]">{room.name}</span>
+                                <li key={room.id} className="cursor-pointer hover:bg-gray-200 p-2 mb-3 flex items-center justify-between group">
+                                    <div onClick={() => setSelectedRoom(room)} className="flex items-center">
+                                        <img src={room.imageUrl} alt={room.name} className="inline-block w-8 h-8 rounded-full mr-2" />
+                                        <span className="font-medium text-[#002278]">{room.name}</span>
+                                    </div>
+                                    <FontAwesomeIcon
+                                        icon={faMinus}
+                                        onClick={() => handleDeleteRoom(room.id)}
+                                        className="text-white bg-red-500 rounded-full p-1 cursor-pointer hidden group-hover:block"
+                                    />
                                 </li>
                             ))}
                         </ul>

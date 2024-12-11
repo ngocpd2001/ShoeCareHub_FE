@@ -47,12 +47,12 @@ function classNames(...classes) {
 }
 
 const navigation = [
-  {
-    name: "Trang chủ",
-    href: "/employee/dashboard",
-    icon: HomeIcon,
-    current: false,
-  },
+  // {
+  //   name: "Trang chủ",
+  //   href: "/employee/dashboard",
+  //   icon: HomeIcon,
+  //   current: false,
+  // },
   {
     name: "Cửa hàng",
     icon: BuildingStorefrontIcon,

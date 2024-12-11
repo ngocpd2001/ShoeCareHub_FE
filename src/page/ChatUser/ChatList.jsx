@@ -19,6 +19,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
     };
 
     useEffect(() => {
+        setMessages([]);
         const fetchMessages = async () => {
             try {
                 const response = await getMessages(roomId); 
@@ -39,7 +40,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
         <div className={`overflow-auto ${hasAttachments ? 'h-[650px]' : 'h-[750px]'}`}>
             {messages.length === 0 ? (
                 <div className="text-center text-gray-500">
-                    Không có tin nhắn nào trong phòng này.
+                    Hãy bắt đầu cuộc trò chuyện...
                 </div>
             ) : (
                 messages.map((message, index) => {
@@ -55,13 +56,10 @@ const ChatList = ({ roomId, hasAttachments }) => {
                             )}
                             <div className={`my-2 mb-3 p-2 rounded-2xl ${message.senderId === accountId ? 'bg-[#3D70B8] text-right w-fit ml-auto' : 'bg-pink-200 text-left w-fit mr-auto'}`}>
                                 <div className="whitespace-pre-wrap text-left">
-                                    {splitMessage(message.content, 15).map((chunk, i) => (
+                                    {message.content ? splitMessage(message.content, 15).map((chunk, i) => (
                                         <div key={i}>{chunk}</div>
-                                    ))}
+                                    )) : null}
                                 </div>
-                                {message.imageUrl && (
-                                    <img src={message.imageUrl} alt="Message Attachment" className="max-w-full h-auto mt-2" />
-                                )}
                                 <div className={`text-sm ${message.senderId === accountId ? 'text-white' : 'text-black'} text-gray-500`}>
                                     {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                 </div>

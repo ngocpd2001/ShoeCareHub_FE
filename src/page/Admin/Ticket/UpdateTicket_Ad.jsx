@@ -367,7 +367,7 @@ const UpdateTicket_Ad = () => {
                     className="ml-2 px-4 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors flex items-center gap-1"
                   >
                     <FontAwesomeIcon icon={faBell} className="text-sm" />
-                    <span>Thông báo cho cửa hàng</span>
+                    <span>Thông báo xử lý đơn</span>
                   </button>
                 </div>
               )}
