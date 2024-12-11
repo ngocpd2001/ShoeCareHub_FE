@@ -59,7 +59,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
     >
       {messages?.length === 0 ? (
         <div className="text-center text-gray-500">
-          Không có tin nhắn nào trong phòng này.
+          Hãy bắt đầu cuộc trò chuyện...
         </div>
       ) : (
         messages?.map((message, index) => {
@@ -83,7 +83,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
                     : "bg-pink-200 text-left w-fit mr-auto"
                 }`}
               >
-                <div className="flex gap-2   items-center">
+                {/* <div className="flex gap-2   items-center">
                   {message.ImageUrl && (
                     <img
                       src={message.ImageUrl}
@@ -93,7 +93,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
                   )}
 
                   <div className="text-lg">{message.FullName}</div>
-                </div>
+                </div> */}
                 <div className="whitespace-pre-wrap text-left pl-10">
                   {splitMessage(message.Content, 15).map((chunk, i) => (
                     <div key={i}>{chunk}</div>
