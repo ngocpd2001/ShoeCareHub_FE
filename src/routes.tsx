@@ -93,6 +93,7 @@ import DashboardPlatform from "./page/Admin/Dashboard/DashboardPlatform";
 import WordBlackManager from "./page/Admin/WordBlack/WordBlackManager";
 import FeaturePackManager from "./page/Admin/FeaturePack/FeaturePackManager";
 import ChatRoom from "./page/Owner/Chat/ChatRoom";
+import LoginGoogle from "./page/LoginGoogle/LoginGoogle";
 
 // Component bảo vệ route
 const RequireAuth = ({ children }: { children: JSX.Element }) => {
@@ -160,6 +161,10 @@ export const routers = createBrowserRouter([
       {
         path: "/confirm-fail",
         element: <EmailVerificationFailedScreen />,
+      },
+      {
+        path: "/auth",
+        element: <LoginGoogle />,
       },
       {
         path: "/register",
@@ -419,7 +424,7 @@ export const routers = createBrowserRouter([
       },
       {
         path: "/owner/chat",
-        element: <ChatRoom/>,
+        element: <ChatRoom />,
       },
     ],
   },

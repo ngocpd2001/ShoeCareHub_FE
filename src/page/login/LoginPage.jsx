@@ -92,6 +92,18 @@ export default function LoginPage(props) {
       message.success(`Xác nhận tài khoản thành công vui lòng đăng nhập `);
     }
   }, [location.pathname]);
+
+  const loginGoogle = () => {
+    getData("/auth/login-by-google")
+      .then((e) => {
+        console.log(e.data);
+        window.location.href = e.data;
+      }).catch((error) => {
+      message.error(`Đăng nhập bằng google không thành công vui lòng thử lại sau`);
+      
+    })
+  }
+
   return (
     <>
       {/* <Header login={true} /> */}
@@ -114,7 +126,9 @@ export default function LoginPage(props) {
             </div>
             <div className="flex flex-col justify-center px-10">
               <div className="  text-center ">
-                <h3 className="text-3xl font-bold text-gray-700">Đăng nhập</h3>
+                <h3 className="text-3xl font-bold text-gray-700 mt-4">
+                  Đăng nhập
+                </h3>
                 <p className="mt-2 text-gray-500">
                   Chào mừng đến với Shoe Care Hub!
                 </p>
@@ -147,15 +161,17 @@ export default function LoginPage(props) {
                     <FieldError className="text-red-500 text-center">
                       {LoginState || LoginError ? errorMessage : ""}
                     </FieldError>
-                    <div className="flex justify-end">
-                      <Link to="/reset-password" className=" text-sky-600">
-                        Quên mật khẩu
-                      </Link>
-                    </div>
-                    <div className="flex justify-end">
-                      <Link to="/login-otp" className=" text-sky-600">
-                        Đăng nhập bằng OTP
-                      </Link>
+                    <div className="flex justify-between">
+                      <div className="flex justify-end">
+                        <Link to="/login-otp" className=" text-sky-600">
+                          Đăng nhập bằng OTP
+                        </Link>
+                      </div>
+                      <div className="flex justify-end">
+                        <Link to="/reset-password" className=" text-sky-600">
+                          Quên mật khẩu
+                        </Link>
+                      </div>
                     </div>
                     <div className="mt-4 text-center gap-3 flex flex-col">
                       <ComButton
@@ -165,6 +181,19 @@ export default function LoginPage(props) {
                         className="w-full duration-300"
                       >
                         Đăng nhập
+                      </ComButton>
+                      <ComButton
+                        disabled={disabled}
+                        type="primary"
+                        onClick={loginGoogle}
+                        className="w-full duration-300 flex justify-center items-center gap-2 bg-sky-800 "
+                      >
+                        <img
+                          className="object-cover w-5 h-5  "
+                          src="https://firebasestorage.googleapis.com/v0/b/shoecarehub-4dca3.firebasestorage.app/o/images%2Fdafb7fd8-072f-4a43-8104-df90d4e9e592.png?alt=media&token=39205b44-2984-4111-869a-6144867c3ef9"
+                          alt="Login Image"
+                        />
+                        <p> Đăng nhập bằng google</p>
                       </ComButton>
 
                       <Link to="/register" className=" text-sky-600">
