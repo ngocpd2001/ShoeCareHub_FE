@@ -616,7 +616,7 @@ const UpdateOrder = () => {
   };
 
   if (!orderData) {
-    return <div>Đang tải dữ li���u...</div>;
+    return <div>Đang tải dữ liệu...</div>;
   }
 
   const orderDetails = orderData.orderDetails || [];
