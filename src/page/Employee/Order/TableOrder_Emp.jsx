@@ -88,7 +88,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "branchName",
         width: 200,
         sorter: (a, b) => a.orderDetails[0]?.branch?.name.localeCompare(b.orderDetails[0]?.branch?.name),
-        ...getColumnSearchProps("branchName", "Chi nhánh"),
+        // ...getColumnSearchProps("branchName", "Chi nhánh"),
         render: (orderDetails) => orderDetails[0]?.branch?.name || "N/A",
       },
       {
@@ -97,7 +97,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "serviceName",
         width: 200,
         sorter: (a, b) => a.orderDetails[0]?.service?.name.localeCompare(b.orderDetails[0]?.service?.name),
-        ...getColumnSearchProps("serviceName", "Tên dịch vụ"),
+        // ...getColumnSearchProps("serviceName", "Tên dịch vụ"),
         render: (orderDetails) => (
           <ul>
             {orderDetails.map((detail, index) => (
@@ -112,7 +112,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "createTime",
         width: 150,
         sorter: (a, b) => new Date(a.createTime) - new Date(b.createTime),
-        ...getColumnApprox("createTime", "Ngày đặt"),
+        // ...getColumnApprox("createTime", "Ngày đặt"),
         render: (text) => new Date(text).toLocaleDateString("vi-VN"),
       },
       {
@@ -121,7 +121,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "fullName",
         width: 150,
         sorter: (a, b) => a.fullName.localeCompare(b.fullName),
-        ...getColumnSearchProps(["fullName", "phone"], "Khách hàng"),
+        // ...getColumnSearchProps(["fullName", "phone"], "Khách hàng"),
         render: (text, record) => (
           <div>
             <div>{text}</div>
@@ -135,7 +135,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "totalPrice",
         width: 150,
         sorter: (a, b) => a.totalPrice - b.totalPrice,
-        ...getColumnPriceRangeProps("totalPrice", "Tổng tiền"),
+        // ...getColumnPriceRangeProps("totalPrice", "Tổng tiền"),
         render: (text) => formatCurrency(text),
       },
       {
@@ -144,7 +144,7 @@ export const TableOrder_Emp = forwardRef((props, ref) => {
         key: "status",
         width: 150,
         sorter: (a, b) => a.status.localeCompare(b.status),
-        ...getColumnSearchProps("status", "Trạng thái"),
+        // ...getColumnSearchProps("status", "Trạng thái"),
         render: (status) => (
           <span
             className={`px-3 py-1 rounded-full text-sm ${

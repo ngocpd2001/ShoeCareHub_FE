@@ -340,3 +340,4 @@ const InformationShop = ({ businessId, onBranchSelect }) => {
 };
 
 export default InformationShop;
+

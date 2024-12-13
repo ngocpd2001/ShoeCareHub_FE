@@ -29,6 +29,7 @@ import {
   faEllipsisVertical,
   faPenNib,
   faTrashCan,
+  faCommentDots,
 } from "@fortawesome/free-solid-svg-icons";
 import {
   getOrderById,
@@ -46,6 +47,7 @@ import { message, Modal } from "antd";
 import UpdateOrderDetailModal from "./UpdateOrderDetailModal";
 import { faEye } from "@fortawesome/free-regular-svg-icons";
 import ProcessShippingModal from "./ProcessShippingModal";
+import { getRooms, createRoom } from "../../../api/chat";
 
 const STATUS_TO_ENUM = {
   "Đang chờ": "PENDING",
@@ -160,6 +162,8 @@ const UpdateOrder = () => {
   const [shippingStatus, setShippingStatus] = useState(null);
   const [isShippingModalVisible, setIsShippingModalVisible] = useState(false);
   const [serviceId, setServiceId] = useState(null);
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [isChatOpen, setChatOpen] = useState(false);
 
   useEffect(() => {
     if (orderData) {
@@ -444,7 +448,7 @@ const UpdateOrder = () => {
 
           const processes = await getProcessesByServiceId(detail.service.id);
           const highestProcessOrder = Math.max(...processes.data.items.map(item => item.processOrder));
-          
+
           // Tìm process có processOrder cao nhất
           const highestProcess = processes.data.items.find(item => item.processOrder === highestProcessOrder);
 
@@ -599,7 +603,7 @@ const UpdateOrder = () => {
 
   const handleUpdateClick = (OrderDetailId) => {
     const orderDetail = orderDetails.find(item => item.id === OrderDetailId);
-    
+
     console.log("Order Detail:", orderDetail); // Kiểm tra orderDetail
     const serviceId = orderDetail ? orderDetail.service.id : null; // Lấy serviceId từ orderDetail
     // console.log("Service ID:", serviceId); // Kiểm tra serviceId
@@ -615,8 +619,66 @@ const UpdateOrder = () => {
     setIsShippingModalVisible(true);
   };
 
+  const toggleChatDrawer = () => {
+    setChatOpen(!isChatOpen);
+  };
+
+  const handleChatClick = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (!user) {
+        console.error("Không tìm thấy thông tin người dùng trong localStorage");
+        return;
+      }
+      const accountId1 = user.id;
+      const accountId2 = orderData.accountId;
+      const userRole = user.role; // Lấy role từ localStorage
+
+      const roomsResponse = await getRooms(accountId1);
+      if (roomsResponse.status !== "success") {
+        console.error("Lỗi khi lấy danh sách phòng:", roomsResponse.message);
+        return;
+      }
+
+      const rooms = roomsResponse.data;
+      const existingRoom = rooms.find(room =>
+        (room.accountId1 === accountId1 && room.accountId2 === accountId2) ||
+        (room.accountId1 === accountId2 && room.accountId2 === accountId1)
+      );
+
+      if (existingRoom) {
+        setSelectedRoom({
+          ...existingRoom,
+          name: accountId2,
+          imageUrl: accountId2
+        });
+      } else {
+        const newRoom = await createRoom(accountId1, accountId2);
+        console.log("New Room Response:", newRoom);
+        if (newRoom.status !== "success") {
+          console.error("Lỗi khi tạo phòng chat:", newRoom.message);
+          return;
+        }
+        setSelectedRoom({
+          ...newRoom,
+          name: accountId2,
+          imageUrl: accountId2
+        });
+      }
+
+      // Điều hướng dựa trên role
+      if (userRole === "OWNER") {
+        navigate("/owner/chat");
+      } else if (userRole === "EMPLOYEE") {
+        navigate("/employee/chat");
+      }
+    } catch (error) {
+      console.error("Lỗi khi kiểm tra hoặc tạo phòng chat:", error);
+    }
+  };
+
   if (!orderData) {
-    return <div>Đang tải dữ li���u...</div>;
+    return <div>Đang tải dữ liệu...</div>;
   }
 
   const orderDetails = orderData.orderDetails || [];
@@ -697,7 +759,7 @@ const UpdateOrder = () => {
                         <div className="flex items-center">
                           <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
                             {item.service.assetUrls &&
-                            item.service.assetUrls.length > 0 ? (
+                              item.service.assetUrls.length > 0 ? (
                               <Image.PreviewGroup
                                 preview={{
                                   onChange: (current, prev) =>
@@ -726,9 +788,9 @@ const UpdateOrder = () => {
                       </td>
                       <td className="text-right">
                         {item.service.promotion &&
-                        item.service.promotion.status === "Hoạt Động"
+                          item.service.promotion.status === "Hoạt Động"
                           ? item.service.promotion.newPrice.toLocaleString() +
-                            "đ"
+                          "đ"
                           : item.service.price.toLocaleString() + "đ"}
                       </td>
                       {/* <td className="text-right">
@@ -738,51 +800,51 @@ const UpdateOrder = () => {
                         {["Đã nhận", "Đang xử lý", "Lưu trữ"].includes(
                           orderStatus
                         ) && ( // Kiểm tra trạng thái
-                          <Dropdown
-                            overlay={
-                              <Menu>
-                                <Menu.Item
-                                  key="update"
-                                  onClick={() => handleUpdateClick(item.id)}
-                                >
-                                  <FontAwesomeIcon
-                                    icon={faPenNib}
-                                    className="text-[#002278]"
-                                  />{" "}
-                                  Cập nhật dịch vụ
-                                </Menu.Item>
-                                <Menu.Item key="delete">
-                                  <Popconfirm
-                                    title="Bạn có chắc chắn muốn xóa dịch vụ này?"
-                                    onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
-                                    okText="Đồng ý"
-                                    cancelText="Hủy"
+                            <Dropdown
+                              overlay={
+                                <Menu>
+                                  <Menu.Item
+                                    key="update"
+                                    onClick={() => handleUpdateClick(item.id)}
                                   >
-                                    <span
-                                      className={
-                                        orderStatus !== "Đã nhận"
-                                          ? "text-gray-400 cursor-not-allowed"
-                                          : "text-[#002278]"
-                                      }
+                                    <FontAwesomeIcon
+                                      icon={faPenNib}
+                                      className="text-[#002278]"
+                                    />{" "}
+                                    Cập nhật dịch vụ
+                                  </Menu.Item>
+                                  <Menu.Item key="delete">
+                                    <Popconfirm
+                                      title="Bạn có chắc chắn muốn xóa dịch vụ này?"
+                                      onConfirm={() => handleDelete(item.id)} // Gọi hàm handleDelete khi xác nhận
+                                      okText="Đồng ý"
+                                      cancelText="Hủy"
                                     >
-                                      <FontAwesomeIcon
-                                        icon={faTrashCan}
-                                        className="text-[#002278]"
-                                      />{" "}
-                                      Xóa dịch vụ
-                                    </span>
-                                  </Popconfirm>
-                                </Menu.Item>
-                              </Menu>
-                            }
-                            trigger={["click"]}
-                          >
-                            <FontAwesomeIcon
-                              icon={faEllipsisVertical}
-                              className="cursor-pointer text-[#002278]"
-                            />
-                          </Dropdown>
-                        )}
+                                      <span
+                                        className={
+                                          orderStatus !== "Đã nhận"
+                                            ? "text-gray-400 cursor-not-allowed"
+                                            : "text-[#002278]"
+                                        }
+                                      >
+                                        <FontAwesomeIcon
+                                          icon={faTrashCan}
+                                          className="text-[#002278]"
+                                        />{" "}
+                                        Xóa dịch vụ
+                                      </span>
+                                    </Popconfirm>
+                                  </Menu.Item>
+                                </Menu>
+                              }
+                              trigger={["click"]}
+                            >
+                              <FontAwesomeIcon
+                                icon={faEllipsisVertical}
+                                className="cursor-pointer text-[#002278]"
+                              />
+                            </Dropdown>
+                          )}
                       </td>
                     </tr>
                     {item.materials &&
@@ -792,7 +854,7 @@ const UpdateOrder = () => {
                             <div className="flex items-center">
                               <div className="w-24 h-24 flex items-center justify-center overflow-hidden mr-3">
                                 {material.assetUrls &&
-                                material.assetUrls.length > 0 ? (
+                                  material.assetUrls.length > 0 ? (
                                   <Image
                                     src={material.assetUrls[0].url} // Hình ảnh của material
                                     alt={material.name}
@@ -974,6 +1036,13 @@ const UpdateOrder = () => {
                   {orderData.phone || "Không có thông tin số điện thoại"}
                 </p>
               </div>
+              <button
+                onClick={handleChatClick}
+                className="bg-[#1D364D] text-white rounded-lg py-2 px-4 flex items-center mt-2"
+              >
+                <FontAwesomeIcon icon={faCommentDots} className="mr-2" />
+                Chat Ngay
+              </button>
             </div>
           </div>
 
@@ -1086,15 +1155,15 @@ const UpdateOrder = () => {
                         "Đang giao hàng",
                         "Quá hạn nhận hàng",
                       ].includes(orderStatus) && ( // Kiểm tra trạng thái
-                        <button
-                          onClick={handleShowShippingStatus}
-                          className="flex items-center border border-[#002278] text-[#002278] bg-white rounded-md px-4 py-2 hover:bg-[#002278] hover:text-white transition duration-200"
-                          title="Xem quá trình vận chuyển" // Thêm tooltip để giải thích
-                        >
-                          <FontAwesomeIcon icon={faEye} className="mr-2" />
-                          Xem quá trình vận chuyển
-                        </button>
-                      )}
+                          <button
+                            onClick={handleShowShippingStatus}
+                            className="flex items-center border border-[#002278] text-[#002278] bg-white rounded-md px-4 py-2 hover:bg-[#002278] hover:text-white transition duration-200"
+                            title="Xem quá trình vận chuyển" // Thêm tooltip để giải thích
+                          >
+                            <FontAwesomeIcon icon={faEye} className="mr-2" />
+                            Xem quá trình vận chuyển
+                          </button>
+                        )}
                     </div>
                     {/* Thêm thông báo nhỏ để người dùng biết có thể xem quá trình vận chuyển */}
                     {/* {[
