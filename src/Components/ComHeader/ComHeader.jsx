@@ -16,9 +16,9 @@ import { useStorage } from "../../hooks/useLocalStorage";
 import { MenuButton, MenuItem, MenuItems, Menu } from "@headlessui/react";
 import { ChevronDownIcon } from "lucide-react";
 import { getData } from "../../api/api";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faComment } from '@fortawesome/free-regular-svg-icons';
-import ChatUser from '../../page/ChatUser/ChatUser';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faComment } from "@fortawesome/free-regular-svg-icons";
+import ChatUser from "../../page/ChatUser/ChatUser";
 
 const navigation = [
   { name: "Dashboard", href: "/admin/institute", current: false },
@@ -81,14 +81,14 @@ export default function ComHeader({ children }) {
   }, [currentPath]);
   const handleSearch = (e) => {
     if (e.key === "Enter") {
-      setSearchTerm("")
+      setSearchTerm("");
       navigate(`/service?search=${encodeURIComponent(searchTerm)}`);
     }
   };
 
   // Hàm xử lý khi người dùng nhấn nút tìm kiếm
   const handleSearchClick = () => {
-    setSearchTerm('')
+    setSearchTerm("");
     navigate(`/service?search=${encodeURIComponent(searchTerm)}`);
   };
 
@@ -183,7 +183,11 @@ export default function ComHeader({ children }) {
                               alignItems: "center",
                             }}
                           >
-                            <FontAwesomeIcon icon={faComment} size="lg" color="black" />
+                            <FontAwesomeIcon
+                              icon={faComment}
+                              size="lg"
+                              color="black"
+                            />
                           </div>
                         </Link>
                       </>
@@ -312,22 +316,22 @@ export default function ComHeader({ children }) {
                       KÊNH CUNG CẤP
                     </Link>
                   </li>
-                  <li>
+                  {/* <li>
                     <Link
                       to="/subscription-provider"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
                       GÓI LÊN SÀN
                     </Link>
-                  </li>
-                  <li>
+                  </li> */}
+                  {/* <li>
                     <Link
                       to="/"
                       className="text-blue-900 hover:text-blue-700 text-center"
                     >
                       VỀ CHÚNG TÔI
                     </Link>
-                  </li>
+                  </li> */}
                 </ul>
               </div>
             </nav>
@@ -447,7 +451,7 @@ export default function ComHeader({ children }) {
           Hồ Chí Minh
         </p>
         <p className="text-sm mt-1">
-          Điện Thoại: (024) XXXXXXX - Email: contact@TP4SCS.vn
+          Điện Thoại: (024) 676685 - Email: contact@TP4SCS.vn
         </p>
       </div>
       <Drawer

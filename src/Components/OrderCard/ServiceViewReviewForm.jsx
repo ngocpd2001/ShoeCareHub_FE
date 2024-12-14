@@ -241,7 +241,9 @@ const ServiceViewReviewForm = ({ data, onClose, reloadData, edit }) => {
             </div>
             {value?.feedback?.status === "SUSPENDED" && (
               <p className="text-red-600 p-8">
-                Đánh giá bị từ chối vì vi phạm tiêu chuẩn nội dung.
+                Đánh giá bị từ chối vì vi phạm tiêu chuẩn nội dung "Từ ngữ thô
+                tục, xúc phạm ...".
+                <br /> Bạn có thể chỉnh sửa feedback 1 lần sau khi bị từ chối!!!
               </p>
             )}
           </div>

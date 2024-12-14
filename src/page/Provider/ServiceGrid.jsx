@@ -56,7 +56,7 @@ export default function ServiceGrid({ name, api }) {
     getData(`/${api}?Status=ACTIVE&IsDecsending=false&PageSize=99999&PageNum=1`) // Lấy tất cả sản phẩm
       .then((data) => {
         console.log(data?.data?.data);
-        
+
         const items = data?.data?.data || [];
         setServices(items);
       })
@@ -157,7 +157,7 @@ export default function ServiceGrid({ name, api }) {
       <div className="flex flex-col md:flex-row items-center mb-6 gap-4 px-7">
         <input
           type="text"
-          placeholder="Tìm kiếm dịch vụ..."
+          placeholder="Tìm kiếm nhà cung cấp..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full  p-2 border border-gray-300 rounded"
