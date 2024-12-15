@@ -167,7 +167,7 @@ export const TableService = forwardRef((props, ref) => {
               );
             }}
             // extraMenuItems={extraMenuItems}
-            excludeDefaultItems={["details", "reject", "accept"]}
+            excludeDefaultItems={["details", "reject", "accept", "delete"]}
           />
         </div>
       ),
