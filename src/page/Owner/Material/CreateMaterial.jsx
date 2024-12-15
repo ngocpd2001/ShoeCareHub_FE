@@ -14,29 +14,10 @@ import { useStorage } from "../../../hooks/useLocalStorage";
 import { getData } from "../../../api/api";
 import { createMaterial } from "../../../api/material";
 import { updateMaterialQuantity } from "../../../api/material";
-import * as yup from "yup";
+import { YupMaterial } from "../../../yup/YupMaterial";
 import { getBranchByBusinessId } from "../../../api/branch";
 import { getServiceByBusinessId } from "../../../api/service";
 import { Modal } from "antd";
-
-// Điều chỉnh schema validation
-const MaterialSchema = yup.object().shape({
-  name: yup
-    .string()
-    .required("Tên phụ kiện là bắt buộc")
-    .trim()
-    .min(2, "Tên phụ kiện phải có ít nhất 2 ký tự"),
-  price: yup
-    .number()
-    .required("Giá phụ kiện là bắt buộc")
-    .min(1000, "Giá tối thiểu là 1000đ"),
-  status: yup.string().required("Trạng thái là bắt buộc"),
-  branchId: yup
-    .array()
-    .of(yup.string())
-    .min(1, "Phải chọn ít nhất một chi nhánh")
-    .required("Vui lòng chọn chi nhánh"),
-});
 
 export default function CreateMaterial() {
   const [disabled, setDisabled] = useState(false);
@@ -48,7 +29,7 @@ export default function CreateMaterial() {
   const [services, setServices] = useState([]);
 
   const methods = useForm({
-    resolver: yupResolver(MaterialSchema),
+    resolver: yupResolver(YupMaterial),
     defaultValues: {
       name: "",
       price: null,
