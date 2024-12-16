@@ -14,7 +14,7 @@ function TableFeedback() {
       <div className="flex justify-between items-end pb-2 px-4 ">
         <div>
           <h3 className="text-[#002278] text-2xl mb-4 font-semibold">
-            Đánh giá
+            Đánh giá 2
           </h3>
         </div>
       </div>
