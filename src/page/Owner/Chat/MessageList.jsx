@@ -39,7 +39,7 @@ const MessageList = ({ roomId, hasAttachments }) => {
 
   return (
     <div
-      className={`overflow-auto ${hasAttachments ? "h-[650px]" : "h-[750px]"}`}
+      className={`overflow-auto ${hasAttachments ? "h-[600px]" : "h-[720px]"}`}
     >
       {messages.length === 0 ? (
         <div className="text-center text-gray-500">

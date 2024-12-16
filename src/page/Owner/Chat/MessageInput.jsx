@@ -42,25 +42,25 @@ const MessageInput = ({ roomId, onMessageSent, messages, setMessages, setHasAtta
         }
     };  
 
-    const handleFileUpload = async (event) => {
-        const files = Array.from(event.target.files);
-        if (files.length === 0) return;
+    // const handleFileUpload = async (event) => {
+    //     const files = Array.from(event.target.files);
+    //     if (files.length === 0) return;
 
-        setIsUploading(true);
-        try {
-            const uploadedUrls = await firebaseImgs(files);
-            const newAttachments = uploadedUrls.map(url => ({ url, type: "IMAGE" }));
-            setAttachments(prev => [...prev, ...newAttachments]);
-            setHasAttachments(true);
-            for (const url of uploadedUrls) {
-                await handleSend(url);
-            }
-        } catch (error) {
-            console.error("Lỗi khi upload ảnh:", error);
-        } finally {
-            setIsUploading(false);
-        }
-    };
+    //     setIsUploading(true);
+    //     try {
+    //         const uploadedUrls = await firebaseImgs(files);
+    //         const newAttachments = uploadedUrls.map(url => ({ url, type: "IMAGE" }));
+    //         setAttachments(prev => [...prev, ...newAttachments]);
+    //         setHasAttachments(true);
+    //         for (const url of uploadedUrls) {
+    //             await handleSend(url);
+    //         }
+    //     } catch (error) {
+    //         console.error("Lỗi khi upload ảnh:", error);
+    //     } finally {
+    //         setIsUploading(false);
+    //     }
+    // };
 
     const removeAttachment = (index) => {
         setAttachments(prev => {
@@ -97,7 +97,7 @@ const MessageInput = ({ roomId, onMessageSent, messages, setMessages, setHasAtta
             )}
 
             <div className="flex items-center w-full">
-                <label className="mr-4 text-2xl cursor-pointer">
+                {/* <label className="mr-4 text-2xl cursor-pointer">
                     <FontAwesomeIcon icon={faImage} />
                     <input 
                         type="file" 
@@ -105,7 +105,7 @@ const MessageInput = ({ roomId, onMessageSent, messages, setMessages, setHasAtta
                         onChange={handleFileUpload} 
                         className="hidden"
                     />
-                </label>
+                </label> */}
                 <textarea  
                     className="flex-grow border-none outline-none text-lg resize-none overflow-y-auto"  
                     placeholder="Nhập nội dung..."  

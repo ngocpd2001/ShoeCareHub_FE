@@ -115,7 +115,7 @@ const getAvailableStatuses = (currentStatus) => {
     //   return [{ value: "Lưu trữ", className: "bg-gray-50 text-gray-700" }];
 
     case "FINISHED":
-      return [];
+      return [{ value: "Đã xác nhận", className: "bg-green-50 text-green-700" }];
 
     case "CANCELED":
       return [];

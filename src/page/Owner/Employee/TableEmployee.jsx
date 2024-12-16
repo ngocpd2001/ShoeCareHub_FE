@@ -70,7 +70,7 @@ export const TableEmployee = forwardRef((props, ref) => {
         if (!a.branch || !b.branch) return 0;
         return a.branch.name.localeCompare(b.branch.name);
       },
-      ...getColumnSearchProps(["branch", "name"], "Chi nhánh"),
+      // ...getColumnSearchProps(["branch", "name"], "Chi nhánh"),
       render: (text, record) => {
         if (!record.branch) {
           return <div>Chưa có chi nhánh</div>;
@@ -96,7 +96,7 @@ export const TableEmployee = forwardRef((props, ref) => {
       key: "dob",
       width: 150,
       sorter: (a, b) => new Date(a.dob) - new Date(b.dob),
-      ...getColumnSearchProps("dob", "Ngày sinh/Giới tính"),
+      // ...getColumnSearchProps("dob", "Ngày sinh/Giới tính"),
       render: (text, record) => (
         <div>
           <div>{new Date(record.dob).toLocaleDateString("vi-VN")}</div>
@@ -112,7 +112,7 @@ export const TableEmployee = forwardRef((props, ref) => {
       key: "status",
       width: 200,
       sorter: (a, b) => a.status.localeCompare(b.status),
-      ...getColumnSearchProps("status", "Trạng thái"),
+      // ...getColumnSearchProps("status", "Trạng thái"),
       render: (text, record) => (
         <div className={`${
           record.status === "ACTIVE" 
