@@ -97,8 +97,8 @@ const ProviderLandingPage = () => {
             </div>
             <ServiceCard businessId={id} branchId={selectedBranchId} />
           </section>
-
-          <ImageSlider images={images} />
+{/* 
+          <ImageSlider images={images} /> */}
 
           {/* <div className="grid grid-cols-5 gap-4 mx-auto py-8">
             <div className="col-span-3 relative h-[450px] flex items-center justify-center">

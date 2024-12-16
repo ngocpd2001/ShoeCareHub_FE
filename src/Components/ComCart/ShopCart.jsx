@@ -44,10 +44,10 @@ const ShopCart = ({
             <h2 className="text-xl font-medium text-[#002278] mr-2 max-w-sm break-words whitespace-normal overflow-hidden overflow-ellipsis">
               {branchData.name}
             </h2>
-            <FontAwesomeIcon
+            {/* <FontAwesomeIcon
               icon={faMessage}
               className="text-[#002278] bg-[#F9F1E7]"
-            />
+            /> */}
           </div>
 
           <div className="flex items-center justify-end">
