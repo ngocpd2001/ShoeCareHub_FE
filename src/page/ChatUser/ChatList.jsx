@@ -46,6 +46,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
         const arrayData = Object.values(data);
         console.log(333333, arrayData);
         arrayData.sort((a, b) => new Date(a.Timestamp) - new Date(b.Timestamp));
+        // arrayData.reverse();
         setMessages(arrayData);
       } catch (error) {
         setMessages([]);
@@ -79,7 +80,7 @@ const ChatList = ({ roomId, hasAttachments }) => {
               <div
                 className={`my-2 mb-3 p-2 rounded-2xl ${
                   message.SenderId === accountId
-                    ? "bg-[#3D70B8] text-right w-fit ml-auto"
+                    ? "bg-[#3D70B8] text-white text-right w-fit ml-auto"
                     : "bg-pink-200 text-left w-fit mr-auto"
                 }`}
               >
@@ -101,8 +102,8 @@ const ChatList = ({ roomId, hasAttachments }) => {
                 </div>
                 <div
                   className={`text-sm ${
-                    message.SenderId === accountId ? "text-white" : "text-black"
-                  } text-gray-500`}
+                    message.SenderId === accountId ? "text-black" : "text-gray-500"
+                  }`}
                 >
                   {new Date(message.Timestamp).toLocaleTimeString([], {
                     hour: "2-digit",

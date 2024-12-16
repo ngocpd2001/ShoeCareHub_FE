@@ -69,12 +69,12 @@ const ChatRoom = () => {
             setMessages(response.data);
           } else {
             console.error("Lỗi khi lấy tin nhắn:", response.message);
-            alert(`Lỗi: ${response.message}`);
+            // alert(`Lỗi: ${response.message}`);
           }
         } catch (error) {
           console.error("Đã xảy ra lỗi:", error);
           console.error("Thông tin lỗi:", JSON.stringify(error, null, 2));
-          alert("Đã xảy ra lỗi khi lấy tin nhắn. Vui lòng thử lại sau.");
+          // alert("Đã xảy ra lỗi khi lấy tin nhắn. Vui lòng thử lại sau.");
         } finally {
           setIsFetching(false);
         }
@@ -129,30 +129,36 @@ const ChatRoom = () => {
           />
         </div>
         <ul className="overflow-auto h-[810px]">
-          {filteredRooms.map((room) => (
-            <li
-              key={room.id}
-              onClick={() => {
-                console.log(`Room ID được chọn: ${room.id}`);
-                setSelectedRoom(room);
-              }}
-              className="cursor-pointer hover:bg-gray-200 p-2 mb-3 flex items-center justify-between group"
-            >
-              <div onClick={() => setSelectedRoom(room)} className="flex items-center">
-                <img
-                  src={room.imageUrl}
-                  alt={room.name}
-                  className="inline-block w-8 h-8 rounded-full mr-2"
+          {filteredRooms.map((room) => {
+            const isCurrentUserAccount1 = room.accountId1 === accountId;
+            const isUnseen = isCurrentUserAccount1 ? !room.isAccount1Seen : !room.isAccount2Seen;
+            const roomBgClass = !isUnseen ? "bg-yellow-100" : "";
+
+            return (
+              <li
+                key={room.id}
+                onClick={() => {
+                  console.log(`Room ID được chọn: ${room.id}`);
+                  setSelectedRoom(room);
+                }}
+                className={`cursor-pointer hover:bg-gray-200 p-2 mb-3 flex items-center justify-between group ${roomBgClass}`}
+              >
+                <div onClick={() => setSelectedRoom(room)} className="flex items-center">
+                  <img
+                    src={room.imageUrl}
+                    alt={room.name}
+                    className="inline-block w-8 h-8 rounded-full mr-2"
+                  />
+                  <span className="font-medium text-[#002278]">{room.name}</span>
+                </div>
+                <FontAwesomeIcon
+                  icon={faMinus}
+                  onClick={() => handleDeleteRoom(room.id)}
+                  className="text-white bg-red-500 rounded-full p-1 cursor-pointer hidden group-hover:block"
                 />
-                <span className="font-medium text-[#002278]">{room.name}</span>
-              </div>
-              <FontAwesomeIcon
-                icon={faMinus}
-                onClick={() => handleDeleteRoom(room.id)}
-                className="text-white bg-red-500 rounded-full p-1 cursor-pointer hidden group-hover:block"
-              />
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       </div>
       <div className="flex-1 px-4 overflow-hidden">
